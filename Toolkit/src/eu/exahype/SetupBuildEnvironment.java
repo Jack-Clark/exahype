@@ -32,6 +32,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
         _writer.write("PROJECT_CFLAGS+=-DDim2\n");
       } catch (Exception exc) {
         System.err.println("ERROR: " + exc.toString());
+        exc.printStackTrace();
         valid = false;
       }
     }
@@ -41,6 +42,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
         _writer.write("PROJECT_CFLAGS+=-DDim3\n");
       } catch (Exception exc) {
         System.err.println("ERROR: " + exc.toString());
+        exc.printStackTrace();
         valid = false;
       }
     }
@@ -68,6 +70,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       }
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
+      exc.printStackTrace();
       valid = false;
     }
   }
@@ -124,7 +127,10 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.write("EXECUTABLE=ExaHyPE-" + node.getName() + "\n");
       _writer.write("\n\n");
 
-      String architecture = node.getArchitecture().toString().trim().toLowerCase();
+      String architecture = "noarch";
+      if (node.getArchitecture()!=null) {
+        architecture = node.getArchitecture().toString().trim().toLowerCase();
+      }
 
       if (architecture.equals("wsm")) {
         _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=16");
@@ -150,6 +156,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
+      exc.printStackTrace();
       valid = false;
     }
   }
@@ -273,6 +280,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.close();
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
+      exc.printStackTrace();
       valid = false;
     }
   }

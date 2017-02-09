@@ -1,5 +1,8 @@
 package eu.exahype.solvers;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 import eu.exahype.IOUtils;
 
 public class OptimisedADERDG implements Solver {
@@ -30,7 +33,12 @@ public class OptimisedADERDG implements Solver {
     _hasConstants       = hasConstants;
     _isLinear           = isLinear;
   }
-
+  
+  private String getAbstractSolverName(String solverName) {
+    return "Abstract"+solverName;
+  }
+  
+  @Override
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
 	  String content = IOUtils.convertRessourceContentToString(
@@ -38,48 +46,87 @@ public class OptimisedADERDG implements Solver {
 
 	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
 	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
+    content = content.replaceAll("\\{\\{AbstractSolver\\}\\}", getAbstractSolverName(solverName));
 
 	  String profilerInclude                     = "";
+    String parserInclude                       = "";
 	  String solverConstructorSignatureExtension = "";
+    String solverInitSignatureExtension        = "";
 	  if (_enableProfiler) {
 		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
 		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
 	  }
 	  if (_hasConstants) {
-		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
+      solverInitSignatureExtension = ", exahype::Parser::ParserView& constants";
+      parserInclude = "#include \"exahype/Parser.h\"";
+      solverConstructorSignatureExtension += solverInitSignatureExtension;
 	  }
 	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
+    content = content.replaceAll("\\{\\{ParserInclude\\}\\}", parserInclude);
 	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
+    content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", solverInitSignatureExtension);
 
 	  content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
 	  content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
 	  content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
 	  content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order));
-	  
-    if(_dimensions == 2) {
-      content = content.replaceAll("\\{\\{fluxSplitted_h_signature\\}\\}", "");  
-    } else { // == 3
-      content = content.replaceAll("\\{\\{fluxSplitted_h_signature\\}\\}", ", double* h");  
-    }
     
 	  writer.write(content);
   }
 
-  public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
+  
+  @Override
+  public void writeAbstractHeader(java.io.BufferedWriter writer, String solverName, String projectName)
+      throws java.io.IOException {
+    String content = IOUtils.convertRessourceContentToString(
+        "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverHeader.template");
+
+    content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
+    content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
+    content = content.replaceAll("\\{\\{AbstractSolver\\}\\}", getAbstractSolverName(solverName));
+
+    String profilerInclude                     = "";
+    String solverConstructorSignatureExtension = "";
+    String solverInitSignatureExtension        = "";
+    if (_enableProfiler) {
+      profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
+      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
+    }
+    content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", solverInitSignatureExtension);
+    content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
+    content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
+    
+    content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
+    content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
+    content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
+    content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order));
+
+    writer.write(content);
+  }
+  
+  @Override
+  public void writeAbstractImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
         
     Helpers.invokeCodeGenerator(solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
         _microarchitecture, _pathToLibxsmm);
         
     String content = IOUtils.convertRessourceContentToString(
-        "eu/exahype/solvers/templates/OptimisedADERDGSolverInCGeneratedCode.template"); //OptimisedADERDGSolverInCGeneratedCode_withConverter for debug (can switch SpaceTimePredictor and RiemannSolver to generic if needed)
+        "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverImplementation.template"); //OptimisedADERDGSolverInCGeneratedCode_withConverter for debug (can switch SpaceTimePredictor and RiemannSolver to generic if needed)
     
 	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
 	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
+    content = content.replaceAll("\\{\\{AbstractSolver\\}\\}", getAbstractSolverName(solverName));
 	  //
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
 	  String solverConstructorArgumentExtension  = "";
+    String solverInitCallExtension             = "";
+    if (_enableProfiler) {
+      profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
+      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
+    }
+    
     
 	  if (_enableProfiler) {
 		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
@@ -138,8 +185,10 @@ public class OptimisedADERDG implements Solver {
 	  }
 	  if (_hasConstants) {
 		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
+      solverInitCallExtension = ", constants";
 	  }
-	  
+    
+	  content = content.replaceAll("\\{\\{SolverInitCallExtension\\}\\}",solverInitCallExtension);
 	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
 	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
 	  content = content.replaceAll("\\{\\{SolverConstructorArgumentExtension\\}\\}", solverConstructorArgumentExtension);
@@ -147,6 +196,7 @@ public class OptimisedADERDG implements Solver {
 	  writer.write(content);
   }
   
+  @Override
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
     String content = IOUtils.convertRessourceContentToString(
@@ -157,9 +207,32 @@ public class OptimisedADERDG implements Solver {
     
     content = content.replaceAll("\\{\\{Elements\\}\\}",  String.valueOf( _numberOfParameters+_numberOfVariables));
     content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf(_dimensions));
-    
-    int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
 
+    String SolverInitSignatureExtension = "";
+    if (_hasConstants) {
+        SolverInitSignatureExtension = ", exahype::Parser::ParserView& constants";
+    }
+    content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", SolverInitSignatureExtension);
+    //
+    String solverConstructorArgumentExtension  = "";
+    String solverConstructorSignatureExtension = "";
+    String SolverInitCallExtension             = "";
+    if (_enableProfiler) {
+      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
+      solverConstructorArgumentExtension  += ", std::move(profiler)";
+    }
+    if (_hasConstants) {
+      solverConstructorSignatureExtension += ", exahype::Parser::ParserView& constants";
+       SolverInitCallExtension = ", constants";
+    }
+
+    content = content.replaceAll("\\{\\{SolverInitCallExtension\\}\\}",SolverInitCallExtension);
+    content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
+    content = content.replaceAll("\\{\\{SolverConstructorArgumentExtension\\}\\}", solverConstructorArgumentExtension);
+    
+    // user functions
+    int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
+    
     String adjustedSolutionValues = "  // State variables:\n";
     for (int i = 0; i < _numberOfVariables; i++) {
       adjustedSolutionValues += "  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;";
@@ -229,6 +302,11 @@ public class OptimisedADERDG implements Solver {
     
     writer.write(content);
   }
+  
+  @Deprecated
+  @Override
+  public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
+      String projectName) {}
 
   public void writeUserPDE(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {

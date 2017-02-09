@@ -23,25 +23,6 @@
 
 #if DIMENSIONS == 3
 
-namespace {
-
-double minmod(double a, double b) {
-  assert(std::isfinite(a));
-  assert(std::isfinite(b));
-
-  if (a * b < 0.0) {  // sign is different (alternative: std::signbit and xor)
-    return 0.0;
-  } else {
-    if (std::abs(a) < std::abs(b)) {
-      return a;
-    } else {
-      return b;
-    }
-  }
-}
-
-}  // namespace
-
 namespace kernels {
 namespace finitevolumes {
 namespace godunov {
@@ -51,17 +32,18 @@ namespace c {
  * A simple Rusanov flux considering pointwise
  * left and right values.
  */ 
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda),
-          void PDEFlux(const double* const Q, double** F)>
-double riemannSolver(double* F, const double* qL, const double* qR,
+//template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+//                              double* lambda),
+//          void PDEFlux(const double* const Q, double** F)>
+template <typename SolverType>
+double riemannSolver(SolverType& solver, double* F, const double* qL, const double* qR,
                      int numberOfVariables, int normalNonZero,
                      double** tempStateSizedVectors) { // TODO(Dominic): I need four of those
   double* sL = tempStateSizedVectors[0]; 
   double* sR = tempStateSizedVectors[1];
 
-  PDEEigenvalues(qL, normalNonZero, sL);
-  PDEEigenvalues(qR, normalNonZero, sR);
+  solver.eigenvalues(qL, normalNonZero, sL);
+  solver.eigenvalues(qR, normalNonZero, sR);
 
   double s_max = -1.0;
   for (int i = 0; i < numberOfVariables; i++) {
@@ -75,8 +57,8 @@ double riemannSolver(double* F, const double* qL, const double* qR,
 
   double* FL[3] = {tempStateSizedVectors[0],tempStateSizedVectors[1],tempStateSizedVectors[2]}; // dim a numberOfVariables
   double* FR[3] = {tempStateSizedVectors[3],tempStateSizedVectors[4],tempStateSizedVectors[5]}; // dim a numberOfVariables
-  PDEFlux(qL, FL);
-  PDEFlux(qR, FR);
+  solver.flux(qL, FL);
+  solver.flux(qR, FR);
 
   for (int i = 0; i < numberOfVariables; i++) {
     F[i] = 0.5 * (FL[normalNonZero][i] + FR[normalNonZero][i]) +
@@ -385,11 +367,13 @@ void ghostLayerFilling(
  * new solution. 
  * Finally add the source terms.
  */
-template <void PDEFlux(const double* const Q, double** F),
-          void PDESource(const double* const Q, double* S),
-          void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
+//template <void PDEFlux(const double* const Q, double** F),
+//          void PDESource(const double* const Q, double* S),
+//          void PDEEigenvalues(const double* const Q, const int normalNonZero,
+//                              double* lambda)>
+template <typename SolverType>
 double solutionUpdate(
+    SolverType& solver,
     double* luh_new, const double* luh,
     double** tempStateSizedVectors,double** tempUnknowns,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -410,7 +394,8 @@ double solutionUpdate(
   for (int j = patchBegin; j < patchEnd+1; j++) {
   for (int k = patchBegin-1; k < patchEnd+1; k++) {  // We have basisSize+1 faces in each coordinate direction
     const double s_max_x = 
-        riemannSolver<PDEEigenvalues, PDEFlux>(
+        riemannSolver<SolverType>(
+            solver,
             Fn, 
             luh + idx(i,j, k, 0),
             luh + idx(i,j, k+1, 0), 
@@ -432,7 +417,9 @@ double solutionUpdate(
   for (int i = patchBegin; i < patchEnd+1; i++) {
   for (int j = patchBegin-1; j < patchEnd+1; j++) {
   for (int k = patchBegin; k < patchEnd+1; k++) {
-    const double s_max_y = riemannSolver<PDEEigenvalues, PDEFlux>(
+    const double s_max_y =
+      riemannSolver<SolverType>(
+        solver,
         Fn, 
         luh + idx(i, j, k,0),
         luh + idx(i, j+1, k,0), 
@@ -452,7 +439,9 @@ double solutionUpdate(
   for (int i = patchBegin-1; i < patchEnd+1; i++) {
   for (int j = patchBegin; j < patchEnd+1; j++) {
   for (int k = patchBegin; k < patchEnd+1; k++) {
-    const double s_max_z = riemannSolver<PDEEigenvalues, PDEFlux>(
+    const double s_max_z =
+      riemannSolver<SolverType>(
+        solver,
         Fn, 
         luh + idx(i, j,k,0),
         luh + idx(i+1, j,k,0), 
@@ -476,7 +465,7 @@ double solutionUpdate(
   for (int i = patchBegin; i < patchEnd+1; i++) {
   for (int j = patchBegin; j < patchEnd+1; j++) {
   for (int k = patchBegin; k < patchEnd+1; k++) {
-    PDESource(&luh[idx(i,j,k,0)], source);      
+    solver.source(&luh[idx(i,j,k,0)], source);
     for (int l = 0; l < numberOfVariables; l++) {
       luh_new[idx(i,j,k,l)] += dt * source[l];
     }
@@ -487,12 +476,15 @@ double solutionUpdate(
   return dt_max_allowed;
 }
   
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
-double stableTimeStepSize(const double* const luh,
-                          double* tempEigenvalues,
-                          const tarch::la::Vector<DIMENSIONS, double>& dx,
-                          int numberOfVariables, int basisSize) {  
+//template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+//                              double* lambda)>
+template <typename SolverType>
+double stableTimeStepSize(
+    SolverType& solver,
+    const double* const luh,
+    double* tempEigenvalues,
+    const tarch::la::Vector<DIMENSIONS, double>& dx,
+    int numberOfVariables, int basisSize) {
   double dt_max_stable = std::numeric_limits<double>::max();
   constexpr double EXAHYPE_CFL_FACTOR = 0.9; // TODO externalize
   
@@ -506,7 +498,7 @@ double stableTimeStepSize(const double* const luh,
   for (int j = patchBegin; j < patchEnd+1; j++) {
   for (int k = patchBegin; k < patchEnd+1; k++) {
       // x
-      PDEEigenvalues(luh + idx_luh(i,j,k,0), 0/*x-axis*/, lambda);
+      solver.eigenvalues(luh + idx_luh(i,j,k,0), 0/*x-axis*/, lambda);
       std::transform(lambda, lambda + numberOfVariables, lambda,
                      std::abs<double>);
       double s_max_x = *std::max_element(lambda, lambda + numberOfVariables);
@@ -514,7 +506,7 @@ double stableTimeStepSize(const double* const luh,
           dt_max_stable, EXAHYPE_CFL_FACTOR / DIMENSIONS * (dx[0]/basisSize) / s_max_x);
 
       // y
-      PDEEigenvalues(luh + idx_luh(i,j,k,0), 1/*y-axis*/, lambda);
+      solver.eigenvalues(luh + idx_luh(i,j,k,0), 1/*y-axis*/, lambda);
       std::transform(lambda, lambda + numberOfVariables, lambda,
                      std::abs<double>);
       double s_max_y = *std::max_element(lambda, lambda + numberOfVariables);
@@ -522,7 +514,7 @@ double stableTimeStepSize(const double* const luh,
           dt_max_stable, EXAHYPE_CFL_FACTOR / DIMENSIONS * (dx[1]/basisSize) / s_max_y);
       
       // z
-      PDEEigenvalues(luh + idx_luh(i,j,k,0), 2/*z-axis*/, lambda);
+      solver.eigenvalues(luh + idx_luh(i,j,k,0), 2/*z-axis*/, lambda);
       std::transform(lambda, lambda + numberOfVariables, lambda,
           std::abs<double>);
       double s_max_z = *std::max_element(lambda, lambda + numberOfVariables);
@@ -535,10 +527,12 @@ double stableTimeStepSize(const double* const luh,
   return dt_max_stable;
 }
 
-template <void PDESolutionAdjustment(const double* const x, const double w,
-    const double t, const double dt,
-    double* Q)>
+//template <void PDESolutionAdjustment(const double* const x, const double w,
+//    const double t, const double dt,
+//    double* Q)>
+template <typename SolverType>
 void solutionAdjustment(
+    SolverType& solver,
     double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
     const tarch::la::Vector<DIMENSIONS, double>& dx, const double t,
     const double dt, const int numberOfVariables, const int basisSize) {
@@ -560,21 +554,22 @@ void solutionAdjustment(
         const double qr = (2.0*(i-patchBegin)+1.0)/(2.0*basisSize); //linspace; 
         x[0] = center[0] + dx[0] * (qr - 0.5);
         // read initial condition
-        PDESolutionAdjustment(x, 0, t, dt, luh+idx_luh(k,j,i,0));
+        solver.adjustedSolutionValues(x, 0, t, dt, luh+idx_luh(k,j,i,0));
       }
     }
   }
 }
 
 template <typename SolverType>
-void boundaryConditions(SolverType& solver,
-                        double* stateOut,
-                        const double* const stateIn,
-                        const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-                        const tarch::la::Vector<DIMENSIONS,double>& cellSize,
-                        const double t,const double dt,
-                        const int faceIndex,
-                        const int normalNonZero) {
+void boundaryConditions(
+    SolverType& solver,
+    double* stateOut,
+    const double* const stateIn,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+    const double t,const double dt,
+    const int faceIndex,
+    const int normalNonZero) {
   const int numberOfVariables = solver.getNumberOfVariables();
   const int basisSize         = solver.getNodesPerCoordinateAxis();
   // Determine if face is "left" (=0 for faceIndex=0,2,4) or "right" face (=1 for faceIndex=1,2,3).
@@ -582,7 +577,6 @@ void boundaryConditions(SolverType& solver,
 
   idx3 idx(basisSize,basisSize,numberOfVariables);
   // Determine the free direction from the non-zero normal entry.
-  // @todo(Dominic,31/07/16) I might have confused these directions. Please start here with the debugging.
   int d1=0;
   int d2=0;
   switch(normalNonZero) {

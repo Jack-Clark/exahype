@@ -1,5 +1,8 @@
 package eu.exahype.solvers;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 public class UserDefinedADER_DGinC implements Solver {
   public static final String Identifier = "user::defined";
 
@@ -9,6 +12,20 @@ public class UserDefinedADER_DGinC implements Solver {
   private boolean _hasConstants;
   private boolean _enableProfiler;
 
+  @Override
+  public void writeAbstractHeader(BufferedWriter writer, String solverName,
+      String projectName) throws IOException {
+    // TODO Auto-generated method stub
+    
+  }
+  
+  @Override
+  public void writeAbstractImplementation(BufferedWriter writer,
+      String solverName, String projectName) throws IOException {
+    // TODO Auto-generated method stub
+    
+  }
+  
   public UserDefinedADER_DGinC(int numberOfVariables, int numberOfParameters, int order, boolean hasConstants, boolean enableProfiler) {
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;

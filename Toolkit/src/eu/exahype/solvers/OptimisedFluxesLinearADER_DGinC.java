@@ -1,5 +1,8 @@
 package eu.exahype.solvers;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 public class OptimisedFluxesLinearADER_DGinC implements Solver {
   public static final String Identifier = "optimised::fluxes::linear";
 
@@ -24,6 +27,20 @@ public class OptimisedFluxesLinearADER_DGinC implements Solver {
     _hasConstants   = hasConstants;
   }
 
+  @Override
+  public void writeAbstractHeader(BufferedWriter writer, String solverName,
+      String projectName) throws IOException {
+    // TODO Auto-generated method stub
+    
+  }
+  
+  @Override
+  public void writeAbstractImplementation(BufferedWriter writer,
+      String solverName, String projectName) throws IOException {
+    // TODO Auto-generated method stub
+    
+  }
+  
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
     Helpers.invokeCodeGenerator(solverName, _numberOfUnknowns, _numberOfParameters, _order, true, _dimensions,

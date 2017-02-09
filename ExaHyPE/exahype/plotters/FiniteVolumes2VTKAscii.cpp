@@ -115,8 +115,8 @@ void exahype::plotters::FiniteVolumes2VTKAscii::finishPlotting() {
     assertion( _timeStampDataWriter!=nullptr );
 
     _gridWriter->close();
-    _timeStampDataWriter->close();
     _cellDataWriter->close();
+    _timeStampDataWriter->close();
     
     std::ostringstream snapshotFileName;
     snapshotFileName << _filename

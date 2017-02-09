@@ -4,18 +4,18 @@
 #define _EXAHYPE_BUILD_INFO_H_
 
 #define EXAHYPE_BUILDINFO_AVAILABLE
-#define EXAHYPE_BUILD_DATE          "Fri Feb 3 11:03:02 GMT 2017"
+#define EXAHYPE_BUILD_DATE          "Thu Feb 9 17:03:49 GMT 2017"
 #define EXAHYPE_BUILD_HOST          "localhost.localdomain"
 
 /* Strings passed by the Makefile */
 #define EXAHYPE_BUILD_INFO \
     "COMPILER = GNU\n" \
-    "MODE = Asserts\n" \
+    "MODE = Release\n" \
     "SHAREDMEM = TBB\n" \
-    "DISTRIBUTEDMEM = MPI\n" \
+    "DISTRIBUTEDMEM = non\n" \
     "------\n" \
     "ARCHITECTURE = CPU\n" \
-    "CC = /usr/lib64/mpi/gcc/openmpi/bin/mpiCC\n" \
+    "CC = g++\n" \
     "BOUNDARYCONDITIONS = None\n" \
     "------\n" \
     "EXAHYPE_PATH = /home/tobias/git/ExaHyPE-Engine/./ExaHyPE\n" \
@@ -30,7 +30,7 @@
  */
 
 /* Information collected with git version 2.11.0 */
-#define EXAHYPE_GIT_INFO "master  5bfb0ac5 Fri Feb 3 10:50:04 2017"
+#define EXAHYPE_GIT_INFO "master  266bb713 Thu Feb 9 16:49:56 2017"
 
 /*
  * Peano Subversion Repository information extraction

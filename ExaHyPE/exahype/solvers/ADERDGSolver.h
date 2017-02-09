@@ -726,6 +726,8 @@ public:
   virtual int getTempFluxUnknownsSize()          const {return getFluxUnknownsPerCell();}
   virtual int getBndFaceSize()                   const {return getUnknownsPerFace();}
   virtual int getBndTotalSize()                  const {return getUnknownsPerCellBoundary();}
+  
+  virtual bool alignTempArray()                  const {return false;}
 
   /**
    * False for generic solver, may be true for optimized one

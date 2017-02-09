@@ -18,16 +18,24 @@ public class TestVariables {
     variablesMap.put("j", 3);
     variablesMap.put("E", 1);
     
+    Map<String,Map<String,Integer>> namingSchemesMap = new LinkedHashMap<String,Map<String,Integer>>();
     Map<String,Integer> primitivesMap = new LinkedHashMap<String,Integer>();
     primitivesMap.put("rho", 1);
     primitivesMap.put("u", 3);
     primitivesMap.put("E", 1);
+    namingSchemesMap.put("primitives", primitivesMap);
+    
+    Map<String,Integer> tools = new LinkedHashMap<String,Integer>();
+    tools.put("hammer", 1);
+    tools.put("nails", 3);
+    tools.put("screwdriver", 10);
+    namingSchemesMap.put("tools", tools);
     
     Map<String,Integer> parametersMap = new LinkedHashMap<String,Integer>();
     parametersMap.put("matScalar", 1);
     parametersMap.put("matVector", 3);
     
-    Variables variables = new Variables(variablesMap,parametersMap,primitivesMap,dimensions);
+    Variables variables = new Variables(variablesMap,parametersMap,namingSchemesMap,dimensions);
     
     BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(System.out));
     

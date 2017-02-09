@@ -169,10 +169,10 @@ void exahype::plotters::ADERDG2CartesianVTK::finishPlotting() {
     assertion( _gridWriter!=nullptr );
 
     _gridWriter->close();
-    if (_vertexTimeStampDataWriter!=nullptr) _vertexTimeStampDataWriter->close();
-    if (_cellTimeStampDataWriter!=nullptr)   _cellTimeStampDataWriter->close();
     if (_vertexDataWriter!=nullptr) _vertexDataWriter->close();
     if (_cellDataWriter!=nullptr)   _cellDataWriter->close();
+    if (_vertexTimeStampDataWriter!=nullptr) _vertexTimeStampDataWriter->close();
+    if (_cellTimeStampDataWriter!=nullptr)   _cellTimeStampDataWriter->close();
 
     std::ostringstream snapshotFileName;
     snapshotFileName << _filename

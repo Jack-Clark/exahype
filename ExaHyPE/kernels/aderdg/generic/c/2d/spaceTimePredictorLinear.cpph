@@ -40,8 +40,11 @@ void spaceTimePredictorLinear(SolverType& solver,
   const int basisSize3 = basisSize2 * basisSize;
   const int order = basisSize - 1;
 
+  double* PSi = tempPointForceSources; // size: basisSize3 * (basisSize + 1) * numberOfVariables;
   double* lQi = tempSpaceTimeUnknowns[0]; // size: basisSize2 * (basisSize + 1) * numberOfVariables;
   std::memset(lQi, 0, basisSize2 * (basisSize + 1) * numberOfVariables * sizeof(double));
+
+  idx4 idx_PSi(basisSize + 1, basisSize, basisSize,numberOfVariables);
 
   idx4 idx_lQi(basisSize + 1, basisSize, basisSize, numberOfVariables);
 
@@ -59,6 +62,29 @@ void spaceTimePredictorLinear(SolverType& solver,
     }
   }
 
+  // Add point source to the zeroth time derivative
+for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+            for (int m = 0; m < numberOfVariables - numberOfParameters; m++) {
+	    double sum = 0.0;
+	     for (int n = 1; n <  basisSize+1; n++) {
+	     sum = sum +   gaussLegendreWeights[order][n-1]*PSi[idx_PSi(n, j, k, m)];
+	     }
+              lQi[idx_lQi(0, j, k, m)] += dt*sum/(dx[0]*dx[1]);
+          }
+        }
+      }
+
+
+// Add point source to the first time derivative
+   for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+            for (int n = 0; n < numberOfVariables - numberOfParameters; n++) {
+              lQi[idx_lQi(1, j, k, n)] += PSi[idx_PSi(0, j, k, n)]/(dx[0]*dx[1]);
+            }
+        }
+      }
+      
   double* lFi = tempSpaceTimeFluxUnknowns[0]; // size: basisSize3 * DIMENSIONS * numberOfVariables
   idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables);
   
@@ -163,6 +189,7 @@ void spaceTimePredictorLinear(SolverType& solver,
     dtavFac *= dt / (i + 2);
   }
 
+ 
   double* lFh = tempFluxUnknowns;
   idx4 idx_lFh(DIMENSIONS, basisSize, basisSize, numberOfVariables);
 
@@ -194,6 +221,21 @@ void spaceTimePredictorLinear(SolverType& solver,
     dtavFac *= dt / (i + 2);
   }
 
+ // Add point source to the right hand side
+for (int j = 0; j < DIMENSIONS; j++) {
+      for (int k = 0; k < basisSize; k++) {
+          for (int m = 0; m < basisSize; m++) {
+            for (int n = 0; n < numberOfVariables - numberOfParameters; n++) {
+	    double sum = 0.0;
+	     for (int n0 = 1; n0 <  basisSize+1; n0++) {
+	     sum = sum +   gaussLegendreWeights[order][n0-1]*PSi[idx_PSi(n0, k, m, n)];
+	     }
+              lFh[idx_lFh(j, k, m, n)] += sum/((DIMENSIONS+1)*(dx[0]*dx[1]));
+            }
+          }
+      }
+    }
+    
   // Compute the boundary-extrapolated values for Q and F*n
   std::memset(lQbnd, 0,
               2 * DIMENSIONS * basisSize * numberOfVariables * sizeof(double));

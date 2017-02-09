@@ -9,45 +9,102 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/Parser.h"
-#include "exahype/solvers/FiniteVolumesSolver.h"
 {{ProfilerInclude}}
 
 #include <ostream>
+
+#include "Abstract{{Solver}}.h"
 
 namespace {{Project}}{
   class {{Solver}};
 }
 
-class {{Project}}::{{Solver}} : public exahype::solvers::FiniteVolumesSolver {
+class {{Project}}::{{Solver}} : public {{Project}}::Abstract{{Solver}} {
   public:
-    static constexpr int nVar      = {{NumberOfVariables}};  // TODO: Not required anymore
-    static constexpr int nParams   = {{NumberOfParameters}}; // TODO: Not required anymore
-    static constexpr int nDim      = {{Dimensions}};         // TODO: Was never required (->DIMENSIONS)
-
-	class Variables;
-    class ReadOnlyVariables;
-    class Fluxes;
-    class Primitives;
-
-    {{Solver}}(int cellsPerCoordinateAxis,double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
+    {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
     
-    double stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
-    void solutionAdjustment(double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) override;
+    /**
+     * Initialise the solver.
+     *
+     * \param[in] cmdlineargs the command line arguments.
+     */
+    void init(std::vector<std::string>& cmdlineargs);
+    
+    /**
+     * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell
+     * during the interval [t,t+dt].
+     *
+     * \note Use this function and ::adjustedSolutionValues to set initial conditions.
+     *
+     * \param[in]    center    The center of the cell.
+     * \param[in]    dx        The extent of the cell.
+     * \param[in]    t         the start of the time interval.
+     * \param[in]    dt        the width of the time interval.
+     * \return true if the solution has to be adjusted.
+     */
     bool hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) override;
-    exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
-    void solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) override;
-    void ghostLayerFilling(double* luh,const double* luhNeighbour,const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) override;
-    void ghostLayerFillingAtBoundary(double* luh,const double* luhbnd,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) override;
-    void boundaryLayerExtraction(double* luhbnd,const double* luh,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) override;
-    void boundaryConditions(double* stateOut,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) override;
-	
     
-  	void init(std::vector<std::string>& cmdlineargs);
-    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q); // TODO: Use template kernels
-    static void eigenvalues(const double* const Q,const int normalNonZeroIndex,double* lambda);                        // TODO: Use template kernels
-    static void flux(const double* const Q,double** F);                                                                // TODO: Use template kernels
-    static void source(const double* const Q,double* S);                                                               // TODO: Use template kernels
+    /**
+     * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
+     *
+     * \note Use this function and ::hasToAdjustSolution to set initial conditions.
+     *
+     * \param[in]    x         the physical coordinate on the face.
+     * \param[in]    w         (deprecated) the quadrature weight corresponding to the quadrature point w.
+     * \param[in]    t         the start of the time interval.
+     * \param[in]    dt        the width of the time interval.
+     * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
+     *                         as C array (already allocated).
+     */
+    void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q); 
+    
+    /**
+     * Compute the flux tensor.
+     *
+     * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
+     *                 as C array (already allocated).
+     * \param[inout] F the fluxes at that point as C array (already allocated).
+     */
+    void flux(const double* const Q,double** F);
+    
+    /**
+     * Compute the eigenvalues of the flux tensor per coordinate direction \p d.
+     *
+     * \param[in] Q  the conserved variables associated with a quadrature node
+     *               as C array (already allocated).
+     * \param[in] d  the column of the flux vector (d=0,1,...,DIMENSIONS).
+     * \param[inout] lambda the eigenvalues as C array (already allocated).
+     */
+    void eigenvalues(const double* const Q,const int d,double* lambda);
+    
+    /**
+     * Compute the source.
+     *
+     * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
+     *                 as C array (already allocated).
+     * \param[inout] S the source point as C array (already allocated).
+     */
+    void source(const double* const Q,double* S);                                                               
+    
+    /**
+     * Impose boundary conditions at a point on a face
+     * during the time interval [t,t+dt].
+     *
+     * \param[in]    x         the physical coordinate on the face.
+     * \param[in]    t         the start of the time interval.
+     * \param[in]    dt        the width of the time interval.
+     * \param[in]    faceIndex indexing of the face (0 -- {x[0]=xmin}, 1 -- {x[1]=xmax}, 2 -- {x[1]=ymin}, 3 -- {x[2]=ymax}, and so on,
+     *                         where xmin,xmax,ymin,ymax are the bounds of the cell containing point x.
+     * \param[in]    d         the coordinate direction the face normal is pointing to.
+     * \param[in]    QIn       the conserved variables at point x from inside of the domain
+     *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
+     * \param[inout] QOut      the conserved variables at point x from outside of the domain
+     *                         and time-averaged (over [t,t+dt]) as C array (already allocated).
+     */
     void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,const double* const stateIn,double* stateOut);
+    
+    /** Has currently no effect for the Finite Volumes Solver. */
+    exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
 };
 
 

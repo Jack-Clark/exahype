@@ -214,12 +214,12 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-                          "::" + _solverName + "("+patchSize+", parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
                           (_enableProfiler ? ", std::move(profiler)": ""));
       if (node.getConstants()!=null) {
         _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
       }
-      _methodBodyWriter.write( "  ));\n");
+      _methodBodyWriter.write( "  , cmdlineargs));\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
       
@@ -285,8 +285,9 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       if (_enableProfiler) { writeProfilerCreation(); }
 
       _methodBodyWriter.write("  solver = new " + _projectName +
-                          "::" + _solverName+"_FV(2*(aderdgSolver->getNodesPerCoordinateAxis()-1)+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
-                          (_enableProfiler ? ", std::move(profiler)": ""));
+                          "::" + _solverName+"_FV(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                          (_enableProfiler ? ", std::move(profiler)": "")+
+                          ",cmdlineargs");
       if (node.getConstants()!=null) {
         _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
       }
@@ -321,7 +322,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write(FileSearch.PPinclude(plotterName, _directoryAndPathChecker.outputDirectory.getAbsolutePath()));
       
-      writeVersionString("Kernel["+_kernelNumber+"].Plotter["+_plotterNumber+"]", _projectName + "::" + plotterName);
+      writeVersionString("Kernel["+(_kernelNumber-1)+"].Plotter["+_plotterNumber+"]", _projectName + "::" + plotterName);
 
       if (_inALimitingADERDGSolver) {
         _methodBodyWriter.write(

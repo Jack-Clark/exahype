@@ -195,12 +195,12 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::finishPlotting() {
     assertion( _timeStampVertexDataWriter!=nullptr );
 
     _gridWriter->close();
-    _timeStampVertexDataWriter->close();
 //    if (_timeStampCellDataWriter!=nullptr) _timeStampCellDataWriter->close();
     if (_vertexDataWriter!=nullptr)        _vertexDataWriter->close();
     if (_cellDataWriter!=nullptr)          _cellDataWriter->close();
     if (_cellLimiterStatusWriter!=nullptr) _cellLimiterStatusWriter->close();
     if (_vertexLimiterStatusWriter!=nullptr) _vertexLimiterStatusWriter->close();
+    _timeStampVertexDataWriter->close();
 
     std::ostringstream snapshotFileName;
     snapshotFileName << _filename

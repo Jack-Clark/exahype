@@ -86,7 +86,7 @@ public class Helpers {
     writer.write(
         "class " + projectName + "::" + solverName + ": public exahype::solvers::FiniteVolumesSolver {\n");
     writer.write("  public:\n");
-    writer.write("    " + solverName + "(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler);\n\n");
+    writer.write("    " + solverName + "(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::vector<std::string>& cmdlineargs, std::unique_ptr<exahype::profilers::Profiler> profiler);\n\n");
 
     writer.write("    double stableTimeStepSize( double* luh[THREE_POWER_D], const tarch::la::Vector<DIMENSIONS, double>& dx) override; \n\n" );
     writer.write("    void   solutionAdjustment( double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) override; \n\n");

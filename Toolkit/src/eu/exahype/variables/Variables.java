@@ -2,27 +2,30 @@ package eu.exahype.variables;
 
 import java.io.BufferedWriter;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import eu.exahype.IOUtils;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AFiniteVolumesSolver;
 import eu.exahype.node.ALimitingAderdgSolver;
+import eu.exahype.node.ANamingScheme;
+import eu.exahype.node.ANamingSchemes;
 import eu.exahype.node.AVariables;
 import eu.exahype.node.AWithNameVariable;
 import eu.exahype.node.AWithoutNameVariable;
+import eu.exahype.node.PNamingScheme;
 import eu.exahype.node.PSolver;
 import eu.exahype.node.PVariable;
 
 public class Variables {
-  int                 _dimensions;
-  Map<String,Integer> _variablesMap;
-  int                 _numberOfVariables;
-  Map<String,Integer> _parametersMap;
-  int                 _numberOfParameters;
-  Map<String,Integer> _primitivesMap;
-  int                 _numberOfPrimitives;
+  Map<String,Integer>             _variablesMap;
+  int                             _numberOfVariables;
+  Map<String,Integer>             _parametersMap;
+  int                             _numberOfParameters;
+  Map<String,Map<String,Integer>> _namingSchemesMap;
   
   public Map<String, Integer> getVariablesMap() {
     return _variablesMap;
@@ -39,6 +42,10 @@ public class Variables {
   public int getNumberOfParameters() {
     return _numberOfParameters;
   }
+  
+  public Set<String> getNamingSchemeNames() {
+    return _namingSchemesMap.keySet();
+  }
 
   private static List<PVariable> getVariablesAsList(PSolver node) {
     List<PVariable> variablesAsList = null;
@@ -48,36 +55,74 @@ public class Variables {
       variablesAsList = ((AVariables)((ALimitingAderdgSolver) node).getVariables()).getVariable();
     } else if (node instanceof AFiniteVolumesSolver) {
       variablesAsList = ((AVariables)((AFiniteVolumesSolver) node).getVariables()).getVariable();
+    } else {
+      System.err.println("eu/exahype/variables/Variables.getVariablesAsList(PSolver)\t[ERROR]: Do not support solver type '"+node.getClass().toString()+"'.");
+      System.exit(1);
     } 
+    
+    assert variablesAsList!=null;
     return variablesAsList;
   }
   
+  /**
+   * Returns an empty map if no parameters have been found.
+   * Thus no check for null is necessary.
+   */
   private static List<PVariable> getParametersAsList(PSolver node) {
-    List<PVariable> parametersAsList = null;
+    List<PVariable> parametersAsList = new LinkedList<PVariable>();
+    
     if (node instanceof AAderdgSolver) {
-      parametersAsList = ((AVariables)((AAderdgSolver) node).getParameters()).getVariable();
+      if ( ((AAderdgSolver) node).getParameters() != null) {
+        parametersAsList.addAll(((AVariables)((AAderdgSolver) node).getParameters()).getVariable());
+      }
     } else if (node instanceof ALimitingAderdgSolver) {
-      parametersAsList = ((AVariables)((ALimitingAderdgSolver) node).getParameters()).getVariable();
+      if ( ((ALimitingAderdgSolver) node).getParameters() != null) {
+        parametersAsList.addAll(((AVariables)((ALimitingAderdgSolver) node).getParameters()).getVariable());
+      }
     } else if (node instanceof AFiniteVolumesSolver) {
-      parametersAsList = ((AVariables)((AFiniteVolumesSolver) node).getParameters()).getVariable();
-    } 
+      if ( ((AFiniteVolumesSolver) node).getParameters() != null) {
+        parametersAsList.addAll(((AVariables)((AFiniteVolumesSolver) node).getParameters()).getVariable());
+      }
+    } else {
+      System.out.println("eu/exahype/variables/Variables.getParametersAsList(PSolver)\t[WARNING]: Do not support solver type '"+node.getClass().toString()+"'.");
+    }
     return parametersAsList;
   }
   
-  private static List<PVariable> getPrimitivesAsList(PSolver node) {
-    List<PVariable> primivitesAsList = null;
+  private static Map<String,List<PVariable>> getNamingSchemesAsList(PSolver node) {
+    List<PNamingScheme> namingSchemesAsList = null;
+    
     if (node instanceof AAderdgSolver) {
-      primivitesAsList = ((AVariables)((AAderdgSolver) node).getPrimitives()).getVariable();
+      if ( ((AAderdgSolver) node).getNamingSchemes()!= null) {
+        namingSchemesAsList = ((ANamingSchemes)(((AAderdgSolver) node).getNamingSchemes())).getNamingScheme();
+      }
     } else if (node instanceof ALimitingAderdgSolver) {
-      primivitesAsList = ((AVariables)((ALimitingAderdgSolver) node).getPrimitives()).getVariable();
+      if ( ((ALimitingAderdgSolver) node).getNamingSchemes()!= null) {
+        namingSchemesAsList = ((ANamingSchemes)(((ALimitingAderdgSolver) node).getNamingSchemes())).getNamingScheme();
+      }
     } else if (node instanceof AFiniteVolumesSolver) {
-      primivitesAsList = ((AVariables)((AFiniteVolumesSolver) node).getPrimitives()).getVariable();
-    } 
-    return primivitesAsList;
+      if ( ((AFiniteVolumesSolver) node).getNamingSchemes() != null) {
+        namingSchemesAsList = ((ANamingSchemes)(((AFiniteVolumesSolver) node).getNamingSchemes())).getNamingScheme();
+      }
+    } else {
+      System.out.println("eu/exahype/variables/Variables.getNamingSchemes(PSolver)\t[WARNING]: Do not support solver type '"+node.getClass().toString()+"'.");
+    }
+    
+    Map<String,List<PVariable>> namingSchemes = new LinkedHashMap<String,List<PVariable>>(); // We want to preserve the ordering.
+    if (namingSchemesAsList!=null) {
+      for (PNamingScheme pNamingScheme : namingSchemesAsList) {
+        ANamingScheme aNamingScheme = (ANamingScheme) pNamingScheme;
+        String identifier = aNamingScheme.getName().getText();
+        List<PVariable> variables = ((AVariables) aNamingScheme.getScheme()).getVariable();
+        
+        namingSchemes.put(identifier, variables);
+      }
+    }
+    return namingSchemes;
   }
   
-  private static Map<String,Integer> parseVariables(List<PVariable> variablesAsList) {
-    Map<String, Integer> map = new LinkedHashMap<String, Integer>(variablesAsList.size());
+  private static Map<String,Integer> parseVariables(List<PVariable> variablesAsList,String defaultName) {
+    Map<String, Integer> map = new LinkedHashMap<String, Integer>();
     
     for (PVariable pVariable :  variablesAsList) {
       if (pVariable instanceof AWithNameVariable) {
@@ -90,7 +135,7 @@ public class Variables {
         }
       } else if (pVariable instanceof AWithoutNameVariable) {
         AWithoutNameVariable variable = (AWithoutNameVariable) pVariable;
-        String name       = "Q";
+        String name       = defaultName;
         int multiplicity  = Integer.parseInt(variable.getMultiplicity().getText());
         
         if (multiplicity > 0) {
@@ -108,75 +153,64 @@ public class Variables {
   /**
    * @note We rely on a linked hash map here that does not change the order of the variables.
    */
-  public static Map<String, Integer> readVariables(PSolver node) {    
+  public static Map<String, Integer> getVariables(PSolver node,String defaultName) {    
     List<PVariable> variablesAsList = getVariablesAsList(node);
     if (variablesAsList!=null) {
-      return parseVariables(variablesAsList); 
+      return parseVariables(variablesAsList,defaultName); 
     } else {
-      System.out.println("ERROR: I do not know how to handle solver type "+node.getClass().toString()+"!");
-      System.exit(1);
-      return null;
-    }
-  }
-  /**
-   * @note We rely on a linked hash map here that does not change the order of the parameters.
-   */
-  public static Map<String, Integer> readParameters(PSolver node) {
-    List<PVariable> parametersAsList = getParametersAsList(node);
-    if (parametersAsList!=null) {
-      return parseVariables(parametersAsList); 
-    } else {
-      System.out.println("ERROR: I do not know how to handle solver type "+node.getClass().toString()+"!");
+      System.out.println("ERROR: I do not know how to handle variables of solver type "+node.getClass().toString()+"!");
       System.exit(1);
       return null;
     }
   }
   
   /**
+   * @note We rely on a linked hash map here that does not change the order of the variables.
+   */
+  public static Map<String, Integer> getParameters(PSolver node,String defaultName) {    
+    List<PVariable> variablesAsList = getParametersAsList(node);
+    return parseVariables(variablesAsList,defaultName);
+  }
+
+  
+  /**
    * @note We rely on a linked hash map here that does not change the order of the parameters.
    */
-  public static Map<String, Integer> readPrimitives(PSolver node) {
-    List<PVariable> parametersAsList = getPrimitivesAsList(node);
-    if (parametersAsList!=null) {
-      return parseVariables(parametersAsList); 
-    } else {
-      System.out.println("ERROR: I do not know how to handle solver type "+node.getClass().toString()+"!");
-      System.exit(1);
-      return null;
+  public static Map<String, Map<String,Integer>> getNamingSchemes(PSolver node) {
+    Map<String,Map<String,Integer>> namingSchemes = new LinkedHashMap<String,Map<String,Integer>>(); 
+    
+    Map<String,List<PVariable>> namingSchemesAsList = getNamingSchemesAsList(node);
+    for (String name : namingSchemesAsList.keySet()) {
+      namingSchemes.put(name, parseVariables(namingSchemesAsList.get(name), "values"));
     }
+    return namingSchemes;
   }
   
   public static int sumMultiplicities(Map<String,Integer> variables) {
     int sumOfMultiplicities = 0;
-    for (String key : variables.keySet()) {
-      sumOfMultiplicities += variables.get(key);
+    if (variables!=null) {
+      for (String key : variables.keySet()) {
+        sumOfMultiplicities += variables.get(key);
+      }
     }
     
     return sumOfMultiplicities;
   }
   
-  public Variables(PSolver node, int dimensions) {
-    _variablesMap       = readVariables(node);
-    _parametersMap      = readParameters(node);
-    _primitivesMap      = readPrimitives(node);
+  public Variables(PSolver node) {
+    _variablesMap       = getVariables(node,"Q");
+    _parametersMap      = getParameters(node,"params");
+    _namingSchemesMap   = getNamingSchemes(node);
     _numberOfVariables  = sumMultiplicities(_variablesMap);
     _numberOfParameters = sumMultiplicities(_parametersMap);
-    _numberOfPrimitives = sumMultiplicities(_primitivesMap);
-    _dimensions         = dimensions;
-    
-    assert _numberOfPrimitives==_numberOfVariables;
   }
   
-  public Variables(Map<String, Integer> variablesMap, Map<String, Integer> parametersMap, Map<String, Integer> primitivesMap, int dimensions) {
+  public Variables(Map<String, Integer> variablesMap, Map<String, Integer> parametersMap, Map<String,Map<String, Integer>> namingSchemesMap, int dimensions) {
     _variablesMap       = variablesMap;
     _parametersMap      = parametersMap;
-    _primitivesMap      = primitivesMap;
+    _namingSchemesMap   = namingSchemesMap;
     _numberOfVariables  = sumMultiplicities(variablesMap);
     _numberOfParameters = sumMultiplicities(parametersMap);
-    _numberOfPrimitives = sumMultiplicities(primitivesMap);
-    _dimensions         = dimensions;
-    
-    assert _numberOfPrimitives==_numberOfVariables;
   }
   
   private String appendVariableGetters(String getters, String identifier, int multiplicity, int offset) {
@@ -194,9 +228,10 @@ public class Variables {
               +  indent + "}\n\n";
       // ex: tarch::la::Vector<3,double> v() const;
       getters += indent + "tarch::la::Vector<"+multiplicity+",double> "+identifier+"() const {\n"
-              + indent + "  tarch::la::Vector<"+multiplicity+",double> values(";
+              +  indent + "  tarch::la::Vector<"+multiplicity+",double> values;\n";
+      getters += indent + "  values=";
       for (int i=0; i<multiplicity; i++) {
-        getters += "_Q"+"["+(offset+i)+"]"+( i<multiplicity-1 ? "," : ");\n" );
+        getters += "_Q"+"["+(offset+i)+"]"+( i<multiplicity-1 ? "," : ";\n" );
       }
       getters += indent + "  return values;\n"
               +  indent + "}\n\n";
@@ -216,10 +251,12 @@ public class Variables {
       getters  = appendVariableGetters(getters,identifier,multiplicity,offset);
       offset  += multiplicity;
     }
-    for (String identifier : _parametersMap.keySet()) {
-      int multiplicity = _parametersMap.get(identifier);
-      getters  = appendVariableGetters(getters,identifier,multiplicity,offset);
-      offset  += multiplicity;
+    if (_parametersMap!=null) {
+      for (String identifier : _parametersMap.keySet()) {
+        int multiplicity = _parametersMap.get(identifier);
+        getters  = appendVariableGetters(getters,identifier,multiplicity,offset);
+        offset  += multiplicity;
+      }
     }
     
     return getters;
@@ -267,10 +304,12 @@ public class Variables {
       setters = appendVariableSetters(setters, identifier, multiplicity, offset);
       offset += multiplicity;
     }
-    for (String identifier : _parametersMap.keySet()) {
-      int multiplicity = _parametersMap.get(identifier);
-      setters = appendVariableSetters(setters, identifier, multiplicity, offset);
-      offset += multiplicity;
+    if (_parametersMap!=null) {
+      for (String identifier : _parametersMap.keySet()) {
+        int multiplicity = _parametersMap.get(identifier);
+        setters = appendVariableSetters(setters, identifier, multiplicity, offset);
+        offset += multiplicity;
+      }
     }
     
     return setters;
@@ -279,14 +318,16 @@ public class Variables {
   /**
    * Generate the getters for the primitives.
    */
-  private String createPrimitivesGetters() {
+  private String createNamingSchemeGetters(String name) {
     String getters = "";
     
     int offset = 0;
-    for (String identifier : _primitivesMap.keySet()) {
-      int multiplicity = _primitivesMap.get(identifier);
-      getters  = appendVariableGetters(getters,identifier,multiplicity,offset);
-      offset  += multiplicity;
+    if (_namingSchemesMap!=null) {
+      for (String identifier : _namingSchemesMap.get(name).keySet()) {
+        int multiplicity = _namingSchemesMap.get(name).get(identifier);
+        getters  = appendVariableGetters(getters,identifier,multiplicity,offset);
+        offset  += multiplicity;
+      }
     }
     
     return getters;
@@ -295,14 +336,16 @@ public class Variables {
   /**
    * Generate the setters for the primitives.
    */
-  private String createPrimitivesSetters() {
+  private String createNamingSchemeSetters(String name) {
     String setters = "";
     
     int offset = 0;
-    for (String identifier : _primitivesMap.keySet()) {
-      int multiplicity = _primitivesMap.get(identifier);
-      setters = appendVariableSetters(setters, identifier, multiplicity, offset);
-      offset += multiplicity;
+    if (_namingSchemesMap!=null) {
+      for (String identifier : _namingSchemesMap.get(name).keySet()) {
+        int multiplicity = _namingSchemesMap.get(name).get(identifier);
+        setters = appendVariableSetters(setters, identifier, multiplicity, offset);
+        offset += multiplicity;
+      }
     }
     
     return setters;
@@ -324,11 +367,18 @@ public class Variables {
               +  indent + "}\n\n";
       // ex: tarch::la::Vector<DIMENSIONS,double> rho() const;
       getters += indent + "tarch::la::Vector<DIMENSIONS,double> "+identifier+"() const {\n"
+              +  indent + "  #if DIMENSIONS==2\n" 
               +  indent + "  tarch::la::Vector<DIMENSIONS,double> values(";
-              for (int i=0; i<_dimensions; i++) {
-                getters += "_F["+i+"]["+offset+"]" + ( i<_dimensions-1 ? "," : ");\n" );
+              for (int i=0; i<2; i++) {
+                getters += "_F["+i+"]["+offset+"]" + ( i<2-1 ? "," : ");\n" );
               }
-      getters += indent + "  return values;\n"
+     getters  += indent + "  #elif DIMENSIONS==3\n" 
+              +  indent + "  tarch::la::Vector<DIMENSIONS,double> values(";
+              for (int i=0; i<3; i++) {
+                getters += "_F["+i+"]["+offset+"]" + ( i<3-1 ? "," : ");\n" );
+              }
+      getters += indent + "  #endif\n"
+              +  indent + "  return values;\n"
               +  indent + "}\n\n";
       
     } else {
@@ -342,26 +392,42 @@ public class Variables {
       // tarch::la::Vector<3,double> v(int row) const;
       getters += indent + "tarch::la::Vector<DIMENSIONS,double> "+identifier+"(int row) const {\n"
               +  indent + "  assertion(row >= 0 && row<"+multiplicity+");\n"
+              +  indent + "  #if DIMENSIONS==2\n"
               +  indent + "  tarch::la::Vector<DIMENSIONS,double> values(";
-      for (int i=0; i<_dimensions; i++) {
-        getters += "_F["+i+"]["+offset+"+row]" + ( i<_dimensions-1 ? "," : ");\n" );
-      }
-      getters += indent + "  return values;\n"
+              for (int i=0; i<2; i++) {
+                getters += "_F["+i+"]["+offset+"+row]" + ( i<2-1 ? "," : ");\n" );
+              }
+      getters += indent + "  #elif DIMENSIONS==3\n" 
+              +  indent + "  tarch::la::Vector<DIMENSIONS,double> values(";
+              for (int i=0; i<3; i++) {
+                getters += "_F["+i+"]["+offset+"+row]" + ( i<3-1 ? "," : ");\n" );
+              }
+      getters += indent + "  #endif\n"
+              +  indent + "  return values;\n"
               +  indent + "}\n\n";
       
       // ex: tarch::la::Matrix<3,3,double> v() const;
       getters += indent + "tarch::la::Matrix<"+multiplicity+",DIMENSIONS,double> "+identifier+"() const {\n"
-              +  indent + "  tarch::la::Matrix<"+multiplicity+",DIMENSIONS,double> values;\n";
+              +  indent + "  tarch::la::Matrix<"+multiplicity+",DIMENSIONS,double> values;\n"
+              +  indent + "  #if DIMENSIONS==2\n";
       getters += indent + "  values = ";      
-      for (int i=0; i<multiplicity; i++) {
-        for (int j=0; j<_dimensions; j++) {
-          getters += "_F["+j+"]["+(offset+i)+"]" + ( j<_dimensions-1 ? "," : "" );
-        }
-        getters += ( i<multiplicity-1 ? ",\n"+indent + "           " : ";\n" );
-      }
-      getters += indent + "  return values;\n"
+              for (int i=0; i<multiplicity; i++) {
+                for (int j=0; j<2; j++) {
+                  getters += "_F["+j+"]["+(offset+i)+"]" + ( j<2-1 ? "," : "" );
+                }
+                getters += ( i<multiplicity-1 ? ",\n"+indent + "           " : ";\n" );
+              }
+      getters += indent + "  #elif DIMENSIONS==3\n";
+      getters += indent + "  values = ";      
+              for (int i=0; i<multiplicity; i++) {
+                for (int j=0; j<2; j++) {
+                  getters += "_F["+j+"]["+(offset+i)+"]" + ( j<2-1 ? "," : "" );
+                }
+                getters += ( i<multiplicity-1 ? ",\n"+indent + "           " : ";\n" );
+              }
+      getters += indent + "  #endif\n"
+              +  indent + "  return values;\n"
               +  indent + "}\n\n";
-      
     }
     return getters;
   }
@@ -590,11 +656,27 @@ public class Variables {
     content = content.replaceAll("\\{\\{FluxesGetters\\}\\}", fluxesGetters);
     content = content.replaceAll("\\{\\{FluxesSetters\\}\\}", fluxesSetters);
     
-    String primitivesGetters = createPrimitivesGetters().replaceAll("_Q","_V");
-    String primitivesSetters = createPrimitivesSetters().replaceAll("_Q","_V");
-    content = content.replaceAll("\\{\\{PrimitivesGetters\\}\\}", primitivesGetters);
-    content = content.replaceAll("\\{\\{PrimitivesSetters\\}\\}", primitivesSetters);
-
+    // now generate the naming schemes
+    String namingSchemesTemplate = IOUtils.convertRessourceContentToString(
+        "eu/exahype/variables/templates/NamingScheme.template");
+    
+    String namingSchemes = "";
+    for (String name : _namingSchemesMap.keySet()) {
+      int multiplicities = sumMultiplicities(_namingSchemesMap.get(name));
+      
+      namingSchemes += namingSchemesTemplate+"\n\n";
+      namingSchemes = namingSchemes.replaceAll("\\{\\{Project\\}\\}", projectName);
+      namingSchemes = namingSchemes.replaceAll("\\{\\{Solver\\}\\}",  solverName);
+      namingSchemes = namingSchemes.replaceAll("\\{\\{Name\\}\\}",  name.substring(0,1).toUpperCase()+name.substring(1));
+      namingSchemes = namingSchemes.replaceAll("\\{\\{Size\\}\\}",  String.valueOf(multiplicities));
+      
+      String getters = createNamingSchemeGetters(name).replaceAll("_Q","_data");
+      String setters = createNamingSchemeSetters(name).replaceAll("_Q","_data");
+      namingSchemes = namingSchemes.replaceAll("\\{\\{Getters\\}\\}", getters);
+      namingSchemes = namingSchemes.replaceAll("\\{\\{Setters\\}\\}", setters);
+    }
+    
+    content = content.replaceAll("\\{\\{NamingSchemes\\}\\}", namingSchemes);
     writer.write(content);
   }
 }

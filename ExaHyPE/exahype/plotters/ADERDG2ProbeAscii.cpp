@@ -59,6 +59,10 @@ void exahype::plotters::ADERDG2ProbeAscii::init(const std::string& filename, int
   #endif
 
   logDebug( "init(...)", "probe at location " << _x );
+
+  if (!tarch::la::equals(_x,_x)) {
+    logError( "init(...)", "Probe location is invalid." );
+  }
 }
 
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # The ExaHyPE toolkit compilation script wrapper.
 #
@@ -18,10 +18,19 @@ for dep in java javac jar; do
 	fi
 done
 
+# build in parallel.
+if which nproc &>/dev/null; then
+	NUMPROCS=$(nproc)
+else
+	NUMPROCS=1
+fi
+
 # stop on errors
 set -e
 
 cd src
 make clean
-make all
+make createParser
+make -j${NUMPROCS} compile
+make dist
 

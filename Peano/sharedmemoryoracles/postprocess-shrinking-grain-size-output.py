@@ -35,7 +35,7 @@ def processMeasurement(adapter):
     line = inputFile.readline()
   
   htmlOverview.write( "<table border=\"1\">" );
-  htmlOverview.write( "<tr><td><b>Method</b></td><td><b>Maximum problem size</b></td><td><b>Grain size</b></td><td><b>Search delta</b></td><td><b>Accuracy</b></td><td><b>Remarks</b></td></tr>" );
+  htmlOverview.write( "<tr><td><b>Method</b></td><td><b>Maximum problem size</b></td><td><b>Grain size</b></td><td><b>Search delta</b></td><td><b>Accuracy</b></td><td><b>Remarks</b></td><td><b>Max. concurrency level</b></td></tr>" );
 
   line = inputFile.readline()
   while not re.search( "end OracleForOnePhaseWithShrinkingGrainSize", line):
@@ -63,20 +63,21 @@ def processMeasurement(adapter):
 
 
     if analysis==Analysis.NoSerialRuntimeYet and float(accuracy)==0:
-      htmlOverview.write( "<td bgcolor=\"White\">" + grainSize + "</td>" );
+      colour = "White"
     elif analysis==Analysis.NoSerialRuntimeYet:
-      htmlOverview.write( "<td bgcolor=\"Yellow\">" + grainSize + "</td>" );
+      colour = "Yellow"
     elif analysis==Analysis.SeemsNotToScale:
-      htmlOverview.write( "<td bgcolor=\"Fuchsia\">" + grainSize + "</td>" );
+      colour = "Fuchsia"
     elif analysis==Analysis.MightScale:
-      htmlOverview.write( "<td bgcolor=\"LightSkyBlue\">" + grainSize + "</td>" );
+      colour = "LightSkyBlue"
     elif analysis==Analysis.DoesNotScale:
-      htmlOverview.write( "<td bgcolor=\"Red\">" + grainSize + "</td>" );
+      colour = "Red"
     elif analysis==Analysis.Scales:
-      htmlOverview.write( "<td bgcolor=\"LightGreen\">" + grainSize + "</td>" );
+      colour = "LightGreen"
     else:
-      htmlOverview.write( "<td bgcolor=\"White\">" + grainSize + "</td>" );
+      colour = "White"
 
+    htmlOverview.write( "<td bgcolor=\"" + colour + "\">" + grainSize + "</td>" );
     htmlOverview.write( "<td>" + searchDelta + "</td>" );
     htmlOverview.write( "<td>" + accuracy + "</td>" );
 
@@ -88,9 +89,14 @@ def processMeasurement(adapter):
     htmlOverview.write( ". " );
     if analysis==Analysis.SeemsNotToScale:
       htmlOverview.write( "Code might have found scaling setup but wants to re-validate serial runtime." );
-    
-   
     htmlOverview.write( "</td>" );
+    
+    maxConcurrencyLevel = float(biggestProblemSize)/float(grainSize)
+    if maxConcurrencyLevel<=1.0 and colour!="White":
+      colour = "Grey"
+    htmlOverview.write( "<td bgcolor=\"" + colour + "\">" + str(maxConcurrencyLevel) + "</td>" );
+    
+    
     htmlOverview.write( "</tr>" );
     line = inputFile.readline()  
 

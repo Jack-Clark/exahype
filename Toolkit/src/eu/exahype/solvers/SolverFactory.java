@@ -1,5 +1,7 @@
 package eu.exahype.solvers;
 
+import java.util.Set;
+
 public class SolverFactory {
   private int _dimensions;
   private boolean _enableProfiler;
@@ -17,7 +19,7 @@ public class SolverFactory {
     _pathToLibxsmm = pathToLibxsmm;
   }
   
-  public Solver createADERDGSolver(String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,int order,boolean hasConstants) {
+  public Solver createADERDGSolver(String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int order,boolean hasConstants) {
     String generalKernel = kernel.substring(0, kernel.lastIndexOf("::"));
     boolean isLinear     = kernel.substring(kernel.lastIndexOf("::")).equalsIgnoreCase("::linear");
     
@@ -30,7 +32,7 @@ public class SolverFactory {
     }
     else if (generalKernel.equals( eu.exahype.solvers.GenericADERDG.Identifier )) {
       return new eu.exahype.solvers.GenericADERDG(_dimensions,
-          numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants, isLinear, isFortran );
+          numberOfVariables, numberOfParameters, namingSchemeNames, order, _enableProfiler, hasConstants, isLinear, isFortran );
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )) {
       return new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions,
@@ -49,7 +51,7 @@ public class SolverFactory {
     return null;
   }
   
-  public Solver createFiniteVolumesSolver(String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,int patchSize,boolean hasConstants) {
+  public Solver createFiniteVolumesSolver(String kernel,boolean isFortran,int numberOfVariables,int numberOfParameters,Set<String> namingSchemeNames,int patchSize,boolean hasConstants) {
     if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinFortran.Identifier )) {
       return new eu.exahype.solvers.UserDefinedFiniteVolumesinFortran(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
@@ -57,7 +59,7 @@ public class SolverFactory {
       return new eu.exahype.solvers.UserDefinedFiniteVolumesinC(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
     if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesGodunovInC.Identifier )) {
-      return new eu.exahype.solvers.GenericFiniteVolumesGodunovInC(_dimensions,numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
+      return new eu.exahype.solvers.GenericFiniteVolumesGodunovInC(_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants);
     }
 
     return null;

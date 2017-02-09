@@ -1533,7 +1533,9 @@ void exahype::solvers::FiniteVolumesSolver::dropMasterData(
 
 void exahype::solvers::FiniteVolumesSolver::validateNoNansInFiniteVolumesSolution(
     CellDescription& cellDescription,const int cellDescriptionsIndex,const char* methodTrace)  const {
+  #if defined(Asserts)
   double* solution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+  #endif
 
   dfor(i,_nodesPerCoordinateAxis+_ghostLayerWidth) {
     if (tarch::la::allSmaller(i,_nodesPerCoordinateAxis+_ghostLayerWidth)
@@ -1548,7 +1550,7 @@ void exahype::solvers::FiniteVolumesSolver::validateNoNansInFiniteVolumesSolutio
                    methodTrace);
       }
     }
-  }
+  } // Dead code elimination should get rid of this loop if Asserts is not set.
 }
 
 void exahype::solvers::FiniteVolumesSolver::printFiniteVolumesSolution(

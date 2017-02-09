@@ -35,18 +35,21 @@ createParser:
 
 compile: files.mk $(OBJECTS) 
 
+jar:
+	jar cmf ./Manifest.txt ExaHyPE.jar .
 
 dist:
-	jar cmf ../Manifest.txt ../dist/ExaHyPE.jar .
-	tar -czvf ../dist/ExaHyPE-toolkit.tar.gz --exclude=*.class eu 
+	jar cmf ./Manifest.txt ExaHyPE.jar .
+	mv ExaHyPE.jar ../dist
+	tar -czf ../dist/ExaHyPE-toolkit.tar.gz --exclude=*.class Manifest.txt Makefile eu 
 
 
 all: clean createParser compile dist
 
 
 files.mk:
-	touch files.mk
-	echo "SOURCES=\\" > files.mk
+	@touch files.mk
+	@echo "SOURCES=\\" > files.mk
 	find . -name '*.java' | tr '\n' ' ' >> files.mk
 
 

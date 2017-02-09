@@ -159,6 +159,7 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      * handy in an MPI+X context. See class description.
      */
     const bool                                           _learn;
+    const bool                                           _restart;
 
     /**
      * Per method trace, we hold multiple problem analyses. See rationale
@@ -399,11 +400,8 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     /**
      * This operation analyses whether a set of entries for a given method
      * trace is stable. A set is stable if and only if all entries
-     *
-     * - either have grain size 0, i.e., we are not searching for good grain
-     *   sizes anymore,
-     * - or have not set any accuracy at all, i.e. no entry has been
-     *   used/analysed so far.
+     * have grain size 0, i.e., we are not searching for good grain
+     * sizes anymore.
      *
      * If the property holds, it might be reasonable to restart the search.
      * At least, we should skip the method trace while we search for valid
@@ -492,7 +490,7 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     /**
      * Oracle Constructor
      */
-    OracleForOnePhaseWithShrinkingGrainSize(bool learn);
+    OracleForOnePhaseWithShrinkingGrainSize(bool learn, bool restart);
 
     /**
      * Nop
@@ -560,7 +558,7 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
 
     /**
      * If the method trace we currently are tracking did yield any new valid
-     * measurement, we make the corresponing database entry learn(). If any
+     * measurement, we make the corresponding database entry learn(). If any
      * learns are done, we clearAllMeasurementsBesidesActiveOne().
      *
      * Afterwards, we changeMeasuredMethodTrace() if there are any database
@@ -568,6 +566,16 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      * parallelise() call will start to befill the database. If we can switch
      * the active trace, we subsequently
      * widenAccuracyOfCurrentlyStudiedMethodTraceAndRandomlyRestart().
+     *
+     * <h2> Data propagation </h2>
+     *
+     * If the search has ran into a situation where the search terminates, i.e.
+     * when it has found a working setup, we start to propagate it to all
+     * subsequent database entries. Database entries are stored ascendingly.
+     * All entries next in the array correspond to bigger total problem sizes.
+     * So we run into these following entries. If they are also still searching
+     * (if they have already converged we stop the propagation), we use the
+     * entries specialised copy constructor to propagate data.
      */
     void activateOracle() override;
 

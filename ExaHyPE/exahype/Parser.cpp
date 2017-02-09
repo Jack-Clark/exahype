@@ -78,6 +78,7 @@ void exahype::Parser::readFile(const std::string& filename) {
   std::regex COMMENT_BEGIN(R"((\/\*))"); // Covers all cases /*,/**,/***,... .
   std::regex COMMENT_END(R"((\*\/))"); //
   std::regex GROUP_BEGIN_OR_END(R"(^(\s|\t)*([a-zA-Z][^\=]+)+)");
+  std::regex CONST_PARAMETER(R"(^(\s|\t)*([A-Za-z](\w|[^a-zA-Z\d\s\t])*)(\s|\t)+const(\s|\t)*=(\s|\t)*(([^\s\t]|\,\s*)+)(\s|\t)*$)");
   std::regex PARAMETER(R"(^(\s|\t)*([A-Za-z](\w|[^a-zA-Z\d\s\t])*)(\s|\t)*=(\s|\t)*(([^\s\t]|\,\s*)+)(\s|\t)*$)");
   std::regex NO_SPLITTING(R"(\}|\{)");
   std::regex COMMA_SEPARATED(R"((\w|[^a-zA-Z\,\s\t])+)");
@@ -96,7 +97,7 @@ void exahype::Parser::readFile(const std::string& filename) {
   }
 
   int currentlyReadsComment = 0;
-
+  int lineNumber            = 0;
   while (!inputFile.eof() && inputFile) {
     char lineBuffer[MAX_CHARS_PER_LINE];
     inputFile.getline(lineBuffer, MAX_CHARS_PER_LINE);
@@ -110,6 +111,7 @@ void exahype::Parser::readFile(const std::string& filename) {
       currentlyReadsComment -= 1;
     }
 
+    // Runtime parameters
     if (currentlyReadsComment==0 && std::regex_search(line, match, PARAMETER) && match.size() > 1) {
       _tokenStream.push_back(match.str(2)); // Subgroup 2 is left-hand side (trimmed)
       std::string rightHandSide = match.str(6);
@@ -124,7 +126,21 @@ void exahype::Parser::readFile(const std::string& filename) {
       } else {
         _tokenStream.push_back(rightHandSide);
       }
+    // Compile time parameters (Do not push the token const on the stream)
+    } else if (currentlyReadsComment==0 && std::regex_search(line, match, CONST_PARAMETER) && match.size() > 1) {
+      _tokenStream.push_back(match.str(2)); // Subgroup 2 is left-hand side (trimmed)
+      std::string rightHandSide = match.str(7);
 
+      if (!std::regex_search(rightHandSide, match, NO_SPLITTING)) {
+        std::regex_iterator<std::string::iterator> regex_it ( rightHandSide.begin(), rightHandSide.end(), COMMA_SEPARATED );
+        std::regex_iterator<std::string::iterator> rend;
+        while(regex_it!=rend) {
+          _tokenStream.push_back(regex_it->str());
+          ++regex_it;
+        }
+      } else {
+        _tokenStream.push_back(rightHandSide);
+      }
     } else if (currentlyReadsComment==0 && std::regex_search(line, match, GROUP_BEGIN_OR_END) && match.size() > 1) {
       std::regex_iterator<std::string::iterator> regex_it ( line.begin(), line.end(), WHITESPACE_SEPARATED );
       std::regex_iterator<std::string::iterator> rend;
@@ -136,22 +152,25 @@ void exahype::Parser::readFile(const std::string& filename) {
       } // else do nothing
     } else if (currentlyReadsComment<0) {
       logError("readFile(String)",
-           "Please remove additional multi-line comment end(s) in line '" << line << "'.");
+           "Please remove additional multi-line comment end(s) in line '" << lineNumber << "'.");
        _interpretationErrorOccured = true;
     }
+    lineNumber++;
   }
 
   if (currentlyReadsComment>0) {
     logError("readFile(String)",
-             "A multi-line comment was not closed.");
+             "A multi-line comment was not closed after line " << lineNumber);
     _interpretationErrorOccured = true;
   }
 
-  //  For debugging purposes
-  //  std::cout << "_tokenStream=" << std::endl;
-  //  for (std::string str : _tokenStream) {
-  //    std::cout << "["<<str<<"]" << std::endl;
-  //  }
+//  For debugging purposes
+/*
+  std::cout << "_tokenStream=" << std::endl;
+  for (std::string str : _tokenStream) {
+    std::cout << "["<<str<<"]" << std::endl;
+  }
+*/
 }
 
 bool exahype::Parser::isValid() const {
@@ -770,9 +789,7 @@ std::string exahype::Parser::getSelectorForPlotter(int solverNumber,
   std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
                                     plotterNumber + 1, 11);
   logDebug("getSelectorForPlotter()", "found token " << token);
-  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
-             plotterNumber);
-  return (token != _noTokenFound) ? token : "{}";
+  return (token != _noTokenFound) ? token : "";
 }
 
 std::string exahype::Parser::getLogFileName() const {

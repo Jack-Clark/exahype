@@ -174,7 +174,8 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
         "use autotuning shared memory oracle");
     peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
         new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize(
-          tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1
+          tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1,
+          true
         ));
     break;
   case Parser::MulticoreOracleType::GrainSizeSampling:
@@ -418,115 +419,118 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
 int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& repository) {
   peano::utils::UserInterface::writeHeader();
 
-  initSolverTimeStepData();
-  repository.getState().switchToPreAMRContext();
-  createGrid(repository);
-  /*
-   * Set ADER-DG corrector time stamp and finite volumes time stamp.
-   * Compute ADER-DG corrector time step size implicitly and finite volumes time step size.
-   * (Implicitly means here that we set the predictor time step size but after the next newTimeStep(...)
-   * the corrector time step size is set as this predictor time step size.)
-   *
-   * Note that it is important that we run SolutionAdjustmentAnd
-   * GlobalTimeStepComputation directly after the grid setup
-   * since we receive here the metadata
-   * that was sent in the last iteration of the grid setup.
-   */
-  initSolverTimeStepData();
-
-  logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
-
-  repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
-  repository.switchToInitialConditionAndTimeStepSizeComputation();
-  repository.iterate();
-  logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
-
-  // TODO(Dominic):
-  if (!exahype::State::fuseADERDGPhases() &&
-      exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
+  if (!exahype::solvers::RegisteredSolvers.empty()) {
+    initSolverTimeStepData();
+    repository.getState().switchToPreAMRContext();
+    createGrid(repository);
+    /*
+     * Set ADER-DG corrector time stamp and finite volumes time stamp.
+     * Compute ADER-DG corrector time step size implicitly and finite volumes time step size.
+     * (Implicitly means here that we set the predictor time step size but after the next newTimeStep(...)
+     * the corrector time step size is set as this predictor time step size.)
+     *
+     * Note that it is important that we run SolutionAdjustmentAnd
+     * GlobalTimeStepComputation directly after the grid setup
+     * since we receive here the metadata
+     * that was sent in the last iteration of the grid setup.
+     */
     initSolverTimeStepData();
 
-    updateLimiterDomain(repository);
-  }
+    logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
 
-  /*
-   * Compute current first predictor based on current time step size.
-   * Set current time step size as old time step size of next iteration.
-   * Compute the current time step size of the next iteration.
-   */
-  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
-  bool plot = exahype::plotters::isAPlotterActive(
-      solvers::Solver::getMinSolverTimeStampOfAllSolvers());
-  if (plot) {
-    #if DIMENSIONS==2
-    repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();
-    #else
-    repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
-    #endif
-  } else {
-    repository.switchToPredictionAndFusedTimeSteppingInitialisation();
-  }
-  repository.iterate();
-  logInfo("runAsMaster(...)","plotted initial solution (if specified) and computed first predictor");
+    repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
+    repository.switchToInitialConditionAndTimeStepSizeComputation();
+    repository.iterate();
+    logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
 
-  /*
-   * Finally print the initial time step info.
-   */
-  printTimeStepInfo(-1,repository);
+    // TODO(Dominic):
+    if (!exahype::State::fuseADERDGPhases() &&
+        exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
+      initSolverTimeStepData();
 
-  validateInitialSolverTimeStepData(_parser.getFuseAlgorithmicSteps());
-
-  const double simulationEndTime = _parser.getSimulationEndTime();
-
-  logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
-  logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
-
-  while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
-      tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
-    // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
-    // see issue #103
-    bool plot = exahype::plotters::isAPlotterActive(
-        solvers::Solver::estimateMinNextSolverTimeStampOfAllSolvers());
-
-    if (_parser.getFuseAlgorithmicSteps()) {
-      repository.getState().setTimeStepSizeWeightForPredictionRerun(
-          _parser.getFuseAlgorithmicStepsFactor());
-
-      int numberOfStepsToRun = 1;
-      if (plot) {
-        numberOfStepsToRun = 0;
-      }
-      else if (solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping::GlobalFixed)) {
-        /**
-         * This computation is optimistic. If we were pessimistic, we had to
-         * use the max solver time step size. However, this is not necessary
-         * here, as we half the time steps anyway.
-         */
-        if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {
-          const double timeIntervalTillNextPlot = std::min(exahype::plotters::getTimeOfNextPlot(),simulationEndTime) - solvers::Solver::getMaxSolverTimeStampOfAllSolvers();
-          numberOfStepsToRun = std::floor( timeIntervalTillNextPlot / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() * _parser.getTimestepBatchFactor() );
-        }
-        numberOfStepsToRun = numberOfStepsToRun<1 ? 1 : numberOfStepsToRun;
-      }
-
-      runOneTimeStampWithFusedAlgorithmicSteps(
-        repository,
-        numberOfStepsToRun,
-        _parser.getExchangeBoundaryDataInBatchedTimeSteps() && repository.getState().isGridStationary()
-      );
-      recomputePredictorIfNecessary(repository);
-      printTimeStepInfo(numberOfStepsToRun,repository);
-    } else {
-      runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
+      updateLimiterDomain(repository);
     }
 
-    logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
-  }
-  if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
-    logWarning("runAsMaster(...)","Minimum solver time step size is zero (up to machine precision).");
+    /*
+     * Compute current first predictor based on current time step size.
+     * Set current time step size as old time step size of next iteration.
+     * Compute the current time step size of the next iteration.
+     */
+    repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
+    bool plot = exahype::plotters::isAPlotterActive(
+        solvers::Solver::getMinSolverTimeStampOfAllSolvers());
+    if (plot) {
+      #if DIMENSIONS==2
+      repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();
+      #else
+      repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
+      #endif
+    } else {
+      repository.switchToPredictionAndFusedTimeSteppingInitialisation();
+    }
+    repository.iterate();
+    logInfo("runAsMaster(...)","plotted initial solution (if specified) and computed first predictor");
+
+    /*
+     * Finally print the initial time step info.
+     */
+    printTimeStepInfo(-1,repository);
+
+    validateInitialSolverTimeStepData(_parser.getFuseAlgorithmicSteps());
+
+    const double simulationEndTime = _parser.getSimulationEndTime();
+
+    logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
+    logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
+
+    while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
+        tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
+      // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
+      // see issue #103
+      bool plot = exahype::plotters::isAPlotterActive(
+          solvers::Solver::estimateMinNextSolverTimeStampOfAllSolvers());
+
+      if (_parser.getFuseAlgorithmicSteps()) {
+        repository.getState().setTimeStepSizeWeightForPredictionRerun(
+            _parser.getFuseAlgorithmicStepsFactor());
+
+        int numberOfStepsToRun = 1;
+        if (plot) {
+          numberOfStepsToRun = 0;
+        }
+        else if (solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping::GlobalFixed)) {
+          /**
+           * This computation is optimistic. If we were pessimistic, we had to
+           * use the max solver time step size. However, this is not necessary
+           * here, as we half the time steps anyway.
+           */
+          if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {
+            const double timeIntervalTillNextPlot = std::min(exahype::plotters::getTimeOfNextPlot(),simulationEndTime) - solvers::Solver::getMaxSolverTimeStampOfAllSolvers();
+            numberOfStepsToRun = std::floor( timeIntervalTillNextPlot / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() * _parser.getTimestepBatchFactor() );
+          }
+          numberOfStepsToRun = numberOfStepsToRun<1 ? 1 : numberOfStepsToRun;
+        }
+
+        runOneTimeStampWithFusedAlgorithmicSteps(
+          repository,
+          numberOfStepsToRun,
+          _parser.getExchangeBoundaryDataInBatchedTimeSteps() && repository.getState().isGridStationary()
+        );
+        recomputePredictorIfNecessary(repository);
+        printTimeStepInfo(numberOfStepsToRun,repository);
+      } else {
+        runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
+      }
+
+      logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
+    }
+    if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
+      logWarning("runAsMaster(...)","Minimum solver time step size is zero (up to machine precision).");
+    }
+
+    repository.logIterationStatistics(false);
   }
 
-  repository.logIterationStatistics(true);
   repository.terminate();
 
   return 0;

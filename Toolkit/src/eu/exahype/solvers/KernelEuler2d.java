@@ -1,5 +1,8 @@
 package eu.exahype.solvers;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 public class KernelEuler2d implements Solver {
   public static final String Identifier = "kernel::euler2d";
 
@@ -8,7 +11,21 @@ public class KernelEuler2d implements Solver {
     // @todo
     System.err.println("not implemented yet\n");
   }
+  
+  @Override
+  public void writeAbstractHeader(BufferedWriter writer, String solverName,
+      String projectName) throws IOException {
+    // TODO Auto-generated method stub
+    
+  }
 
+  @Override
+  public void writeAbstractImplementation(BufferedWriter writer,
+      String solverName, String projectName) throws IOException {
+    // TODO Auto-generated method stub
+    
+  }
+  
   public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
     // @todo Implement

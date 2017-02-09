@@ -17,9 +17,10 @@ const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_Ti
 
 
 
-sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(bool learn):
+sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(bool learn, bool restart):
   _activeMethodTrace(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling),
   _learn(learn),
+  _restart(restart),
   _measurements() {
 }
 
@@ -49,7 +50,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry&  sh
       *_measurements[askingMethod].rbegin(),
       _measurements[askingMethod].rbegin()->_biggestProblemSize*2
     ));
-    logDebug(
+    logInfo(
       "getDatabaseEntry(int)",
       "inserted new entry for " + peano::datatraversal::autotuning::toString(askingMethod)
       << ": " << _measurements[askingMethod].rbegin()->toString()
@@ -98,14 +99,15 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::widenAccuracyOfCurrentlyStudiedMethodTraceAndRandomlyRestart() {
   bool widenedEntry = false;
   for (auto& p: _measurements[_activeMethodTrace]) {
-    const bool widenThisEntry = p._searchDelta>0 && p._currentMeasurement.getAccuracy()>0.0;
+    //const bool widenThisEntry = p._searchDelta>0 && p._currentMeasurement.getAccuracy()>0.0;
+    const bool widenThisEntry = p._searchDelta>0 && p._currentMeasurement.getAccuracy()<1.0;
     if (widenThisEntry) {
       p._currentMeasurement.increaseAccuracy(0.9);
     }
     widenedEntry |= widenThisEntry;
   }
-  if (!widenedEntry && rand()%100==0) {
-    logInfo( "widenAccuracyOfCurrentlyStudiedMethodTraceAndRandomlyRestart(...)", "restart all measurments of " << toString(_activeMethodTrace) );
+  if (!widenedEntry && _restart && rand()%100==0) {
+    logInfo( "widenAccuracyOfCurrentlyStudiedMethodTraceAndRandomlyRestart(...)", "restart all measurements of " << toString(_activeMethodTrace) );
     for (auto& p: _measurements[_activeMethodTrace]) {
       p.restart();
     }
@@ -119,14 +121,12 @@ bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::isStableDatab
   }
   else {
     bool result             = true;
-    bool noValidAccuracyYet = true;
 
     for (auto p: _measurements.at(askingMethod)) {
-      result             &= ( (p._searchDelta==0) || (p._currentMeasurement.getAccuracy()==0.0) );
-      noValidAccuracyYet &= (p._currentMeasurement.getAccuracy()==0);
+      result             &= (p._searchDelta==0);
     }
 
-    return result && !noValidAccuracyYet;
+    return result;
   }
 }
 
@@ -224,7 +224,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
     logInfo( "learn()", "continue with " << toString() );
   }
 
-  assertion( _currentGrainSize>0 );
+  assertion1(_currentGrainSize>0,  toString() );
 }
 
 
@@ -281,6 +281,8 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistic
 
 
 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry(int problemSize) {
+  assertion(problemSize>0);
+
   _biggestProblemSize   = problemSize;
   _currentGrainSize     = problemSize;
   _currentMeasurement   = tarch::timing::Measurement( 0.0 );
@@ -293,26 +295,53 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
   DatabaseEntry(newProblemSize) {
   assertion(prototype._biggestProblemSize<newProblemSize);
   if (prototype._currentGrainSize < prototype._biggestProblemSize) {
-    _currentGrainSize = prototype._currentGrainSize;
+    // We do not compute it once bug directly integrate it into the code to
+    // avoid dominating truncation errors
+    // int scaleUp = newProblemSize / prototype._biggestProblemSize;
+    _currentGrainSize = prototype._currentGrainSize * newProblemSize / prototype._biggestProblemSize;
+    _searchDelta      = prototype._searchDelta      * newProblemSize / prototype._biggestProblemSize;
+  }
+
+  if (_searchDelta==0) {
     restart();
   }
+
+  assertion1(_currentGrainSize<=_biggestProblemSize, toString() );
+  assertion1(_currentGrainSize>0,                    toString() );
+  assertion1(_biggestProblemSize>0,                  toString() );
+  assertion1(_searchDelta>=0,                        toString() );
 }
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::restart() {
-  int newCurrentGrainSize = (_biggestProblemSize + _currentGrainSize)/2;
+  const int oldCurrentGrainSize = _currentGrainSize;
+
+  int newCurrentGrainSize = 1;
+  if (
+    _biggestProblemSize>tarch::multicore::Core::getInstance().getNumberOfThreads()
+    &&
+    _currentGrainSize<_biggestProblemSize/2
+    &&
+    _currentGrainSize>0
+  ) {
+    // do not loose all the concurrency in one restart
+    newCurrentGrainSize = _currentGrainSize * 2;
+  }
+  else {
+    newCurrentGrainSize = (_biggestProblemSize + _currentGrainSize)/2;
+  }
+
   _currentGrainSize     = newCurrentGrainSize;
   _currentMeasurement   = tarch::timing::Measurement( 0.0 );
   _previousMeasuredTime = _TimingMax;
-  _searchDelta          = newCurrentGrainSize - _currentGrainSize;
+  _searchDelta          = newCurrentGrainSize - oldCurrentGrainSize;
 
   if (_searchDelta==0) {
     _searchDelta = _biggestProblemSize/2;
   }
+
+  logInfo( "restart(...)", "restarted " << toString() );
 }
-
-
-
 
 
 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry(std::string  rightString) {
@@ -322,30 +351,49 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
   leftToken   = rightString.substr( 0, rightString.find(",") );
   rightString = rightString.substr( leftToken.size()+1 );
   _biggestProblemSize = std::stoi(leftToken);
-  logDebug( "loadStatistics(...)", "got biggest problem size " << _biggestProblemSize );
+  logDebug( "DatabaseEntry(std::string)", "got biggest problem size " << _biggestProblemSize );
 
   leftToken   = rightString.substr( 0, rightString.find(",") );
   rightString = rightString.substr( leftToken.size()+1 );
   _currentGrainSize = std::stoi(leftToken);
-  logDebug( "loadStatistics(...)", "got current grain size " <<  _currentGrainSize );
+  logDebug( "DatabaseEntry(std::string)", "got current grain size " <<  _currentGrainSize );
 
   leftToken   = rightString.substr( 0, rightString.find(",") );
   rightString = rightString.substr( leftToken.size()+1 );
   _previousMeasuredTime = std::stof(leftToken);
-  logDebug( "loadStatistics(...)", "previous measured time is " <<  _previousMeasuredTime );
+  logDebug( "DatabaseEntry(std::string)", "previous measured time is " <<  _previousMeasuredTime );
 
   leftToken   = rightString.substr( 0, rightString.find(",") );
   rightString = rightString.substr( leftToken.size()+1 );
   _searchDelta = std::stoi(leftToken);
-  logDebug( "loadStatistics(...)", "search delta is " <<  _searchDelta );
+  logDebug( "DatabaseEntry(std::string)", "search delta is " <<  _searchDelta );
 
   leftToken   = rightString.substr( 0, rightString.find(",") );
   rightString = rightString.substr( leftToken.size()+1 );
   double accuracy = std::stof(leftToken);
-  logDebug( "loadStatistics(...)", "accuracy is " <<  accuracy << ". Ignore remainder of this line");
+  logDebug( "DatabaseEntry(std::string)", "accuracy is " <<  accuracy << ". Ignore remainder of this line");
 
   _currentMeasurement.erase();
   _currentMeasurement.setAccuracy( accuracy );
+
+  bool isValid = _biggestProblemSize>0
+              && _currentGrainSize>0
+              && _currentGrainSize<=_biggestProblemSize
+              && _previousMeasuredTime>=0
+	      && _searchDelta>=0
+	      && accuracy>=0.0;
+
+  if (!isValid) {
+    if (_biggestProblemSize<=0) {
+      _biggestProblemSize = 65536;
+      logError( "DatabaseEntry(std::string)", "unable to parse file entries w.r.t. biggest problem size" );
+    }
+    _currentGrainSize     = _biggestProblemSize;
+    _currentMeasurement   = tarch::timing::Measurement( 0.0 );
+    _previousMeasuredTime = _TimingMax;
+    _searchDelta          = 0;
+    logError( "DatabaseEntry(std::string)", "input file seems to have been corrupted. Shared memory specification will be invalid/inefficient: " << toString() );
+  }
 }
 
 
@@ -378,7 +426,14 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistic
       #ifdef __EXCEPTIONS
       }
       catch (std::out_of_range& exception) {
-        logWarning( "loadStatistics(...)", "failed to parse shared memory configuration file " << filename << " with error " << exception.what() << " in adapter " << oracleNumber);
+        logError(
+          "loadStatistics(...)",
+          "failed to parse shared memory configuration file " << filename << " with error in " << exception.what() << " in adapter " << oracleNumber
+        );
+        logError(
+          "loadStatistics(...)",
+          "flawed string: " << str
+        );
       }
       #endif
     }
@@ -396,7 +451,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::~OracleForOnePhase
 
 
 peano::datatraversal::autotuning::OracleForOnePhase* sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::createNewOracle() const {
-  return new OracleForOnePhaseWithShrinkingGrainSize(_learn);
+  return new OracleForOnePhaseWithShrinkingGrainSize(_learn,_restart);
 }
 
 
@@ -424,8 +479,10 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::activateOracl
     if (
       _activeMethodTrace!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling
     ) {
+      bool          oneMeasurementDidLearn           = false;
+      bool          oneMeasurementDidTerminateSearch = false;
+      DatabaseEntry learningEntry(1);
       for (auto& p: _measurements[_activeMethodTrace]) {
-	      bool oneMeasurementDidLearn = false;
         if (
           p._currentMeasurement.isAccurateValue()
           &&
@@ -434,11 +491,36 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::activateOracl
           logInfo( "activateOracle()", "found entry that should learn for trace " << toString(_activeMethodTrace) );
           p.learn();
           oneMeasurementDidLearn = true;
+          if (p._searchDelta==0) {
+            logInfo( "activateOracle()", "entry fixed, so propagate its data: " << p.toString() );
+            oneMeasurementDidTerminateSearch = true;
+            learningEntry                    = p;
+          }
         }
+        else if (
+          oneMeasurementDidTerminateSearch
+          &&
+          (
+            p._searchDelta>0
+            ||
+            (p._searchDelta==0 && p._biggestProblemSize==p._currentGrainSize)
+          )
+        ) {
+          // propagate data
+          p = DatabaseEntry( learningEntry, p._biggestProblemSize );
+          logInfo( "activateOracle()", "have propagated solution from " << learningEntry.toString() << " into " << p.toString() );
+        }
+        else if (
+          oneMeasurementDidTerminateSearch
+          &&
+          p._searchDelta==0
+        ) {
+          oneMeasurementDidTerminateSearch = false;
+        }
+      }
 
-        if (oneMeasurementDidLearn) {
-          clearAllMeasurementsBesidesActiveOne();
-        }
+      if (oneMeasurementDidLearn) {
+        clearAllMeasurementsBesidesActiveOne();
       }
     }
 
