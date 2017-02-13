@@ -26,7 +26,14 @@
                                  maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
 }
 
-
+void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
+	// This string is used in the --version output to identify compile time constants
+	os << "{{Project}}::Abstract{{Solver}}("
+	   << "nVar=" << NumberOfVariables << ", "
+	   << "nParam=" << NumberOfParameters << ", "
+	   << "Order=" << Order
+	   << ")";
+}
 
 void {{Project}}::Abstract{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {{BeforeSpaceTimePredictor}}

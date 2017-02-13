@@ -22,6 +22,15 @@
                                         1/* ghost layer width */,maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
 }
 
+void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
+	// This string is used in the --version output to identify compile time constants
+	os << "{{Project}}::Abstract{{Solver}}("
+	   << "nVar=" << NumberOfVariables << ", "
+	   << "nParam=" << NumberOfParameters << ", "
+	   << "PatchSize=" << PatchSize
+	   << ")";
+}
+
 double {{Project}}::Abstract{{Solver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
   double maxAdmissibleDt = kernels::finitevolumes::godunov::c::stableTimeStepSize<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,tempEigenvalues,dx,getNumberOfVariables(),getNodesPerCoordinateAxis());
   return maxAdmissibleDt;

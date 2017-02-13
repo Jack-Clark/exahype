@@ -39,6 +39,8 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     void ghostLayerFillingAtBoundary(double* luh,const double* luhbnd,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) override;
     void boundaryLayerExtraction(double* luhbnd,const double* luh,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) override;
     void boundaryConditions(double* stateOut,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) override;
+
+    static void constantsToString(std::ostream& os);
 };
 
 

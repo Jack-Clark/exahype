@@ -24,6 +24,16 @@
                                  maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
 }
 
+void {{Project}}::{{AbstractSolver}}::constantsToString(std::ostream& os) {
+	// This string is used in the --version output to identify compile time constants
+	os << "{{Project}}::{{AbstractSolver}}("
+	   << "nVar=" << nVar << ", "
+	   << "nParam=" << nParams << ", "
+	   << "nDim=" << nDim ", "
+	   << "order=" << order
+	   << ")";
+}
+
 void {{Project}}::{{AbstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {{BeforeSpaceTimePredictor}}
   kernels::aderdg::optimised::picardLoopNonlinear<{{Solver}}::{{Solver}}::flux>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], nullptr, nullptr, nullptr); //S, gradQ, BGradQ
