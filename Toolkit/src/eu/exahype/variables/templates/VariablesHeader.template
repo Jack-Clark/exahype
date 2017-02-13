@@ -37,7 +37,7 @@ class {{Project}}::{{Solver}}::ReadOnlyVariables {
       return _Q[index];
     }
     
-    const double* const data() {
+    const double* data() const {
       return _Q;
     }
     

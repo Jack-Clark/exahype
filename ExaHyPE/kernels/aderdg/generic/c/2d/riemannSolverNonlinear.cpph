@@ -84,6 +84,7 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
   double* ncp = new double[numberOfVariables]();
   idx2 idx_Bn(numberOfVariables, numberOfVariables);
   solver.matrixb(Qavg, normalNonZero, Bn);
+  
 
   // We now compute the numerical flux. Note that the scheme is at the moment
   // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
@@ -98,12 +99,32 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
       for(int l=0; l < numberOfVariables; l++) {
 	      ncp[l] = 0;
 	      for(int m=0; m < numberOfVariables; m++) {
-		     ncp[l] += Bn[idx_Bn(l, m)] * (QR[idx_FQLR(j, m)] - QL[idx_FQLR(j, m)]);
+		     // BUG resolved: Fortran <-> C matrix access
+		     ncp[l] += Bn[idx_Bn(m, l)] * (QR[idx_FQLR(j, m)] - QL[idx_FQLR(j, m)]);
 	      }
 	     // printf("QR[%d, %d] = %.20e\n", j, l, QR[idx_FQLR(j, l)]);
 	     // printf("QL[%d, %d] = %.20e\n", j, l, QL[idx_FQLR(j, l)]);
 	     // printf("ncp[%d]=%.20e\n", l, ncp[l]);
       }
+
+      // (x,y) location in Q
+      /*
+      int posx = 20;
+      int posy = 21;
+      double xdeb = 3.703704e-02;
+      double ydeb = 2.571550e-03;
+      bool debug = false;
+      if(debug) printf("An position %e, %e:\n", xdeb, ydeb);
+      if(abs(QL[posx]-xdeb) < 1e-6 && abs(QL[posy] - ydeb) < 1e-6) {
+	for(int l=0; l < numberOfVariables; l++) {
+	      //for(int m=0; m < numberOfVariables; m++) {
+	     int m=0;
+	      //printf("Bn(m=%d, l=%d) = %.20e\n", m, l, Bn[idx_Bn(m, l)]);
+	     if(debug) printf("Qavg[%d] = %.20e\n", l, Qavg[l]);
+	      //}
+	}
+      }
+      */
 
       // Avoid diffusion of parameters
       for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
@@ -114,6 +135,18 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
         FL[idx_FQLR(j, k)] = FL[idx_FQLR(j, k)] + 0.5 * ncp[k];
         //if(0) printf("QL[..]-QR = %f - %f\n", QL[idx_FQLR(j, k)], QR[idx_FQLR(j, k)]);
       }
+      
+ /*
+      int mcheck = 6; // K11
+     if(debug) printf("Riemann j=%d m=%d: (x,y)=(%e,%e) ncp=%e QL=%e QR=%e FL=%e FR=%e, normal=%d\n",
+	     j, mcheck,
+	     QL[posx], QL[posy],
+	     ncp[mcheck],
+	     QL[idx_FQLR(j, mcheck)], QR[idx_FQLR(j, mcheck)],
+	     FL[idx_FQLR(j, mcheck)], FR[idx_FQLR(j, mcheck)],
+	     normalNonZero
+      );
+     */
     }
   }
   
