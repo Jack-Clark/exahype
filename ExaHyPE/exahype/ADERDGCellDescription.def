@@ -6,10 +6,10 @@
 /////////////////////////////////////////////////
 #include "peano/utils/Globals.h"
 
-Packed-Type: int;
+Packed-Type: int hint-size 32;
 
-Constant: DIMENSIONS;
-Constant: DIMENSIONS_TIMES_TWO;
+Constant: DIMENSIONS hint-value 3;
+Constant: DIMENSIONS_TIMES_TWO hint-value 6;
 
 class exahype::records::ADERDGCellDescription {
   /**

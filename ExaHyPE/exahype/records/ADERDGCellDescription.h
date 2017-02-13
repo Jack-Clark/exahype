@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   04/01/2017 17:03
+    * @date   10/02/2017 11:40
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -2631,7 +2631,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   04/01/2017 17:03
+             * @date   10/02/2017 11:40
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -2690,10 +2690,16 @@ namespace exahype {
                       |  bytesPerDoFInPreviousSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 11	| #bits 3
                       |  bytesPerDoFInSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 14	| #bits 3
                       |  bytesPerDoFInUpdate	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 17	| #bits 3
-                      |  bytesPerDoFInExtrapolatedPredictor	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 20	| #bits 3
-                      |  bytesPerDoFInFluctuation	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 23	| #bits 3
                       */
                      int _packedRecords0;
+                     
+                     
+                     /** mapping of records:
+                     || Member 	|| startbit 	|| length
+                      |  bytesPerDoFInExtrapolatedPredictor	| startbit 0	| #bits 3
+                      |  bytesPerDoFInFluctuation	| startbit 3	| #bits 3
+                      */
+                     int _packedRecords1;
                      
                      /**
                       * Generated
@@ -3839,9 +3845,9 @@ namespace exahype {
  #endif 
  {
                         int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 20));
-   int tmp = static_cast<int>(_packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 20));
+   mask = static_cast<int>(mask << (0));
+   int tmp = static_cast<int>(_packedRecords1 & mask);
+   tmp = static_cast<int>(tmp >> (0));
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
@@ -3856,9 +3862,9 @@ namespace exahype {
  {
                         assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 20));
-   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 20));
+   mask = static_cast<int>(mask << (0));
+   _packedRecords1 = static_cast<int>(_packedRecords1 & ~mask);
+   _packedRecords1 = static_cast<int>(_packedRecords1 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (0));
                      }
                      
                      
@@ -3869,9 +3875,9 @@ namespace exahype {
  #endif 
  {
                         int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 23));
-   int tmp = static_cast<int>(_packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 23));
+   mask = static_cast<int>(mask << (3));
+   int tmp = static_cast<int>(_packedRecords1 & mask);
+   tmp = static_cast<int>(tmp >> (3));
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
@@ -3886,9 +3892,9 @@ namespace exahype {
  {
                         assertion((bytesPerDoFInFluctuation >= 1 && bytesPerDoFInFluctuation <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 23));
-   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 23));
+   mask = static_cast<int>(mask << (3));
+   _packedRecords1 = static_cast<int>(_packedRecords1 & ~mask);
+   _packedRecords1 = static_cast<int>(_packedRecords1 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (3));
                      }
                      
                      
@@ -5247,9 +5253,9 @@ namespace exahype {
  #endif 
  {
                      int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 20));
-   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 20));
+   mask = static_cast<int>(mask << (0));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords1 & mask);
+   tmp = static_cast<int>(tmp >> (0));
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
@@ -5264,9 +5270,9 @@ namespace exahype {
  {
                      assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 20));
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 20));
+   mask = static_cast<int>(mask << (0));
+   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 & ~mask);
+   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (0));
                   }
                   
                   
@@ -5277,9 +5283,9 @@ namespace exahype {
  #endif 
  {
                      int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 23));
-   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 23));
+   mask = static_cast<int>(mask << (3));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords1 & mask);
+   tmp = static_cast<int>(tmp >> (3));
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
@@ -5294,9 +5300,9 @@ namespace exahype {
  {
                      assertion((bytesPerDoFInFluctuation >= 1 && bytesPerDoFInFluctuation <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 23));
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 23));
+   mask = static_cast<int>(mask << (3));
+   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 & ~mask);
+   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (3));
                   }
                   
                   
@@ -5410,7 +5416,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   04/01/2017 17:03
+                      * @date   10/02/2017 11:40
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -7738,7 +7744,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   04/01/2017 17:03
+                               * @date   10/02/2017 11:40
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  
@@ -7793,10 +7799,16 @@ namespace exahype {
                                         |  bytesPerDoFInPreviousSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 9	| #bits 3
                                         |  bytesPerDoFInSolution	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 12	| #bits 3
                                         |  bytesPerDoFInUpdate	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 15	| #bits 3
-                                        |  bytesPerDoFInExtrapolatedPredictor	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18	| #bits 3
-                                        |  bytesPerDoFInFluctuation	| startbit DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 21	| #bits 3
                                         */
                                        int _packedRecords0;
+                                       
+                                       
+                                       /** mapping of records:
+                                       || Member 	|| startbit 	|| length
+                                        |  bytesPerDoFInExtrapolatedPredictor	| startbit 0	| #bits 3
+                                        |  bytesPerDoFInFluctuation	| startbit 3	| #bits 3
+                                        */
+                                       int _packedRecords1;
                                        
                                        /**
                                         * Generated
@@ -8818,9 +8830,9 @@ namespace exahype {
  #endif 
  {
                                           int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
-   int tmp = static_cast<int>(_packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
+   mask = static_cast<int>(mask << (0));
+   int tmp = static_cast<int>(_packedRecords1 & mask);
+   tmp = static_cast<int>(tmp >> (0));
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
@@ -8835,9 +8847,9 @@ namespace exahype {
  {
                                           assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
-   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
+   mask = static_cast<int>(mask << (0));
+   _packedRecords1 = static_cast<int>(_packedRecords1 & ~mask);
+   _packedRecords1 = static_cast<int>(_packedRecords1 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (0));
                                        }
                                        
                                        
@@ -8848,9 +8860,9 @@ namespace exahype {
  #endif 
  {
                                           int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 21));
-   int tmp = static_cast<int>(_packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 21));
+   mask = static_cast<int>(mask << (3));
+   int tmp = static_cast<int>(_packedRecords1 & mask);
+   tmp = static_cast<int>(tmp >> (3));
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
@@ -8865,9 +8877,9 @@ namespace exahype {
  {
                                           assertion((bytesPerDoFInFluctuation >= 1 && bytesPerDoFInFluctuation <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 21));
-   _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
-   _packedRecords0 = static_cast<int>(_packedRecords0 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 21));
+   mask = static_cast<int>(mask << (3));
+   _packedRecords1 = static_cast<int>(_packedRecords1 & ~mask);
+   _packedRecords1 = static_cast<int>(_packedRecords1 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (3));
                                        }
                                        
                                        
@@ -10076,9 +10088,9 @@ namespace exahype {
  #endif 
  {
                                        int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
-   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
+   mask = static_cast<int>(mask << (0));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords1 & mask);
+   tmp = static_cast<int>(tmp >> (0));
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
@@ -10093,9 +10105,9 @@ namespace exahype {
  {
                                        assertion((bytesPerDoFInExtrapolatedPredictor >= 1 && bytesPerDoFInExtrapolatedPredictor <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 18));
+   mask = static_cast<int>(mask << (0));
+   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 & ~mask);
+   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 | (static_cast<int>(bytesPerDoFInExtrapolatedPredictor) - 1) << (0));
                                     }
                                     
                                     
@@ -10106,9 +10118,9 @@ namespace exahype {
  #endif 
  {
                                        int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 21));
-   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
-   tmp = static_cast<int>(tmp >> (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 21));
+   mask = static_cast<int>(mask << (3));
+   int tmp = static_cast<int>(_persistentRecords._packedRecords1 & mask);
+   tmp = static_cast<int>(tmp >> (3));
    tmp = tmp + 1;
    assertion(( tmp >= 1 &&  tmp <= 7));
    return (int) tmp;
@@ -10123,9 +10135,9 @@ namespace exahype {
  {
                                        assertion((bytesPerDoFInFluctuation >= 1 && bytesPerDoFInFluctuation <= 7));
    int mask =  (1 << (3)) - 1;
-   mask = static_cast<int>(mask << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 21));
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
-   _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (DIMENSIONS_TIMES_TWO + DIMENSIONS_TIMES_TWO + 21));
+   mask = static_cast<int>(mask << (3));
+   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 & ~mask);
+   _persistentRecords._packedRecords1 = static_cast<int>(_persistentRecords._packedRecords1 | (static_cast<int>(bytesPerDoFInFluctuation) - 1) << (3));
                                     }
                                     
                                     

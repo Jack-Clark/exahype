@@ -32,17 +32,17 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
     
     /**
      * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell
-     * during the interval [t,t+dt].
+     * within the time interval [t,t+dt].
      *
      * \note Use this function and ::adjustedSolutionValues to set initial conditions.
      *
-     * \param[in]    center    The center of the cell.
+     * \param[in]    centre    The centre of the cell.
      * \param[in]    dx        The extent of the cell.
      * \param[in]    t         the start of the time interval.
      * \param[in]    dt        the width of the time interval.
      * \return true if the solution has to be adjusted.
      */
-    bool hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) override;
+    bool hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) override;
     
     /**
      * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
@@ -87,8 +87,8 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
     void source(const double* const Q,double* S);
     
     /**
-     * Impose boundary conditions at a point on a face
-     * during the time interval [t,t+dt].
+     * Impose boundary conditions at a point on a boundary face
+     * within the time interval [t,t+dt].
      *
      * \param[in]    x         the physical coordinate on the face.
      * \param[in]    t         the start of the time interval.
@@ -120,16 +120,16 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      *
      * \note Use this function and ::adjustedSolutionValues to set initial conditions.
      *
-     * \param[in]    center    The center of the cell.
+     * \param[in]    centre    The centre of the cell.
      * \param[in]    dx        The extent of the cell.
      * \param[in]    t         the start of the time interval.
      * \param[in]    dt        the width of the time interval.
      * \return One of exahype::solvers::Solver::RefinementControl::{Erase,Keep,Refine}.
      */
-    exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
+    exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
     
     /**
-     * Evaluate the physical admissiblity detection (PAD) criterion within a cell.
+     * Evaluate the physical admissibility detection (PAD) criterion within a cell.
      *
      *
      * \param[in] QMin the minimum value per variable.

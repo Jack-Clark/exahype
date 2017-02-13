@@ -4,22 +4,22 @@
 #define _EXAHYPE_BUILD_INFO_H_
 
 #define EXAHYPE_BUILDINFO_AVAILABLE
-#define EXAHYPE_BUILD_DATE          "Thu Feb 9 17:03:49 GMT 2017"
+#define EXAHYPE_BUILD_DATE          "Mon Feb 13 17:39:21 GMT 2017"
 #define EXAHYPE_BUILD_HOST          "localhost.localdomain"
 
 /* Strings passed by the Makefile */
 #define EXAHYPE_BUILD_INFO \
-    "COMPILER = GNU\n" \
+    "COMPILER = gnu\n" \
     "MODE = Release\n" \
-    "SHAREDMEM = TBB\n" \
-    "DISTRIBUTEDMEM = non\n" \
+    "SHAREDMEM = None\n" \
+    "DISTRIBUTEDMEM = None\n" \
     "------\n" \
     "ARCHITECTURE = CPU\n" \
-    "CC = g++\n" \
+    "CC = cc\n" \
     "BOUNDARYCONDITIONS = None\n" \
     "------\n" \
     "EXAHYPE_PATH = /home/tobias/git/ExaHyPE-Engine/./ExaHyPE\n" \
-    "PROJECT_PATH = /home/tobias/git/ExaHyPE-Engine/./ApplicationExamples/EulerFlow\n" \
+    "PROJECT_PATH = /home/tobias/git/ExaHyPE-Engine/./Demonstrators/EulerFV\n" \
     "PEANO_KERNEL_PEANO_PATH = /home/tobias/git/ExaHyPE-Engine/./Peano/peano\n" \
     "PEANO_KERNEL_TARCH_PATH = /home/tobias/git/ExaHyPE-Engine/./Peano/tarch\n" \
     ""
@@ -30,13 +30,13 @@
  */
 
 /* Information collected with git version 2.11.0 */
-#define EXAHYPE_GIT_INFO "master  266bb713 Thu Feb 9 16:49:56 2017"
+#define EXAHYPE_GIT_INFO "master  62aade32 Mon Feb 13 17:22:03 2017"
 
 /*
  * Peano Subversion Repository information extraction
  */
 
 /* Information collected with svn, version 1.9.5 (r1770682) */
-#define PEANO_SVN_INFO "Rev 2470, 2017-01-14T13:46:39.857187Z"
+#define PEANO_SVN_INFO "Rev 2493, 2017-02-10T12:35:59.336160Z"
 
 #endif /* EXAHYPE_BUILD_INFO_H */

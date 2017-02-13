@@ -30,14 +30,14 @@
 
 #include <vector>
 #include <string>
-#include <cstdlib> // getenv
+#include <cstdlib> // getenv, exit
 #include <iostream>
 #include <cstdio>
 
 tarch::logging::Log _log("");
 
-void version(); // version dumping, see below
-void help(const char* programname);  // A help message
+void version(const std::string& programname); // version dumping, see below
+void help(const std::string& programname);  // A help message
 
 int main(int argc, char** argv) {
   peano::fillLookupTables();
@@ -71,29 +71,39 @@ int main(int argc, char** argv) {
   //   Parse config file
   // =====================
   //
+
+  std::string progname = argv[0];
+
   if (argc < 2) {
-    logError("main()", "Usage: ./ExaHyPE config-file [additional args passed to Solver...]");
+    logError("main()", "Usage: " << progname << " config-file [additional args passed to Solver...]");
     return -1;
   }
 
-  if(std::string(argv[1]) == "-h" || std::string(argv[1]) == "--help") {
-    help(argv[0]);
-    return -1;
+  // cmdlineargs contains all argv expect the progname.
+  std::vector<std::string> cmdlineargs(argv + 1, argv + argc);
+  std::string firstarg = cmdlineargs[0];
+
+  bool showHelp    = firstarg == "-h" || firstarg == "--help";
+  bool showVersion = firstarg == "-v" || firstarg == "--version";
+
+  if(showHelp) {
+    help(progname);
+    return EXIT_SUCCESS;
   }
 
-  // TODO(Dominic): This is not a reboust way to parse in the command line arguments; use the vector below instead.
-  bool onlyShowVersion=std::string(argv[1]) == "--version" || std::string(argv[1]) == "-v";
+  if(showVersion) {
+    version(progname);
+    return EXIT_SUCCESS;
+  }
 
   exahype::Parser parser;
-  parser.readFile(argv[onlyShowVersion ? 2 : 1]);
+  parser.readFile(firstarg);
 
   if (!parser.isValid()) {
     logError("main()", "invalid config file. Quit");
     return -2;
   }
   
-  // Collect all command line arguments for the Solvers
-  std::vector<std::string> cmdlineargs(argv + 1, argv + argc);
 
   //
   //   Init solver registries
@@ -101,11 +111,16 @@ int main(int argc, char** argv) {
   //
   kernels::initSolvers(parser, cmdlineargs);
 
+  /*
+  // We had this before to show the real solver registration, ie. like
+  //    exahype::solvers::RegisteredSolvers->toString(ostream);
+  // This needs kernels::initSolvers(parser...) to be called.
   if (onlyShowVersion) {
     version();
     kernels::finalise();
     return 0;
   }
+  */
 
   //
   //   Configure the logging
@@ -203,8 +218,8 @@ if(! std::getenv("EXAHYPE_SKIP_TESTS")) { // cf issue #74
 }
 
 
-void version() {
-  std::cout << "This is an ExaHyPE executable (http://exahype.eu)\n";
+void version(const std::string& programname) {
+  std::cout << "This is " << programname << ", an ExaHyPE executable (http://exahype.eu)\n";
   std::cout << "Compiled on host " << EXAHYPE_BUILD_HOST << " at " << EXAHYPE_BUILD_DATE << "\n";
 #ifdef EXAHYPE_GIT_INFO
   std::cout << "ExaHyPE git version: " << EXAHYPE_GIT_INFO << "\n";
@@ -247,7 +262,7 @@ void version() {
 #ifdef EXAHYPE_CFL_FACTOR // issue #100
   std::cout << "CFL Factor:    "<< EXAHYPE_CFL_FACTOR << "\n";
 #else
-  std::cout << "CFL Factor:    Default (0.9 or so)\n";
+  std::cout << "CFL Factor:    Default\n";
 #endif
 
   std::cout << "\n";
@@ -266,7 +281,7 @@ void version() {
   std::cout << "\n";
 }
 
-void help(const char* programname) {
+void help(const std::string& programname) {
   std::cout << "Usage: " << programname << " <YourApplication.exahype>\n";
   std::cout << "\n";
   std::cout << "   where YourApplication.exahype is an ExaHyPE specification file.\n";

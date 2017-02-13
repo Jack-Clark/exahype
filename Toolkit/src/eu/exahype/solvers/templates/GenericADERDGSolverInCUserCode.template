@@ -62,11 +62,6 @@ exahype::solvers::Solver::RefinementControl {{Project}}::{{Solver}}::refinementC
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-exahype::solvers::Solver::RefinementControl {{Project}}::{{Solver}}::refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) {
-  // @todo Please implement/augment if required
-  return exahype::solvers::Solver::RefinementControl::Keep;
-}
-
 
 bool {{Project}}::{{Solver}}::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
   // @todo Please implement/augment if required

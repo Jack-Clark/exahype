@@ -32,7 +32,7 @@ class {{Project}}::{{Solver}} : public {{Project}}::Abstract{{Solver}} {
     
     /**
      * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell
-     * during the interval [t,t+dt].
+     * within the time interval [t,t+dt].
      *
      * \note Use this function and ::adjustedSolutionValues to set initial conditions.
      *
@@ -87,8 +87,8 @@ class {{Project}}::{{Solver}} : public {{Project}}::Abstract{{Solver}} {
     void source(const double* const Q,double* S);                                                               
     
     /**
-     * Impose boundary conditions at a point on a face
-     * during the time interval [t,t+dt].
+     * Impose boundary conditions at a point on a boundary face
+     * within the time interval [t,t+dt].
      *
      * \param[in]    x         the physical coordinate on the face.
      * \param[in]    t         the start of the time interval.

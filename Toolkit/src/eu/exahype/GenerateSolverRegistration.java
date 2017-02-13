@@ -188,7 +188,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _plotterNumber = 0;
 
       writeVersionString("Kernel["+_kernelNumber+"].registration", "AderdgSolver");
-      writeVersionCode  ("Kernel["+_kernelNumber+"].type", "exahype::solvers::RegisteredSolvers["+_kernelNumber+"]->toString(ostream);");
+      writeVersionString("Kernel["+_kernelNumber+"].type", _projectName+"::"+_solverName);
+      writeVersionCode  ("Kernel["+_kernelNumber+"].parent", _projectName+"::Abstract"+_solverName+"::constantsToString(ostream);");
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants() != null);
 
       System.out.println("added creation of solver " + _solverName + " ... ok");
@@ -229,7 +230,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _plotterNumber = 0;
       
       writeVersionString("Kernel["+_kernelNumber+"].registration", "FiniteVolumesSolver");
-      writeVersionCode  ("Kernel["+_kernelNumber+"].type", "exahype::solvers::RegisteredSolvers["+_kernelNumber+"]->toString(ostream);");
+      writeVersionString("Kernel["+_kernelNumber+"].type", _projectName+"::"+_solverName);
+      writeVersionCode  ("Kernel["+_kernelNumber+"].parent", _projectName+"::Abstract"+_solverName+"::constantsToString(ostream);");
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants());
       writeVersionString("Kernel["+_kernelNumber+"].patchSize", patchSize);
 
@@ -248,8 +250,13 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _solverName  = node.getName().getText();
 
       _writer.write("#include \"exahype/solvers/LimitingADERDGSolver.h\"\n");
-      _writer.write("#include \"" + _solverName + "_ADERDG.h\"\n");
-      _writer.write("#include \"" + _solverName + "_FV.h\"\n");
+      
+      // Consistency: We have the same definition at CreateSolverClasses.inALimitingAderdgSolver()
+      String solverNameADERDG = _solverName+"_ADERDG";
+      String solverNameFV     = _solverName+"_FV";
+      
+      _writer.write("#include \"" + solverNameADERDG + ".h\"\n");
+      _writer.write("#include \"" + solverNameFV + ".h\"\n");
 
       _methodBodyWriter.write("  {\n\n");
       _methodBodyWriter.write("  // Create and register solver\n");
@@ -257,8 +264,11 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write("  exahype::solvers::Solver* solver = nullptr;\n\n");
 
       writeVersionString("Kernel["+_kernelNumber+"].registration", "LimitingAderdgSolver");
-      writeVersionCode  ("Kernel["+_kernelNumber+"].type", "exahype::solvers::RegisteredSolvers["+_kernelNumber+"]->toString(ostream);");
-      writeVersionString("Kernel["+_kernelNumber+"].name", _projectName + "::" + _solverName + "{_ADERDG, _FV}");
+      //writeVersionString("Kernel["+_kernelNumber+"].type", "exahype::solvers::LimitingADERDGSolver");
+      writeVersionString("Kernel["+_kernelNumber+"].type[FV]", _projectName + "::" + solverNameFV);
+      writeVersionString("Kernel["+_kernelNumber+"].type[ADERDG]", _projectName + "::" + solverNameADERDG);
+      writeVersionCode  ("Kernel["+_kernelNumber+"].abstract[FV]", _projectName+"::Abstract"+solverNameFV+"::constantsToString(ostream);");
+      writeVersionCode  ("Kernel["+_kernelNumber+"].abstract[ADERDG]", _projectName+"::Abstract"+solverNameADERDG+"::constantsToString(ostream);");
       writeVersionString("Kernel["+_kernelNumber+"].hasConstants", node.getConstants() != null);
       
       // ADER-DG
@@ -267,7 +277,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       if (_enableProfiler) { writeProfilerCreation(); }
       
       _methodBodyWriter.write("  solver = new " + _projectName +
-                          "::" + _solverName+"_ADERDG(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                          "::" + solverNameADERDG+"(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
                            (_enableProfiler ? ", std::move(profiler)": "")+
                            ", cmdlineargs");
       if (node.getConstants()!=null) {
@@ -285,7 +295,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       if (_enableProfiler) { writeProfilerCreation(); }
 
       _methodBodyWriter.write("  solver = new " + _projectName +
-                          "::" + _solverName+"_FV(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
+                          "::" + solverNameFV+"(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
                           (_enableProfiler ? ", std::move(profiler)": "")+
                           ",cmdlineargs");
       if (node.getConstants()!=null) {
