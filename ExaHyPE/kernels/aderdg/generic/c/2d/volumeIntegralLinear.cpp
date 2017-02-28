@@ -26,7 +26,8 @@ namespace c {
 void volumeIntegralLinear(double* lduh, const double* const lFhi,
                           const tarch::la::Vector<DIMENSIONS, double>& dx,
                           const int numberOfVariables,
-                          const int numberOfParameters, const int basisSize) {
+                          const int numberOfParameters, /*not used*/ // TODO(Dominic): Remove from arg list.
+                          const int basisSize) {
   // for linear non-conservative PDE, the volume integral is trivial, since it
   // only involves the element mass matrix, which later will cancel
 
@@ -44,8 +45,7 @@ void volumeIntegralLinear(double* lduh, const double* const lFhi,
                       kernels::gaussLegendreWeights[order][k];
 
       // Fortran: lduh(:,k,j) = -SUM(lFhi(:,k,j,1:nDim), dim = 4) * weight
-      // Avoid diffusion of parameters
-      for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
+      for (int l = 0; l < numberOfVariables; l++) {
         for (int m = 0; m < DIMENSIONS; m++) {
           lduh[idx_lduh(j, k, l)] -= weight * lFhi[idx_lFhi(m, j, k, l)];
         }

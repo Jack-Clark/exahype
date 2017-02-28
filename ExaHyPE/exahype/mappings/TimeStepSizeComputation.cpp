@@ -91,41 +91,15 @@ void exahype::mappings::TimeStepSizeComputation::prepareLocalTimeStepVariables()
   }
 }
 
-void exahype::mappings::TimeStepSizeComputation::prepareTemporaryVariables() {
-  if (_tempEigenValues==nullptr) {
-    int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-    _tempEigenValues = new double*[numberOfSolvers];
-
-    int solverNumber=0;
-    for (auto solver : exahype::solvers::RegisteredSolvers) {
-      _tempEigenValues[solverNumber]  = new double[solver->getNumberOfVariables()]; // TOOD(Dominic): Check if we need number of parameters too
-      ++solverNumber;
-    }
-  }
-}
-
-void exahype::mappings::TimeStepSizeComputation::deleteTemporaryVariables() {
-  if(_tempEigenValues!=nullptr) {
-    for (unsigned int solverNumber=0;
-        solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-      delete[] _tempEigenValues[solverNumber];
-      _tempEigenValues[solverNumber] = nullptr;
-    }
-
-    delete[] _tempEigenValues;
-    _tempEigenValues = nullptr;
-  }
-}
-
 exahype::mappings::TimeStepSizeComputation::~TimeStepSizeComputation() {
-  deleteTemporaryVariables();
+  exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
 }
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::TimeStepSizeComputation::TimeStepSizeComputation(const TimeStepSizeComputation& masterThread)
 {
   prepareLocalTimeStepVariables();
-  prepareTemporaryVariables();
+  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 
   // TODO(Dominic): Keep for later.
 //  logInfo("TimeStepSizeComputation(const TimeStepSizeComputation&)","copy mapping for thread");
@@ -153,7 +127,7 @@ void exahype::mappings::TimeStepSizeComputation::beginIteration(
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
   prepareLocalTimeStepVariables();
-  prepareTemporaryVariables();
+  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 
   logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
@@ -256,7 +230,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
 
   VetoFusedTimeSteppingTimeStepSizeReinitialisation = false;
 
-  deleteTemporaryVariables();
+  exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
 
   logTraceOutWith1Argument("endIteration(State)", state);
 }
@@ -305,7 +279,9 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
         double admissibleTimeStepSize =
             solver->startNewTimeStep(
                 fineGridCell.getCellDescriptionsIndex(),element,
-                _tempEigenValues[solverNumber]);
+                _temporaryVariables._tempEigenValues[solverNumber]);
+
+//        logInfo("enterCell(...)","admissibleTimeStepSize="<<admissibleTimeStepSize); // TODO(Dominic): remove
 
         if (!exahype::State::fuseADERDGPhases()) {
           reconstructStandardTimeSteppingData(solver,fineGridCell.getCellDescriptionsIndex(),element);

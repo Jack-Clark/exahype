@@ -10,25 +10,6 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
-// #include "kernels/aderdg/generic/Kernels.h"
-
-// #include "string.h"
-
-// #include "tarch/la/Scalar.h"
-// #include "tarch/la/ScalarOperations.h"
-
-// #include "kernels/GaussLegendreQuadrature.h"
-// #include "kernels/DGMatrices.h"
-
-// #define EXAHYPE_CFL_FACTOR 0.9
-
-// #include <fstream>
-
-// using std::endl;
-// using std::cout;
-
-
 extern "C" {
 void aderspacetimepredictorlinear_(double* lQhi, double* lFhi, double* lQbnd,
                                    double* lFbnd, const double* luhTemp, double* dtTemp,
@@ -49,9 +30,8 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorLinear(
     const double dt,
     double* tempPointForceSources 
     ){
-
-
-  const int numberOfVariables = solver.getNumberOfVariables();
+  const int numberOfVariables  = solver.getNumberOfVariables();
+  const int numberOfParameters = solver.getNumberOfParameters();
   const int basisSize         = solver.getNodesPerCoordinateAxis();
   const int numSpaceDof = numberOfVariables * basisSize * basisSize * basisSize;
   
@@ -67,8 +47,22 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorLinear(
    double* lQhi =  tempUnknowns;
    double* lFhi = tempFluxUnknowns;
 
+   // space-time predictor:
+   double *luhFortran =
+         new double[numberOfVariables * basisSize * basisSize * basisSize];
+   idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
+   idx4 idx_lduh(basisSize, basisSize, basisSize, numberOfVariables);
+   for (int i = 0; i < basisSize; ++i) {
+     for (int j = 0; j < basisSize; ++j) {
+       for (int k = 0; k < basisSize; ++k) {
+         for (int l = 0; l < numberOfVariables; ++l) {
+           luhFortran[idx_lduh(i,j,k,l)] = luh[idx_luh(i,j,k,l)];
+         }
+       }
+     }
+   }
+
+   aderspacetimepredictorlinear_(lQhi, lFhi, lQbnd, lFbnd, luhFortran, dtTemp, dxTemp);			
    
-
-   aderspacetimepredictorlinear_(lQhi, lFhi, lQbnd, lFbnd, luh, dtTemp, dxTemp);			
-
+   delete[] luhFortran;
  }

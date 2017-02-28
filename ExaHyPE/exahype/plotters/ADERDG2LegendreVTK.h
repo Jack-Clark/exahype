@@ -18,6 +18,7 @@
 
 #include "tarch/plotter/griddata/blockstructured/PatchWriterUnstructured.h"
 #include "tarch/plotter/griddata/unstructured/UnstructuredGridWriter.h"
+#include "tarch/plotter/griddata/VTUTimeSeriesWriter.h"
 
 namespace exahype {
   namespace plotters {
@@ -27,6 +28,11 @@ namespace exahype {
     class ADERDG2LegendreVerticesVTKBinary;
     class ADERDG2LegendreCellsVTKAscii;
     class ADERDG2LegendreCellsVTKBinary;
+
+    class ADERDG2LegendreVerticesVTUAscii;
+    class ADERDG2LegendreVerticesVTUBinary;
+    class ADERDG2LegendreCellsVTUAscii;
+    class ADERDG2LegendreCellsVTUBinary;
   }
 }
 
@@ -34,9 +40,16 @@ namespace exahype {
  * Common VTK class. Usually not used directly but through one of the subclasses.
  */
 class exahype::plotters::ADERDG2LegendreVTK: public exahype::plotters::Plotter::Device {
+  protected:
+   enum class PlotterType {
+     BinaryVTK,
+     ASCIIVTK,
+     BinaryVTU,
+     ASCIIVTU
+   };
  private:
   int           _fileCounter;
-  const bool    _isBinary;
+  const PlotterType _plotterType;
   const bool    _plotCells;
   std::string   _filename;
   int           _order;
@@ -44,6 +57,16 @@ class exahype::plotters::ADERDG2LegendreVTK: public exahype::plotters::Plotter::
   int           _writtenUnknowns;
   std::string   _select;
 
+
+  /**
+   * Is obviously only used if we use vtu instead of the vtk legacy format.
+   */
+  tarch::plotter::griddata::VTUTimeSeriesWriter _timeSeriesWriter;
+
+  /**
+   * To memorise the time argument from startPlotter(). We need it when we close the plotter for the time series.
+   */
+  double _time;
 
   tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestLeftBottomFront;
   tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestRightTopBack;
@@ -81,7 +104,7 @@ class exahype::plotters::ADERDG2LegendreVTK: public exahype::plotters::Plotter::
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch
   );
  public:
-  ADERDG2LegendreVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool isBinary, bool plotCells);
+  ADERDG2LegendreVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, PlotterType isBinary, bool plotCells);
   virtual ~ADERDG2LegendreVTK();
 
   virtual void init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select);
@@ -123,6 +146,34 @@ class exahype::plotters::ADERDG2LegendreCellsVTKBinary: public exahype::plotters
   public:
     static std::string getIdentifier();
     ADERDG2LegendreCellsVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
+
+
+class exahype::plotters::ADERDG2LegendreVerticesVTUAscii: public exahype::plotters::ADERDG2LegendreVTK {
+  public:
+    static std::string getIdentifier();
+    ADERDG2LegendreVerticesVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
+
+
+class exahype::plotters::ADERDG2LegendreVerticesVTUBinary: public exahype::plotters::ADERDG2LegendreVTK {
+  public:
+    static std::string getIdentifier();
+    ADERDG2LegendreVerticesVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
+
+
+class exahype::plotters::ADERDG2LegendreCellsVTUAscii: public exahype::plotters::ADERDG2LegendreVTK {
+  public:
+    static std::string getIdentifier();
+    ADERDG2LegendreCellsVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
+
+
+class exahype::plotters::ADERDG2LegendreCellsVTUBinary: public exahype::plotters::ADERDG2LegendreVTK {
+  public:
+    static std::string getIdentifier();
+    ADERDG2LegendreCellsVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
 };
 
 

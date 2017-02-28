@@ -105,6 +105,10 @@ class {{Project}}::{{Solver}} : public {{Project}}::Abstract{{Solver}} {
     
     /** Has currently no effect for the Finite Volumes Solver. */
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
+
+    // Non Conservative Products
+    void ncp(const double* const Q,const double* const gradQ,double* BgradQ);
+    void matrixb(const double* const Q,const int d,double* Bn);
 };
 
 

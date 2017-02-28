@@ -24,10 +24,20 @@ namespace {{Project}}{
 class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
   public:
   
-    static constexpr int nVar    = kernels::aderdg::optimised::getNumberOfVariable();
-    static constexpr int nParams = kernels::aderdg::optimised::getNumberOfParameter();
-    static constexpr int nDim    = kernels::aderdg::optimised::getDimension();
-    static constexpr int order   = kernels::aderdg::optimised::getBasisSize() -1;
+    //change to enable source terms/matrixb
+    static constexpr bool useSource  = false;
+    static constexpr bool useNCP     = false;
+    static constexpr bool useMatrixb = false;
+  
+    static constexpr int NumberOfVariables  = kernels::aderdg::optimised::getNumberOfVariable();
+    static constexpr int NumberOfParameters = kernels::aderdg::optimised::getNumberOfParameter();
+    static constexpr int Order              = kernels::aderdg::optimised::getBasisSize() -1;
+    static constexpr int Dimensions         = kernels::aderdg::optimised::getDimension();
+	
+    class Variables;
+    class ReadOnlyVariables;
+    class Fluxes;
+    {{NamingSchemes}}
   
     {{AbstractSolver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
 
@@ -44,13 +54,16 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     void volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
     void volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
-    //padded array size
+    //padded array size, override default ADERDGSolver values
     int getTempSpaceTimeUnknownsSize()     const {return kernels::aderdg::optimised::getTempSpaceTimeUnknownsSize();    }
     int getTempSpaceTimeFluxUnknownsSize() const {return kernels::aderdg::optimised::getTempSpaceTimeFluxUnknownsSize();}
     int getTempUnknownsSize()              const {return kernels::aderdg::optimised::getTempUnknownsSize();             }
     int getTempFluxUnknownsSize()          const {return kernels::aderdg::optimised::getTempFluxUnknownsSize();         }
     int getBndFaceSize()                   const {return kernels::aderdg::optimised::getBndFaceSize();                  }
     int getBndTotalSize()                  const {return kernels::aderdg::optimised::getBndTotalSize();                 }
+    int getBndFluxSize()                   const {return kernels::aderdg::optimised::getBndFaceSize();                  }
+    int getBndFluxTotalSize()              const {return kernels::aderdg::optimised::getBndTotalSize();                 }
+    int getTempStateSizedVectorsSize()     const {return kernels::aderdg::optimised::getTempStateSizedVectorsSize();    }
     
     bool alignTempArray()                  const {return true;}
     

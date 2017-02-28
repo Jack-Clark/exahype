@@ -1,4 +1,4 @@
-class {{Project}}::{{Solver}}::{{Name}} {
+class {{Project}}::Abstract{{Solver}}::{{Name}} {
   private:
     double _data[{{Size}}];
   public:

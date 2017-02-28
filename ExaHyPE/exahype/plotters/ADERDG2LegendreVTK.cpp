@@ -22,6 +22,8 @@
 
 #include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
 #include "tarch/plotter/griddata/unstructured/vtk/VTKBinaryFileWriter.h"
+#include "tarch/plotter/griddata/unstructured/vtk/VTUTextFileWriter.h"
+#include "tarch/plotter/griddata/unstructured/vtk/VTUBinaryFileWriter.h"
 
 #include "exahype/solvers/ADERDGSolver.h"
 
@@ -34,7 +36,7 @@ std::string exahype::plotters::ADERDG2LegendreVerticesVTKAscii::getIdentifier() 
 
 
 exahype::plotters::ADERDG2LegendreVerticesVTKAscii::ADERDG2LegendreVerticesVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2LegendreVTK(postProcessing,false,false) {
+    ADERDG2LegendreVTK(postProcessing,PlotterType::ASCIIVTK,false) {
 }
 
 
@@ -44,7 +46,7 @@ std::string exahype::plotters::ADERDG2LegendreVerticesVTKBinary::getIdentifier()
 
 
 exahype::plotters::ADERDG2LegendreVerticesVTKBinary::ADERDG2LegendreVerticesVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2LegendreVTK(postProcessing,true,false) {
+    ADERDG2LegendreVTK(postProcessing,PlotterType::BinaryVTK,false) {
 }
 
 
@@ -55,7 +57,7 @@ std::string exahype::plotters::ADERDG2LegendreCellsVTKAscii::getIdentifier() {
 
 
 exahype::plotters::ADERDG2LegendreCellsVTKAscii::ADERDG2LegendreCellsVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2LegendreVTK(postProcessing,false,true) {
+    ADERDG2LegendreVTK(postProcessing,PlotterType::ASCIIVTK,true) {
 }
 
 
@@ -65,15 +67,57 @@ std::string exahype::plotters::ADERDG2LegendreCellsVTKBinary::getIdentifier() {
 
 
 exahype::plotters::ADERDG2LegendreCellsVTKBinary::ADERDG2LegendreCellsVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2LegendreVTK(postProcessing,true,true) {
+    ADERDG2LegendreVTK(postProcessing,PlotterType::BinaryVTK,true) {
 }
 
 
 
-exahype::plotters::ADERDG2LegendreVTK::ADERDG2LegendreVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool isBinary, bool plotCells):
+std::string exahype::plotters::ADERDG2LegendreVerticesVTUAscii::getIdentifier() {
+  return "vtu::Legendre::vertices::ascii";
+}
+
+
+exahype::plotters::ADERDG2LegendreVerticesVTUAscii::ADERDG2LegendreVerticesVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2LegendreVTK(postProcessing,PlotterType::ASCIIVTU,false) {
+}
+
+
+std::string exahype::plotters::ADERDG2LegendreVerticesVTUBinary::getIdentifier() {
+  return "vtu::Legendre::vertices::binary";
+}
+
+
+exahype::plotters::ADERDG2LegendreVerticesVTUBinary::ADERDG2LegendreVerticesVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2LegendreVTK(postProcessing,PlotterType::BinaryVTU,false) {
+}
+
+
+
+std::string exahype::plotters::ADERDG2LegendreCellsVTUAscii::getIdentifier() {
+  return "vtu::Legendre::cells::ascii";
+}
+
+
+exahype::plotters::ADERDG2LegendreCellsVTUAscii::ADERDG2LegendreCellsVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2LegendreVTK(postProcessing,PlotterType::ASCIIVTU,true) {
+}
+
+
+std::string exahype::plotters::ADERDG2LegendreCellsVTUBinary::getIdentifier() {
+ return "vtu::Legendre::cells::binary";
+}
+
+
+exahype::plotters::ADERDG2LegendreCellsVTUBinary::ADERDG2LegendreCellsVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2LegendreVTK(postProcessing,PlotterType::BinaryVTU,true) {
+}
+
+
+
+exahype::plotters::ADERDG2LegendreVTK::ADERDG2LegendreVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, PlotterType plotterType, bool plotCells):
   Device(postProcessing),
   _fileCounter(-1),
-  _isBinary(isBinary),
+  _plotterType(plotterType),
   _plotCells(plotCells),
   _gridWriter(nullptr),
   _vertexWriter(nullptr),
@@ -103,7 +147,7 @@ void exahype::plotters::ADERDG2LegendreVTK::init(
   _regionOfInterestLeftBottomFront(0) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
   x = Parser::getValueFromPropertyString( select, "bottom" );
   _regionOfInterestLeftBottomFront(1) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#ifdef Dim3
+#if DIMENSIONS==3
   x = Parser::getValueFromPropertyString( select, "front" );
   _regionOfInterestLeftBottomFront(2) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
 #endif
@@ -113,7 +157,7 @@ void exahype::plotters::ADERDG2LegendreVTK::init(
   _regionOfInterestRightTopBack(0) = x!=x ? std::numeric_limits<double>::max() : x;
   x = Parser::getValueFromPropertyString( select, "top" );
   _regionOfInterestRightTopBack(1) = x!=x ? std::numeric_limits<double>::max() : x;
-#ifdef Dim3
+#if DIMENSIONS==3
   x = Parser::getValueFromPropertyString( select, "back" );
   _regionOfInterestRightTopBack(2) = x!=x ? std::numeric_limits<double>::max() : x;
 #endif
@@ -124,11 +168,19 @@ void exahype::plotters::ADERDG2LegendreVTK::startPlotting( double time ) {
   _fileCounter++;
 
   if (_writtenUnknowns>0) {
-    if (_isBinary) {
-      _gridWriter = new tarch::plotter::griddata::unstructured::vtk::VTKBinaryFileWriter();
-    }
-    else {
-      _gridWriter = new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter();
+    switch (_plotterType) {
+      case PlotterType::BinaryVTK:
+        _gridWriter = new tarch::plotter::griddata::unstructured::vtk::VTKBinaryFileWriter();
+        break;
+      case PlotterType::ASCIIVTK:
+        _gridWriter = new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter();
+        break;
+      case PlotterType::BinaryVTU:
+        _gridWriter = new tarch::plotter::griddata::unstructured::vtk::VTUBinaryFileWriter();
+        break;
+      case PlotterType::ASCIIVTU:
+        _gridWriter = new tarch::plotter::griddata::unstructured::vtk::VTUTextFileWriter();
+        break;
     }
 
     _vertexWriter                = _gridWriter->createVertexWriter();
@@ -152,6 +204,8 @@ void exahype::plotters::ADERDG2LegendreVTK::startPlotting( double time ) {
   }
 
   _postProcessing->startPlotting( time );
+
+  _time = time;
 }
 
 
@@ -173,12 +227,30 @@ void exahype::plotters::ADERDG2LegendreVTK::finishPlotting() {
     #ifdef Parallel
                      << "-rank-" << tarch::parallel::Node::getInstance().getRank()
     #endif
-                     << "-" << _fileCounter << ".vtk";
+                     << "-" << _fileCounter;
 
-    // See issue #47 for discussion whether to quit program on failure:
-    // _patchWriter should raise/throw the C++ Exception or return something in case
-    // of failure.
-    _gridWriter->writeToFile(snapshotFileName.str());
+    switch (_plotterType) {
+      case PlotterType::BinaryVTK:
+        snapshotFileName << ".vtk"; break;
+      case PlotterType::ASCIIVTK:
+        snapshotFileName << ".vtk"; break;
+      case PlotterType::BinaryVTU:
+        snapshotFileName << ".vtu";
+        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
+        _timeSeriesWriter.writeFile(_filename + ".pvd");
+        break;
+      case PlotterType::ASCIIVTU:
+        snapshotFileName << ".vtu";
+        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
+        _timeSeriesWriter.writeFile(_filename + ".pvd");
+        break;
+    }
+
+    const bool hasBeenSuccessful =
+      _gridWriter->writeToFile(snapshotFileName.str());
+    if (!hasBeenSuccessful) {
+      exit(-1);
+    }
   }
 
   if (_vertexDataWriter!=nullptr)    delete _vertexDataWriter;
@@ -189,13 +261,13 @@ void exahype::plotters::ADERDG2LegendreVTK::finishPlotting() {
   if (_cellTimeStampDataWriter!=nullptr)   delete _cellTimeStampDataWriter;
   if (_gridWriter!=nullptr)          delete _gridWriter;
 
-  _vertexDataWriter     = nullptr;
-  _cellDataWriter       = nullptr;
-  _vertexWriter         = nullptr;
-  _cellWriter           = nullptr;
+  _vertexDataWriter           = nullptr;
+  _cellDataWriter             = nullptr;
+  _vertexWriter               = nullptr;
+  _cellWriter                 = nullptr;
   _vertexTimeStampDataWriter  = nullptr;
   _cellTimeStampDataWriter    = nullptr;
-  _gridWriter           = nullptr;
+  _gridWriter                 = nullptr;
 }
 
 
@@ -230,7 +302,7 @@ std::pair<int,int> exahype::plotters::ADERDG2LegendreVTK::plotLegendrePatch(
   if (_writtenUnknowns>0) {
     assertion(_vertexWriter!=nullptr);
     dfor(i,_order+1) {
-      tarch::la::Vector<2, double> p;
+      tarch::la::Vector<DIMENSIONS, double> p;
 
       //p = offsetOfPatch + tarch::la::multiplyComponents( i.convertScalar<double>(), sizeOfPatch) * (1.0/_order);
 
@@ -244,7 +316,7 @@ std::pair<int,int> exahype::plotters::ADERDG2LegendreVTK::plotLegendrePatch(
 
     assertion(_cellWriter!=nullptr);
     dfor(i,_order) {
-      #ifdef Dim2
+      #if DIMENSIONS==2
       int cellsVertexIndices[4];
       cellsVertexIndices[0] = firstVertex + (i(0)+0) + (i(1)+0) * (_order+1);
       cellsVertexIndices[1] = firstVertex + (i(0)+1) + (i(1)+0) * (_order+1);
@@ -252,8 +324,7 @@ std::pair<int,int> exahype::plotters::ADERDG2LegendreVTK::plotLegendrePatch(
       cellsVertexIndices[3] = firstVertex + (i(0)+1) + (i(1)+1) * (_order+1);
       const int newCellNumber = _cellWriter->plotQuadrangle(cellsVertexIndices);
       firstCell = firstCell==-1 ? newCellNumber : firstCell;
-      #elif Dim3
-      assertionMsg( false, "not implemented yet" );
+      #elif DIMENSIONS==3
       int cellsVertexIndices[8];
       cellsVertexIndices[0] = firstVertex + (i(0)+0) + (i(1)+0) * (_order+1) + (i(2)+0) * (_order+1) * (_order+1);
       cellsVertexIndices[1] = firstVertex + (i(0)+1) + (i(1)+0) * (_order+1) + (i(2)+0) * (_order+1) * (_order+1);

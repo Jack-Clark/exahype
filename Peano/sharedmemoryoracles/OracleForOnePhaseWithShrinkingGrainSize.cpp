@@ -19,7 +19,7 @@ const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_Ti
 
 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(bool learn, bool restart):
   _activeMethodTrace(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling),
-  _learn(learn),
+  _learn(learn && tarch::multicore::Core::getInstance().getNumberOfThreads()>1),
   _restart(restart),
   _measurements() {
 }
@@ -99,17 +99,18 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::widenAccuracyOfCurrentlyStudiedMethodTraceAndRandomlyRestart() {
   bool widenedEntry = false;
   for (auto& p: _measurements[_activeMethodTrace]) {
-    //const bool widenThisEntry = p._searchDelta>0 && p._currentMeasurement.getAccuracy()>0.0;
     const bool widenThisEntry = p._searchDelta>0 && p._currentMeasurement.getAccuracy()<1.0;
     if (widenThisEntry) {
       p._currentMeasurement.increaseAccuracy(0.9);
     }
     widenedEntry |= widenThisEntry;
   }
-  if (!widenedEntry && _restart && rand()%100==0) {
+  if (!widenedEntry && _restart) {
     logInfo( "widenAccuracyOfCurrentlyStudiedMethodTraceAndRandomlyRestart(...)", "restart all measurements of " << toString(_activeMethodTrace) );
     for (auto& p: _measurements[_activeMethodTrace]) {
-      p.restart();
+      if (rand()%100==0) {
+        p.restart();
+      }
     }
   }
 }
@@ -287,19 +288,40 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
   _currentGrainSize     = problemSize;
   _currentMeasurement   = tarch::timing::Measurement( 0.0 );
   _previousMeasuredTime = _TimingMax;
-  _searchDelta          = problemSize < tarch::multicore::Core::getInstance().getNumberOfThreads()*2 ? problemSize/2 : problemSize - problemSize / tarch::multicore::Core::getInstance().getNumberOfThreads();
+
+  if (
+    problemSize < tarch::multicore::Core::getInstance().getNumberOfThreads()*2
+    ||
+    tarch::multicore::Core::getInstance().getNumberOfThreads() <= 2
+  ) {
+    _searchDelta = problemSize/2;
+  }
+  else {
+    _searchDelta = problemSize - problemSize / tarch::multicore::Core::getInstance().getNumberOfThreads();
+  }
 }
 
 
-sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry( DatabaseEntry& prototype, int newProblemSize ):
+sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry( const DatabaseEntry& prototype, int newProblemSize ):
   DatabaseEntry(newProblemSize) {
   assertion(prototype._biggestProblemSize<newProblemSize);
   if (prototype._currentGrainSize < prototype._biggestProblemSize) {
-    // We do not compute it once bug directly integrate it into the code to
-    // avoid dominating truncation errors
-    // int scaleUp = newProblemSize / prototype._biggestProblemSize;
-    _currentGrainSize = prototype._currentGrainSize * newProblemSize / prototype._biggestProblemSize;
-    _searchDelta      = prototype._searchDelta      * newProblemSize / prototype._biggestProblemSize;
+    // These are all integers and it should be possible to  determine all
+    // settings through integer arithmetics if we do not determine a rescaling
+    // factor (integer) once and then add it but first multiply and then
+    // divide. However, if we do so, we quickly run into integer overflows:
+    //     _currentGrainSize = prototype._currentGrainSize * newProblemSize / prototype._biggestProblemSize;
+    //     _searchDelta      = prototype._searchDelta      * newProblemSize / prototype._biggestProblemSize;
+    //
+    // So we have to work with first computing the ratio though it might introduce truncation errors:
+    int scaleUp = newProblemSize / prototype._biggestProblemSize;
+    if (scaleUp==0) {
+      scaleUp = 1;
+    }
+
+    _currentGrainSize = prototype._currentGrainSize * scaleUp;
+    _searchDelta      = prototype._searchDelta      * scaleUp;
+
   }
 
   if (_searchDelta==0) {
@@ -314,18 +336,25 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::restart() {
+  assertion1( _currentGrainSize>0, toString() );
+
   const int oldCurrentGrainSize = _currentGrainSize;
 
   int newCurrentGrainSize = 1;
+
   if (
     _biggestProblemSize>tarch::multicore::Core::getInstance().getNumberOfThreads()
     &&
     _currentGrainSize<_biggestProblemSize/2
-    &&
-    _currentGrainSize>0
   ) {
     // do not loose all the concurrency in one restart
     newCurrentGrainSize = _currentGrainSize * 2;
+  }
+  else if (
+    _biggestProblemSize>tarch::multicore::Core::getInstance().getNumberOfThreads()
+  ) {
+    // do not loose all the concurrency in one restart
+    newCurrentGrainSize = _biggestProblemSize / 2;
   }
   else {
     newCurrentGrainSize = (_biggestProblemSize + _currentGrainSize)/2;
@@ -336,16 +365,17 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
   _previousMeasuredTime = _TimingMax;
   _searchDelta          = newCurrentGrainSize - oldCurrentGrainSize;
 
-  if (_searchDelta==0) {
-    _searchDelta = _biggestProblemSize/2;
+  if (_searchDelta<=0) {
+    _searchDelta = _currentGrainSize/2;
   }
 
   logInfo( "restart(...)", "restarted " << toString() );
 }
 
 
-sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry(std::string  rightString) {
-  std::string leftToken = "";
+sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::DatabaseEntry(std::string  inputLine) {
+  std::string leftToken    = "";
+  std::string rightString  = inputLine;
   std::string methodTrace;
 
   leftToken   = rightString.substr( 0, rightString.find(",") );
@@ -380,19 +410,20 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
               && _currentGrainSize>0
               && _currentGrainSize<=_biggestProblemSize
               && _previousMeasuredTime>=0
-	      && _searchDelta>=0
-	      && accuracy>=0.0;
+              && _searchDelta>=0
+	            && accuracy>=0.0;
 
   if (!isValid) {
     if (_biggestProblemSize<=0) {
       _biggestProblemSize = 65536;
       logError( "DatabaseEntry(std::string)", "unable to parse file entries w.r.t. biggest problem size" );
     }
+    logError( "DatabaseEntry(std::string)", "input file seems to have been corrupted. Restart entry " << toString() << ". Corrupted line: " << inputLine );
     _currentGrainSize     = _biggestProblemSize;
     _currentMeasurement   = tarch::timing::Measurement( 0.0 );
     _previousMeasuredTime = _TimingMax;
     _searchDelta          = 0;
-    logError( "DatabaseEntry(std::string)", "input file seems to have been corrupted. Shared memory specification will be invalid/inefficient: " << toString() );
+    restart();
   }
 }
 
@@ -503,7 +534,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::activateOracl
           (
             p._searchDelta>0
             ||
-            (p._searchDelta==0 && p._biggestProblemSize==p._currentGrainSize)
+            (p._searchDelta==0 && p._currentGrainSize >= p._biggestProblemSize/2)
           )
         ) {
           // propagate data

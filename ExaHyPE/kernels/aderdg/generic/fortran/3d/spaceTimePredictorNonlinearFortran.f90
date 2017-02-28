@@ -20,18 +20,19 @@ SUBROUTINE ADERPicardLoopNonlinear(luh,dt,dx,lqh,lFh)
     DOUBLE PRECISION, INTENT(IN)  :: dt                                             ! 
     DOUBLE PRECISION, INTENT(IN)  :: dx(d)                                          ! 
     DOUBLE PRECISION, INTENT(OUT) :: lqh(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))      ! space-time degrees of freedom  
-    DOUBLE PRECISION, INTENT(OUT) :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))    ! nonlinear flux tensor in each space-time DOF 
+    DOUBLE PRECISION, INTENT(OUT) :: lFh(nVar,d+1,nDOF(1),nDOF(2),nDOF(3),nDOF(0))    ! nonlinear flux tensor in each space-time DOF 
     ! Local variables 
     INTEGER :: i,j,k,l,iVar, iter 
     DOUBLE PRECISION    :: rhs0(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))               ! contribution of the initial condition to the known right hand side 
     DOUBLE PRECISION    :: rhs(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! known right hand side 
     DOUBLE PRECISION    :: aux(d)                                                   ! auxiliary variables 
-    !DOUBLE PRECISION    :: lqhold(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))             ! old space-time degrees of freedom
+    DOUBLE PRECISION    :: lqhold(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))             ! old space-time degrees of freedom
     DOUBLE PRECISION    :: lqx(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qx of q 
     DOUBLE PRECISION    :: lqy(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qy of q 
     DOUBLE PRECISION    :: lqz(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qz of q 
     DOUBLE PRECISION    :: lqt(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! time derivative qt of q 
-    !DOUBLE PRECISION    :: res                                                      ! residual
+    DOUBLE PRECISION    :: src(nVar), BgradQ(nVar), gradQ(nVar,d) 
+    DOUBLE PRECISION    :: res                                                      ! residual
     DOUBLE PRECISION, PARAMETER :: tol = 1e-7                                       ! tolerance 
     !
     DO k = 1, nDOF(3) 
@@ -75,7 +76,7 @@ SUBROUTINE ADERPicardLoopNonlinear(luh,dt,dx,lqh,lFh)
           DO j = 1, nDOF(2) 
               aux = (/ wGPN(l), wGPN(j), wGPN(k) /) 
               rhs(:,:,j,k,l) = rhs0(:,:,j,k,l) - PRODUCT(aux(1:nDim))*dt/dx(1)*MATMUL( lFh(:,1,:,j,k,l), Kxi ) 
-              !lqx(:,:,j,k,l) = 1.0/dx(1)*MATMUL( lqh(:,l,:,j,k), TRANSPOSE(dudx) )         ! currently used only for debugging purposes, to check if derivatives are correctly computed  
+              lqx(:,:,j,k,l) = 1.0/dx(1)*MATMUL( lqh(:,l,:,j,k), TRANSPOSE(dudx) )         ! currently used only for debugging purposes, to check if derivatives are correctly computed  
           ENDDO
          ENDDO 
          
@@ -85,7 +86,7 @@ SUBROUTINE ADERPicardLoopNonlinear(luh,dt,dx,lqh,lFh)
               DO i = 1, nDOF(1) 
                   aux = (/ wGPN(l), wGPN(i), wGPN(k) /) 
                   rhs(:,i,:,k,l) = rhs(:,i,:,k,l) - PRODUCT(aux(1:nDim))*dt/dx(2)*MATMUL( lFh(:,2,i,:,k,l), Kxi ) 
-                  !lqy(:,i,:,k,l) = 1.0/dx(2)*MATMUL( lqh(:,l,i,:,k), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed 
+                  lqy(:,i,:,k,l) = 1.0/dx(2)*MATMUL( lqh(:,l,i,:,k), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed 
               ENDDO
              ENDDO 
          ENDIF 
@@ -95,10 +96,25 @@ SUBROUTINE ADERPicardLoopNonlinear(luh,dt,dx,lqh,lFh)
               DO i = 1, nDOF(1) 
                   aux = (/ wGPN(l), wGPN(i), wGPN(j) /) 
                   rhs(:,i,j,:,l) = rhs(:,i,j,:,l) - PRODUCT(aux(1:nDim))*dt/dx(3)*MATMUL( lFh(:,3,i,j,:,l), Kxi ) 
-                  !lqz(:,i,j,:,l) = 1.0/dx(3)*MATMUL( lqh(:,l,i,j,:), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed  
+                  lqz(:,i,j,:,l) = 1.0/dx(3)*MATMUL( lqh(:,l,i,j,:), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed  
               ENDDO
              ENDDO 
          ENDIF 
+         !
+         DO k = 1, nDOF(3) 
+          DO j = 1, nDOF(2) 
+           DO i = 1, nDOF(1)
+                aux = (/ wGPN(i), wGPN(j), wGPN(k) /) 
+                gradQ(:,1) = lqx(:,i,j,k,l) 
+                gradQ(:,2) = lqy(:,i,j,k,l) 
+                gradQ(:,3) = lqz(:,i,j,k,l) 
+                CALL PDESource(src,lqh(:,l,i,j,k)) 
+                CALL PDENCP(BgradQ,lqh(:,l,i,j,k),gradQ) 
+                lFh(:,d+1,i,j,k,l) = src - BgradQ
+                rhs(:,i,j,k,l) = rhs(:,i,j,k,l) + PRODUCT(aux(1:nDim))*wGPN(l)*dt*lFh(:,d+1,i,j,k,l)   
+           ENDDO
+          ENDDO
+         ENDDO             
          !
         ENDDO ! end loop over time DOF 
         !
@@ -113,32 +129,35 @@ SUBROUTINE ADERPicardLoopNonlinear(luh,dt,dx,lqh,lFh)
            ENDDO
          ENDDO
         ENDDO
-        
+
         !
         ! We can stop the iterations if a certain tolerance has been reached. If you do not like this unpredictable feature (it depends on the solution of the PDE) 
         ! simply comment the lines below, so each element will always do the same number of iterations in the predictor step, i.e. the same number of operations         
         !
-        !res = SQRT(SUM((lqh-lqhold)**2)) 
-        !IF(res.LT.tol) THEN
-        !   EXIT
-        !ENDIF
+        res = SQRT(SUM((lqh-lqhold)**2)) 
+        IF(res.LT.tol) THEN
+           EXIT
+        ENDIF
         !
     ENDDO    
+    
+    !PRINT *, 'lQH=', lQH
 END SUBROUTINE ADERPicardLoopNonlinear
  
     
    
-SUBROUTINE ADERPredictorNonlinear(lqh,lFh,lqhi,lFhi_x,lFhi_y,lFhi_z)
+SUBROUTINE ADERPredictorNonlinear(lqh,lFh,lqhi,lFhi_x,lFhi_y,lFhi_z,lShi)
     USE typesDef
     USE, INTRINSIC :: ISO_C_BINDING
     IMPLICIT NONE 
     ! Argument list 
     DOUBLE PRECISION, INTENT(IN)  :: lqh(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))      ! space-time degrees of freedom  
-    DOUBLE PRECISION, INTENT(IN)  :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))    ! nonlinear flux tensor in each space-time DOF 
+    DOUBLE PRECISION, INTENT(IN)  :: lFh(nVar,d+1,nDOF(1),nDOF(2),nDOF(3),nDOF(0))    ! nonlinear flux tensor in each space-time DOF 
     DOUBLE PRECISION, INTENT(OUT) :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom 
     DOUBLE PRECISION, INTENT(OUT) :: lFhi_x(nVar,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in x direction
     DOUBLE PRECISION, INTENT(OUT) :: lFhi_y(nVar,nDOF(2),nDOF(1),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in y direction
     DOUBLE PRECISION, INTENT(OUT) :: lFhi_z(nVar,nDOF(3),nDOF(1),nDOF(2))           ! time-averaged nonlinear flux tensor in each space-time DOF in z direction
+    DOUBLE PRECISION, INTENT(OUT) :: lShi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged nonlinear source
     ! Local variables 
     INTEGER :: i,j,k,iDim
     !
@@ -160,6 +179,7 @@ SUBROUTINE ADERPredictorNonlinear(lqh,lFh,lqhi,lFhi_x,lFhi_y,lFhi_z)
          lFhi_x(:,i,j,k) = MATMUL( lFh(:,1,i,j,k,:), wGPN )
          lFhi_y(:,j,i,k) = MATMUL( lFh(:,2,i,j,k,:), wGPN )
          lFhi_z(:,k,i,j) = MATMUL( lFh(:,3,i,j,k,:), wGPN )
+         lShi(:,i,j,k)   = MATMUL( lFh(:,4,i,j,k,:), wGPN )
       ENDDO
      ENDDO
     ENDDO

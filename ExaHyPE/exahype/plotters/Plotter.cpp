@@ -17,7 +17,7 @@
 #include "exahype/plotters/ADERDG2LegendreVTK.h"
 #include "exahype/plotters/ADERDG2LegendreCSV.h"
 #include "exahype/plotters/ADERDG2ProbeAscii.h"
-#include "exahype/plotters/FiniteVolumes2VTKAscii.h"
+#include "exahype/plotters/FiniteVolumes2VTK.h"
 #include "exahype/plotters/LimitingADERDG2CartesianVTK.h"
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
@@ -28,11 +28,77 @@ tarch::logging::Log exahype::plotters::Plotter::_log( "exahype::solvers::Plotter
 
 exahype::plotters::Plotter::Plotter(
         const int solverConfig,const int plotterConfig,
+        const exahype::Parser& parser,
+        Device* device) :
+        _solver(solverConfig),
+        _identifier(parser.getIdentifierForPlotter(solverConfig, plotterConfig)),
+        _writtenUnknowns(parser.getUnknownsForPlotter(solverConfig, plotterConfig)),
+        _time(parser.getFirstSnapshotTimeForPlotter(solverConfig, plotterConfig)),
+        _solverTimeStamp(-std::numeric_limits<double>::max()),
+        _repeat(parser.getRepeatTimeForPlotter(solverConfig, plotterConfig)),
+        _filename(parser.getFilenameForPlotter(solverConfig, plotterConfig)),
+        _select(parser.getSelectorForPlotter(solverConfig, plotterConfig)),
+        _isActive(false),
+        _device(device) {
+  if (_time < 0.0) {
+    logError("Plotter(...)",
+        "plotter's first snapshot time is set to negative value "
+        << _time << ". Plotter configuration=" << toString() );
+  }
+  if (_repeat < 0.0) {
+    logError("Plotter(...)", "plotter's repeat time is set to negative value "
+        << _repeat << ". Plotter configuration=" << toString() );
+  }
+  logInfo("Plotter(...)", "write snapshot to file "
+      << _filename << " every " << _repeat
+      << " time units with first snapshot at " << _time
+      << ". plotter type is " << _identifier << ". Plotter configuration=" << toString() );
+
+  if (  _writtenUnknowns <= 0) {
+    logError("Plotter(...)", "plotter's field 'variables' was assigned the nonpositive integer "
+        << _writtenUnknowns << ". If this was done by purpose ignore this warning. Plotter configuration=" << toString() );
+  }
+
+  assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
+
+  if (_device!=nullptr) {
+    _device->init(
+        _filename,
+        solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis(),
+        solvers::RegisteredSolvers[_solver]->getNumberOfVariables()+solvers::RegisteredSolvers[_solver]->getNumberOfParameters(),
+        _writtenUnknowns,
+        _select
+    );
+  }
+  else if (_identifier=="notoken") {
+    logError(
+      "Plotter(...)",
+      "unable to set up " << (plotterConfig+1) << "th plotter for the "
+      << (_solver+1) << "th solverNumber. Ensure number of plot sections "
+      << "equals number of plotters originally passed to toolkit and "
+      << "validate that plot syntax is correct"
+    );
+  }
+  else {
+    logError(
+      "Plotter(...)",
+      "unknown plotter type "
+          << _identifier << " for "
+          << solvers::RegisteredSolvers[_solver]->getIdentifier()
+    << ". Potential reasons: you have not specified a valid identifier following the plot keyword or you have specified a plotter in the ExaHyPE toolkit and later removed this plotter from the config"
+    );
+  }
+}
+
+
+exahype::plotters::Plotter::Plotter(
+        const int solverConfig,const int plotterConfig,
         const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing)
     : _solver(solverConfig),
       _identifier(parser.getIdentifierForPlotter(solverConfig, plotterConfig)),
       _writtenUnknowns(parser.getUnknownsForPlotter(solverConfig, plotterConfig)),
       _time(parser.getFirstSnapshotTimeForPlotter(solverConfig, plotterConfig)),
+      _solverTimeStamp(-std::numeric_limits<double>::max()),
       _repeat(parser.getRepeatTimeForPlotter(solverConfig, plotterConfig)),
       _filename(parser.getFilenameForPlotter(solverConfig, plotterConfig)),
       _select(parser.getSelectorForPlotter(solverConfig, plotterConfig)),
@@ -89,6 +155,30 @@ exahype::plotters::Plotter::Plotter(
       if (_identifier.compare( ADERDG2LegendreCellsVTKBinary::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreCellsVTKBinary(postProcessing);
       }
+      if (_identifier.compare( ADERDG2CartesianVerticesVTUAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianVerticesVTUAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CartesianVerticesVTUBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianVerticesVTUBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CartesianCellsVTUAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianCellsVTUAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CartesianCellsVTUBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianCellsVTUBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreVerticesVTUAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreVerticesVTUAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreVerticesVTUBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreVerticesVTUBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreCellsVTUAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreCellsVTUAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreCellsVTUBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreCellsVTUBinary(postProcessing);
+      }
       if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2ProbeAscii(postProcessing);
       }
@@ -106,14 +196,21 @@ exahype::plotters::Plotter::Plotter(
             postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
                 solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-/*
-      else if (_identifier.compare( ADERDG2VTKBinary::getIdentifier() ) == 0) {
-        _device = new ADERDG2VTKBinary();
+      if (_identifier.compare( FiniteVolumes2VTKBinary::getIdentifier() ) == 0) {
+        _device = new FiniteVolumes2VTKBinary(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-      else if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
-        _device = new ADERDG2ProbeAscii();
+      if (_identifier.compare( FiniteVolumes2VTUAscii::getIdentifier() ) == 0) {
+        _device = new FiniteVolumes2VTUAscii(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
       }
-*/
+      if (_identifier.compare( FiniteVolumes2VTUBinary::getIdentifier() ) == 0) {
+        _device = new FiniteVolumes2VTUBinary(
+            postProcessing,static_cast<exahype::solvers::FiniteVolumesSolver*>(
+                solvers::RegisteredSolvers[_solver])->getGhostLayerWidth());
+      }
     break;
     case exahype::solvers::Solver::Type::LimitingADERDG:
       /**
@@ -213,7 +310,7 @@ exahype::plotters::Plotter::Plotter(
     _device->init(
         _filename,
         solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis(),
-        solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+        solvers::RegisteredSolvers[_solver]->getNumberOfVariables()+solvers::RegisteredSolvers[_solver]->getNumberOfParameters(),
         _writtenUnknowns,
         _select
     );
@@ -252,7 +349,7 @@ exahype::plotters::Plotter::Plotter(
     _device->init(
         _filename,
         solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis(),
-        solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+        solvers::RegisteredSolvers[_solver]->getNumberOfVariables()+solvers::RegisteredSolvers[_solver]->getNumberOfParameters(),
         _writtenUnknowns,
         _select
     );

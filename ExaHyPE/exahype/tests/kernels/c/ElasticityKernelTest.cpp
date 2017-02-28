@@ -47,19 +47,19 @@ void ElasticityKernelTest::run() {
   _log.info("ElasticityKernelTest::run()", "ElasticityKernelTest is active");
   // TODO(Dominic): Assess
 //  testMethod(testPDEFluxes);
-  logWarning("run()","Test testSpaceTimePredictorLinear is disabled!");
-//  testMethod(testSpaceTimePredictorLinear);
-//  testMethod(testSpaceTimePredictorNonlinear);
+  logWarning("run()","Test testSpaceTimePredictorLinear is disabled! Test data might be outdated.");
+//  testMethod(testSpaceTimePredictorLinear); // TODO(Dominic): Fix
+//  testMethod(testSpaceTimePredictorNonlinear); // OPTIONAL
   testMethod(testVolumeIntegralLinear);
-//  testMethod(testVolumeIntegralNonlinear);
-  logWarning("run()","Test testRiemannSolverLinear is disabled!");
-//  testMethod(testRiemannSolverLinear);
-//  testMethod(testRiemannSolverNonlinear);
+//  testMethod(testVolumeIntegralNonlinear); // OPTIONAL
   testMethod(testSurfaceIntegralLinear);
-//  testMethod(testSurfaceIntegralNonlinear);
-//  testMethod(testFaceUnknownsProjection);
-//  testMethod(testVolumeUnknownsProjection);
-//  testMethod(testEquidistantGridProjection);
+//  testMethod(testSurfaceIntegralNonlinear) // OPTIONAL
+  logWarning("run()","Test testRiemannSolverLinear is disabled!");
+  testMethod(testRiemannSolverLinear); // TODO(Dominic): Fix
+//  testMethod(testRiemannSolverNonlinear);// OPTIONAL
+//  testMethod(testFaceUnknownsProjection); // OPTIONAL
+//  testMethod(testVolumeUnknownsProjection); // OPTIONAL
+//  testMethod(testEquidistantGridProjection); // OPTIONAL
 //
 //  testMethod(testSolutionUpdate);
 }

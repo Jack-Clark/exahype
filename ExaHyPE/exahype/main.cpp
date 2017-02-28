@@ -162,9 +162,11 @@ int main(int argc, char** argv) {
     tarch::logging::CommandLineLogger::getInstance().clearFilterList();
     tarch::logging::CommandLineLogger::getInstance().addFilterListEntry(
         ::tarch::logging::CommandLineLogger::FilterListEntry("info", false));
+    #if !defined(Asserts)
     tarch::logging::CommandLineLogger::getInstance().addFilterListEntry(
         ::tarch::logging::CommandLineLogger::FilterListEntry(
             "info", -1, "peano::grid", true));
+    #endif
     tarch::logging::CommandLineLogger::getInstance().addFilterListEntry(
         ::tarch::logging::CommandLineLogger::FilterListEntry("debug", true));
     tarch::logging::CommandLineLogger::getInstance().addFilterListEntry(

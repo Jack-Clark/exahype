@@ -23,11 +23,6 @@ namespace exahype {
 namespace tests {
 namespace c {
 
-static const int kNumberOfParameters = 3;
-static const int kNumberOfVariables = 9 + kNumberOfParameters;
-static const int kN = 4;
-static const int kBasisSize = kN + 1;
-
 class ElasticityKernelTest : public tarch::tests::TestCase {
  public:
   ElasticityKernelTest();
@@ -53,22 +48,22 @@ class ElasticityKernelTest : public tarch::tests::TestCase {
   //  void testEquidistantGridProjection();
 
  public:
-  static int getNumberOfVariables() { return kNumberOfVariables; }
-  static int getNumberOfParameters() { return kNumberOfParameters; }
-  static int getNodesPerCoordinateAxis() { return kN; }
+  static constexpr int NumberOfVariables  = 9;
+  static constexpr int NumberOfParameters = 3; // !!! Must be chosen '3' see ncp(...) definition
+  static constexpr int Order              = 4;
 
-  static void flux(const double* const Q, double** F);
+  void flux(const double* const Q, double** F);
 
-  static void source(const double* Q, double* S);
+  void source(const double* Q, double* S);
 
-  static void eigenvalues(const double* const Q,
-                              const int normalNonZeroIndex, double* lambda);
+  void eigenvalues(const double* const Q,const int normalNonZeroIndex, double* lambda);
 
-  static void ncp(const double* const Q, const double* const gradQ,
-                      double* BgradQ);
+  /**
+   * BgradQ is a matrix for the linear kernels.
+   */
+  void ncp(const double* const Q, const double* const gradQ, double* BgradQ);
 
-  static void matrixb(const double* const Q, const int normalNonZero,
-                          double* Bn);
+  void matrixb(const double* const Q, const int normalNonZero, double* Bn);
 
   const double eps = 1.0e-9;  // for quick adaption of the test cases (say,
                               // switch to single precision)

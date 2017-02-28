@@ -25,7 +25,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   private boolean _enableProfiler = false;
   
   private String _solverName;
-
+  private String _solverType;
+  
   private String _projectName;
   
   private boolean _useOptimisedKernels = false; //at least one solver uses optimised kernels
@@ -71,7 +72,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     for(PSolver psolver : solvers) {
       if(psolver instanceof AAderdgSolver) {
         AAderdgSolver asolver = (AAderdgSolver) psolver;
-        _useOptimisedKernels = _useOptimisedKernels || (asolver.getLanguage().getText().trim().equals("C") 
+        _useOptimisedKernels = _useOptimisedKernels || (asolver.getLanguage().getText().equals("C") 
                                   && (asolver.getKernel().getText().equals( eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier )
                                       ||  asolver.getKernel().getText().equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )));
       }
@@ -107,7 +108,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"kernels/GaussLobattoQuadrature.h\"\n");
       _writer.write("#include \"kernels/LimiterProjectionMatrices.h\"\n");
       _writer.write("#include \"kernels/DGMatrices.h\"\n");
-      _writer.write("#include \"kernels/DGBasisFunctions.h\"\n\n");
+      _writer.write("#include \"kernels/DGBasisFunctions.h\"\n");
+      _writer.write("#include \"buildinfo.h\"\n\n");
       if(_useOptimisedKernels) {
         _writer.write("#include \"kernels/aderdg/optimised/GaussLegendreQuadrature.h\"\n");
         _writer.write("#include \"kernels/aderdg/optimised/DGMatrices.h\"\n");
@@ -163,6 +165,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _inALimitingADERDGSolver = false;
       
       _solverName = node.getName().getText();
+      _solverType = "ADERDG";
 
       _writer.write("#include \"" + _solverName + ".h\"\n");
 
@@ -205,6 +208,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _inALimitingADERDGSolver = false;
       
       _solverName = node.getName().getText();
+      _solverType = "FiniteVolumes";
+      
       int patchSize     = Integer.parseInt(node.getPatchSize().getText());
       
       _writer.write("#include \"" + _solverName + ".h\"\n");
@@ -248,6 +253,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _inALimitingADERDGSolver = true;
       
       _solverName  = node.getName().getText();
+      _solverType  = "ADERDG"; // TODO(Dominic): We currently use the ADERDG degrees of freedom as the plotter input for the LimitingADERDGSolver
 
       _writer.write("#include \"exahype/solvers/LimitingADERDGSolver.h\"\n");
       
@@ -328,20 +334,27 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   @Override
   public void inAPlotSolution(eu.exahype.node.APlotSolution node) {
     try {
-      String plotterName = node.getName().getText().trim();
+      String plotterName = node.getName().getText();
+      String plotterType = node.getPlotterType().getText();
 
       _writer.write(FileSearch.PPinclude(plotterName, _directoryAndPathChecker.outputDirectory.getAbsolutePath()));
       
       writeVersionString("Kernel["+(_kernelNumber-1)+"].Plotter["+_plotterNumber+"]", _projectName + "::" + plotterName);
 
-      if (_inALimitingADERDGSolver) {
+      if (plotterType.equals("user::defined")) {
         _methodBodyWriter.write(
             "  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter("
-                + (_kernelNumber - 1) + "," + _plotterNumber + ",parser,new " + _projectName + "::" + plotterName + "(  *static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[" + (_kernelNumber-1) + "])) ));\n\n");
+                + (_kernelNumber - 1) + "," + _plotterNumber + ",parser, new " + _projectName + "::" + plotterName + "()) );\n\n");
       } else {
-        _methodBodyWriter.write(
-            "  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter("
-                + (_kernelNumber - 1) + "," + _plotterNumber + ",parser,new " + _projectName + "::" + plotterName + "(  *static_cast<" + _projectName + "::" + _solverName + "*>(exahype::solvers::RegisteredSolvers[" + (_kernelNumber-1) + "])) ));\n\n");
+        if (_inALimitingADERDGSolver) {
+          _methodBodyWriter.write(
+              "  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter("
+                  + (_kernelNumber - 1) + "," + _plotterNumber + ",parser,new " + _projectName + "::" + plotterName + "(  *static_cast<exahype::solvers::LimitingADERDGSolver*>(exahype::solvers::RegisteredSolvers[" + (_kernelNumber-1) + "])) ));\n\n");
+        } else {
+          _methodBodyWriter.write(
+              "  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter("
+                  + (_kernelNumber - 1) + "," + _plotterNumber + ",parser,new " + _projectName + "::" + plotterName + "(  *static_cast<" + _projectName + "::" + _solverName + "*>(exahype::solvers::RegisteredSolvers[" + (_kernelNumber-1) + "])) ));\n\n");
+        }
       }
       _plotterNumber++;
       System.out.println("added plotter ... ok");

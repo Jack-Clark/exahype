@@ -42,9 +42,8 @@ SUBROUTINE ElementUpdate(luh,lduh,dt)
     !WRITE(12, '(ES24.16,1x)') , luh
     
 
-    !PRINT *, ' --------luh-ElementUpdate-------------------------------- ' 
-    !PRINT *, luh
-    !PRINT *, ' --------luh-ElementUpdate-------------------------------- ' 
+    !PRINT *, ' --------lduh-ElementUpdate: dt = ' , dt
+    !PRINT *, lduh
     !CALL EXIT
 END SUBROUTINE ElementUpdate 
     

@@ -39,7 +39,7 @@ double kernels::interpolate(
   double xRef[DIMENSIONS];
   xRef[0] =  (x[0] - offsetOfPatch[0]) / sizeOfPatch[0];
   xRef[1] =  (x[1] - offsetOfPatch[1]) / sizeOfPatch[1];
-  #ifdef Dim3
+  #if DIMENSIONS==3
   xRef[2] =  (x[2] - offsetOfPatch[2]) / sizeOfPatch[2];
   #endif
 
@@ -51,11 +51,11 @@ double kernels::interpolate(
     int iGauss = peano::utils::dLinearisedWithoutLookup(ii,order + 1);
     result += kernels::basisFunctions[order][ii(0)](xRef[0]) *
              kernels::basisFunctions[order][ii(1)](xRef[1]) *
-             #ifdef Dim3
+             #if DIMENSIONS==3
              kernels::basisFunctions[order][ii(2)](xRef[2]) *
              #endif
              u[iGauss * numberOfUnknowns + unknown];
-    assertion3(result == result, offsetOfPatch, sizeOfPatch, iGauss);
+    assertion6(std::isfinite(result), result, unknown, iGauss, numberOfUnknowns, offsetOfPatch[0], sizeOfPatch[0]);
   }
 
   return result;

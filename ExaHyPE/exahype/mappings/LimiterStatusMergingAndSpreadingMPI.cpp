@@ -50,7 +50,7 @@ peano::MappingSpecification
 exahype::mappings::LimiterStatusMergingAndSpreadingMPI::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial,true);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification

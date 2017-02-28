@@ -11,13 +11,13 @@
 #ifndef __{{Solver}}_Variables_CLASS_HEADER__
 #define __{{Solver}}_Variables_CLASS_HEADER__
 
-#include "{{Solver}}.h"
+#include "Abstract{{Solver}}.h"
 
 #include <algorithm>
 
 #include "tarch/la/Matrix.h"
 
-class {{Project}}::{{Solver}}::ReadOnlyVariables {
+class {{Project}}::Abstract{{Solver}}::ReadOnlyVariables {
   private:
     const double* const _Q;
   public:
@@ -58,7 +58,7 @@ class {{Project}}::{{Solver}}::ReadOnlyVariables {
 };
 
 
-class {{Project}}::{{Solver}}::Variables {
+class {{Project}}::Abstract{{Solver}}::Variables {
   private:
     double* _Q;
   public:
@@ -112,7 +112,7 @@ class {{Project}}::{{Solver}}::Variables {
 };
 
 
-class {{Project}}::{{Solver}}::Fluxes {
+class {{Project}}::Abstract{{Solver}}::Fluxes {
   private:
     double** _F;
   public:

@@ -45,7 +45,7 @@ void {{Project}}::Abstract{{Solver}}::spaceTimePredictor(double* lQhbnd,double* 
 
 void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luh,const double* const lduh,const double dt) {
 {{BeforeSolutionUpdate}}
-  kernels::aderdg::generic::{{Language}}::solutionUpdate(luh,lduh,dt,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::{{Language}}::solutionUpdate<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,lduh,dt);
 {{AfterSolutionUpdate}}
 }
 
@@ -104,7 +104,7 @@ void {{Project}}::Abstract{{Solver}}::solutionAdjustment(double *luh,const tarch
 
 void {{Project}}::Abstract{{Solver}}::faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
 {{BeforeFaceUnknownsProlongation}}
-  kernels::aderdg::generic::c::faceUnknownsProlongation(lQhbndFine,lFhbndFine,lQhbndCoarse,lFhbndCoarse,coarseGridLevel,fineGridLevel,subfaceIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::faceUnknownsProlongation(lQhbndFine,lFhbndFine,lQhbndCoarse,lFhbndCoarse,coarseGridLevel,fineGridLevel,subfaceIndex,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
 {{AfterFaceUnknownsProlongation}}
 }
 
@@ -112,7 +112,7 @@ void {{Project}}::Abstract{{Solver}}::faceUnknownsProlongation(double* lQhbndFin
 
 void {{Project}}::Abstract{{Solver}}::faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) {
 {{BeforeFaceUnknownsRestriction}}
-  kernels::aderdg::generic::c::faceUnknownsRestriction(lQhbndCoarse,lFhbndCoarse,lQhbndFine,lFhbndFine,coarseGridLevel,fineGridLevel,subfaceIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::faceUnknownsRestriction(lQhbndCoarse,lFhbndCoarse,lQhbndFine,lFhbndFine,coarseGridLevel,fineGridLevel,subfaceIndex,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
 {{AfterFaceUnknownsRestriction}}
 }
 
@@ -120,7 +120,7 @@ void {{Project}}::Abstract{{Solver}}::faceUnknownsRestriction(double* lQhbndCoar
 
 void {{Project}}::Abstract{{Solver}}::volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
 {{BeforeVolumeUnknownsProlongation}}
-  kernels::aderdg::generic::c::volumeUnknownsProlongation(luhFine,luhCoarse,coarseGridLevel,fineGridLevel,subcellIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::volumeUnknownsProlongation(luhFine,luhCoarse,coarseGridLevel,fineGridLevel,subcellIndex,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
 {{AfterVolumeUnknownsProlongation}}
 }
 
@@ -128,15 +128,15 @@ void {{Project}}::Abstract{{Solver}}::volumeUnknownsProlongation(double* luhFine
 
 void {{Project}}::Abstract{{Solver}}::volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) {
 {{BeforeVolumeUnknownsRestriction}}
-  kernels::aderdg::generic::c::volumeUnknownsRestriction(luhCoarse,luhFine,coarseGridLevel,fineGridLevel,subcellIndex,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::aderdg::generic::c::volumeUnknownsRestriction(luhCoarse,luhFine,coarseGridLevel,fineGridLevel,subcellIndex,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
 {{AfterVolumeUnknownsRestriction}}
 }
 
 
 
-// TODO KD
-void {{Project}}::Abstract{{Solver}}::dummyK_GeneratedCall(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempPointForceSources) {
-{{BeforeDummyK}}
-  kernels::aderdg::generic::c::dummyK_Kernel<{{Solver}}>(*static_cast<{{Solver}}*>(this), t, dt, center, dx, getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis(), tempPointForceSources);
-{{AfterDummyK}}
+
+void {{Project}}::Abstract{{Solver}}::pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempPointForceSources) {
+{{BeforePointSource}}
+  kernels::aderdg::generic::c::pointSource<{{Solver}}>(*static_cast<{{Solver}}*>(this), t, dt, center, dx, getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis(), tempPointForceSources);
+{{AfterPointSource}}
 }

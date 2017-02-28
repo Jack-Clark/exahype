@@ -172,9 +172,10 @@ class exahype::Parser {
 
   enum class MulticoreOracleType {
     Dummy,
-    Autotuning,
+    AutotuningWithRestartAndLearning,
+    AutotuningWithoutLearning,
+    AutotuningWithLearningButWithoutRestart,
     GrainSizeSampling
-    // evtl. spaeter mal InvadeSHM
   };
 
   enum class MPILoadBalancingType { Static };

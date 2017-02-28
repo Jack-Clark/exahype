@@ -80,17 +80,20 @@ class exahype::repositories::Repository {
     virtual void switchToPlotAndADERDGTimeStep() = 0;    
     virtual void switchToPredictionRerun() = 0;    
     virtual void switchToLimiterStatusSpreading() = 0;    
+    virtual void switchToLimiterStatusSpreadingFusedTimeStepping() = 0;    
     virtual void switchToLimiterStatusMergingAndSpreadingMPI() = 0;    
     virtual void switchToLimiterStatusMergingMPI() = 0;    
     virtual void switchToReinitialisation() = 0;    
     virtual void switchToSolutionRecomputationAndTimeStepSizeComputation() = 0;    
     virtual void switchToNeighbourDataMerging() = 0;    
     virtual void switchToSolutionUpdate() = 0;    
-    virtual void switchToPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() = 0;    
     virtual void switchToTimeStepSizeComputation() = 0;    
     virtual void switchToPrediction() = 0;    
     virtual void switchToPredictionAndPlot() = 0;    
     virtual void switchToPredictionAndPlot2d() = 0;    
+    virtual void switchToDropMPIMetadataMessagesAndTimeStepSizeComputation() = 0;    
+    virtual void switchToTimeStepDataMerging() = 0;    
+    virtual void switchToTimeStepDataMergingAndDropIncomingMPIMessages() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
@@ -103,17 +106,20 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterPlotAndADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterPredictionRerun() const = 0;
     virtual bool isActiveAdapterLimiterStatusSpreading() const = 0;
+    virtual bool isActiveAdapterLimiterStatusSpreadingFusedTimeStepping() const = 0;
     virtual bool isActiveAdapterLimiterStatusMergingAndSpreadingMPI() const = 0;
     virtual bool isActiveAdapterLimiterStatusMergingMPI() const = 0;
     virtual bool isActiveAdapterReinitialisation() const = 0;
     virtual bool isActiveAdapterSolutionRecomputationAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterNeighbourDataMerging() const = 0;
     virtual bool isActiveAdapterSolutionUpdate() const = 0;
-    virtual bool isActiveAdapterPostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPrediction() const = 0;
     virtual bool isActiveAdapterPredictionAndPlot() const = 0;
     virtual bool isActiveAdapterPredictionAndPlot2d() const = 0;
+    virtual bool isActiveAdapterDropMPIMetadataMessagesAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterTimeStepDataMerging() const = 0;
+    virtual bool isActiveAdapterTimeStepDataMergingAndDropIncomingMPIMessages() const = 0;
 
 
     /**

@@ -20,33 +20,36 @@ void kernels::aderdg::generic::c::solutionAdjustment(
     double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
     const tarch::la::Vector<DIMENSIONS, double>& dx, const double t,
     const double dt) {
-  const int numberOfVariables = solver.getNumberOfVariables();
-  const int basisSize = solver.getNodesPerCoordinateAxis();
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::Order+1;
+  
+  idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
+  
   double x[3];
+  for (int i = 0; i < basisSize; i++) {  // loop over dof
+    const double qi = kernels::gaussLegendreNodes[basisSize - 1][i];
+    for (int j = 0; j < basisSize; j++) {
+      const double qj = kernels::gaussLegendreNodes[basisSize - 1][j];
+      for (int k = 0; k < basisSize; k++) {  // loop over dof
+        const double qk = kernels::gaussLegendreNodes[basisSize - 1][k];
 
-  for (int ii = 0; ii < basisSize; ii++) {  // loop over dof
-    const double qr = kernels::gaussLegendreNodes[basisSize - 1][ii];
+        x[0] = center[0] + dx[0] * (qk - 0.5);
+        x[1] = center[1] + dx[1] * (qj - 0.5);
+        x[2] = center[2] + dx[2] * (qi - 0.5);
 
-    for (int jj = 0; jj < basisSize; jj++) {
-      const double qs = kernels::gaussLegendreNodes[basisSize - 1][jj];
+        const double weight =  
+            kernels::gaussLegendreWeights[basisSize - 1][i] *
+            kernels::gaussLegendreWeights[basisSize - 1][j] *
+            kernels::gaussLegendreWeights[basisSize - 1][k];
 
-      for (int kk = 0; kk < basisSize; kk++) {  // loop over dof
-        const double qt = kernels::gaussLegendreNodes[basisSize - 1][kk];
-
-        // location and index of nodal degrees of freedom
-        const int nodeIndex = ii + basisSize * jj + basisSize * basisSize * kk;
-        x[0] = center[0] + dx[0] * (qr - 0.5);
-        x[1] = center[1] + dx[1] * (qs - 0.5);
-        x[2] = center[2] + dx[2] * (qt - 0.5);
-
-        const double weight =  // Gauss weight
-            kernels::gaussLegendreWeights[basisSize - 1][ii] *
-            kernels::gaussLegendreWeights[basisSize - 1][jj] *
-            kernels::gaussLegendreWeights[basisSize - 1][kk];
-
-        // read initial condition
-        const int dofStartIndex = nodeIndex * numberOfVariables;
-        solver.adjustedSolutionValues(x, weight, t, dt, &luh[dofStartIndex]);
+        // !!
+        // TODO(Dominic): For refactoring purposes. Remove old indexing method.
+        const int nodeIndex     = i + basisSize * j + basisSize * basisSize * k;
+        const int dofStartIndex = nodeIndex * (numberOfVariables+numberOfParameters);
+        assertion(dofStartIndex==idx_luh(k,j,i,0)); 
+        // !
+        solver.adjustedSolutionValues(x, weight, t, dt, &luh[idx_luh(i,j,k,0)]);
       }
     }
   }

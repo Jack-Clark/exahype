@@ -124,7 +124,7 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::init(
   _regionOfInterestLeftBottomFront(0) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
   x = Parser::getValueFromPropertyString( select, "bottom" );
   _regionOfInterestLeftBottomFront(1) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#ifdef Din3
+#if DIMENSIONS==3
   x = Parser::getValueFromPropertyString( select, "front" );
   _regionOfInterestLeftBottomFront(2) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
 #endif
@@ -134,7 +134,7 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::init(
   _regionOfInterestRightTopBack(0) = x!=x ? std::numeric_limits<double>::max() : x;
   x = Parser::getValueFromPropertyString( select, "top" );
   _regionOfInterestRightTopBack(1) = x!=x ? std::numeric_limits<double>::max() : x;
-#ifdef Dim3
+#if DIMENSIONS==3
   x = Parser::getValueFromPropertyString( select, "back" );
   _regionOfInterestRightTopBack(2) = x!=x ? std::numeric_limits<double>::max() : x;
 #endif
@@ -209,10 +209,11 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::finishPlotting() {
     #endif
                      << "-" << _fileCounter << ".vtk";
 
-    // See issue #47 for discussion whether to quit program on failure:
-    // _patchWriter should raise/throw the C++ Exception or return something in case
-    // of failure.
-    _patchWriter->writeToFile(snapshotFileName.str());
+    const bool hasBeenSuccessful =
+      _patchWriter->writeToFile(snapshotFileName.str());
+    if (!hasBeenSuccessful) {
+      exit(-1);
+    }
   }
 
   if (_vertexDataWriter!=nullptr)          delete _vertexDataWriter;
@@ -270,7 +271,7 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::plotVertexData(
         int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
         interpoland[unknown] += kernels::equidistantGridProjector1d[_order][ii(1)][i(1)] *
                  kernels::equidistantGridProjector1d[_order][ii(0)][i(0)] *
-                 #ifdef Dim3
+                 #if DIMENSIONS==3
                  kernels::equidistantGridProjector1d[_order][ii(2)][i(2)] *
                  #endif
                  u[iGauss * _solverUnknowns + unknown];

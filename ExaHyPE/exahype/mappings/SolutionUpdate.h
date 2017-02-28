@@ -56,66 +56,19 @@ class SolutionUpdate;
  * @author Dominic Charrier Tobias Weinzierl
  */
 class exahype::mappings::SolutionUpdate {
- private:
+private:
   /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
 
   /**
-   * An array of 5 pointers to arrays of a length that equals the
-   * number of variables per solver.
-   *
-   * These temporary variables are only used by the finite  volumes
-   * solver.
+   * A bunch of temporary variables for performing a solution
+   * update.
    */
-  double*** _tempStateSizedVectors = nullptr;
+  exahype::solvers::SolutionUpdateTemporaryVariables _temporaryVariables;
 
-  /**
-   * An array of pointers to arrays of a length that equals the
-   * number of solution unknowns per solver.
-   *
-   * These temporary variables are only used by the finite  volumes
-   * solver.
-   */
-  double*** _tempUnknowns = nullptr;
-
-  /**
-   * Per solver, we hold a status flag indicating
-   * if the limiter domain of the solver has
-   * changed.
-   */
-  bool* _limiterDomainHasChanged = nullptr;
-
-  /**
-   * Initialises the temporary variables.
-   *
-   * \note We parallelise over the domain
-   * (mapping is copied for each thread) and
-   * over the solvers registered on a cell.
-   *
-   * \note We need to initialise the temporary variables
-   * in this mapping and not in the solvers since the
-   * solvers in exahype::solvers::RegisteredSolvers
-   * are not copied for every thread.
-   */
-  void prepareTemporaryVariables();
-
-  /**
-   * Sets the limiter domain has changed flags per
-   * solver to false.
-   */
-  void prepareLimiterDomainHasChangedFlags();
-
-  /**
-   * Deletes the temporary variables.
-   *
-   * \note We need to initialise the temporary variables
-   * in this mapping and not in the solvers since the
-   * solvers in exahype::solvers::RegisteredSolvers
-   * are not copied for every thread.
-   */
-  void deleteTemporaryVariables();
+  exahype::solvers::SolverFlags _solverFlags;
 
  public:
   /**
@@ -180,8 +133,12 @@ class exahype::mappings::SolutionUpdate {
   void beginIteration(exahype::State& solverState);
 
   /**
-   * Notifies the state that the limiter domain if the limiter
-   * domain of one of the solvers has changed.
+   * For all solvers, overwrite the current
+   * gridUpdateRequested value with the next value.
+   *
+   * Further update the global solver states (next)limiterDomainHasChanged
+   * with values from the temporary variables.
+   *
    * Further deallocates temporary variables.
    */
   void endIteration(exahype::State& solverState);

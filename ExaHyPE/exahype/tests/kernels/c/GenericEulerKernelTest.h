@@ -26,6 +26,10 @@ namespace c {
 class GenericEulerKernelTest : public tarch::tests::TestCase {
 	
  public:
+  static constexpr int NumberOfVariables  = 5;
+  static constexpr int NumberOfParameters = 1;
+  static constexpr int Order              = 3;
+
   GenericEulerKernelTest();
   virtual ~GenericEulerKernelTest();
 
@@ -51,10 +55,6 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
   void testEquidistantGridProjection();
 
  public:
-  static int getNumberOfVariables() { return 5; }
-  static int getNumberOfParameters() { return 0; }
-  static int getNodesPerCoordinateAxis() { return 3+1; }
-
   static void flux(const double* const Q, double** F);
 
   static void source(const double* Q, double* S);

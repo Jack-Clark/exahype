@@ -193,11 +193,4 @@ class exahype::dastgen::State {
    * are reset to a stable time step size times this factor. 
    */
   persistent double timeStepSizeWeightForPredictionRerun;
-  
-  /**
-   * This flag is used to notify the master thread or rank
-   * that the number of troubled cells has changed, i.e.,
-   * more or less cells need limiting.
-   */
-  parallelise persistent bool limiterDomainHasChanged;
 };

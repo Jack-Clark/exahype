@@ -31,7 +31,7 @@ namespace c {
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
                              const int numberOfVariables,
-                             const int numberOfParameters,
+                             const int numberOfParameters, /*not used*/ // TODO(Dominic): Remove from arg list.
                              const int basisSize) {
   const int order = basisSize - 1;
   const int basisSize2 = basisSize * basisSize;
@@ -50,7 +50,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
       // Fortran: lduh(l, k, j) += lFhi_x(l, m, j) * Kxi(m, k)
       // Matrix product: (l, m) * (m, k) = (l, k)
       for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
+        for (int l = 0; l < numberOfVariables; l++) {
           for (int m = 0; m < basisSize; m++) {
             lduh[idx(j, k, l)] += kernels::Kxi[order][k][m] *
                                   lFhi[x_offset + idx(j, m, l)] * updateSize;
@@ -71,7 +71,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
       // Fortran: lduh(l, j, k) += lFhi_y(l, m, j) * Kxi(m, k)
       // Matrix product: (l, m) * (m, k) = (l, k)
       for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
+        for (int l = 0; l < numberOfVariables; l++) {
           for (int m = 0; m < basisSize; m++) {
             lduh[idx(k, j, l)] += kernels::Kxi[order][k][m] *
                                   lFhi[y_offset + idx(j, m, l)] * updateSize;
@@ -91,8 +91,6 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                               kernels::gaussLegendreWeights[order][k];
 
         // Fortran: lduh(:,k,j) += w * lShi(:,k,j)
-
-        // TODO(guera): numberOfVariables - numberOfParameters
         for (int l = 0; l < numberOfVariables; l++) {
           lduh[idx(j, k, l)] += weight * lFhi[s_offset + idx(j, k, l)];
         }
@@ -105,7 +103,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
 //void spaceTimeVolumeIntegralNonlinear(double* lduh, const double* const lFi,
 //                             const tarch::la::Vector<DIMENSIONS, double>& dx,
 //                             const int numberOfVariables,
-//                             const int numberOfParameters,
+//                             const int numberOfParameters, /* not used */
 //                             const int basisSize) {
 //  const int order = basisSize - 1;
 //  const int basisSize2 = basisSize * basisSize * basisSize;
@@ -129,7 +127,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
 //        // Fortran: lduh(l, k, j) += lFhi_x(l, m, j) * Kxi(m, k)
 //        // Matrix product: (l, m) * (m, k) = (l, k)
 //        for (int k = 0; k < basisSize; k++) {
-//          for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
+//          for (int l = 0; l < numberOfVariables; l++) {
 //            for (int m = 0; m < basisSize; m++) {
 //              lduh[idx(j, k, l)] += kernels::Kxi[order][k][m] *
 //                  lFi[x_offset + idx_lFix(i, j, m, l)] * updateSize;
@@ -153,7 +151,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
 //        // Fortran: lduh(l, j, k) += lFhi_y(l, m, j) * Kxi(m, k)
 //        // Matrix product: (l, m) * (m, k) = (l, k)
 //        for (int k = 0; k < basisSize; k++) {
-//          for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
+//          for (int l = 0; l < numberOfVariables; l++) {
 //            for (int m = 0; m < basisSize; m++) {
 //              lduh[idx(k, j, l)] += kernels::Kxi[order][k][m] *
 //                  lFi[y_offset + idx_lFiy(i, j, m, l)] * updateSize;
@@ -177,7 +175,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
 //
 //          // Fortran: lduh(:,k,j) += w * lShi(:,k,j)
 //
-//          // TODO(guera): numberOfVariables - numberOfParameters
+//          // TODO(guera): numberOfVariables
 //          for (int l = 0; l < numberOfVariables; l++) {
 //            lduh[idx(j, k, l)] += weight * lFi[s_offset + idx_lS(i, j, k, l)];
 //          }

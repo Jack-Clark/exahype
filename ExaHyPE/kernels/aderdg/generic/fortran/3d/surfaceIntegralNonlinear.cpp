@@ -25,27 +25,17 @@ using std::endl;
 using std::cout;
 
 extern "C" {
-void adersurfaceintegralnonlinear_(double* lduh, double* lFhi, double* dx);
+void adersurfaceintegralnonlinear_(double* lduh, const double* const lFhi, const double* const dx);
 }
 
 void kernels::aderdg::generic::fortran::surfaceIntegralNonlinear(
     double* lduh, const double* const lFbnd,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const int numberOfVariables, const int basisSize) {
-    
-  // circumvent 'const double'
-  double* lFbndFortran = new double[numberOfVariables * 6 * basisSize * basisSize];
-  for (int i = 0; i < numberOfVariables * 6 * basisSize * basisSize; i++) {
-    lFbndFortran[i] = lFbnd[i];
-  }
 
-  double* dxTemp = new double[3];
-  dxTemp[0] = dx[0];
-  dxTemp[1] = dx[1];
-  dxTemp[2] = dx[2];
+  // This Fortran subroutine does not work any more (assumably because of the
+  // lFbnd data ordering)
 
-  adersurfaceintegralnonlinear_(lduh, lFbndFortran, dxTemp);
+  adersurfaceintegralnonlinear_(lduh, lFbnd, dx.data());
 
-  delete[] lFbndFortran;
-  delete[] dxTemp;
 }

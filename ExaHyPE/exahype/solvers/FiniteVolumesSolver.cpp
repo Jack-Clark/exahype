@@ -42,20 +42,20 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
     : Solver(identifier, exahype::solvers::Solver::Type::FiniteVolumes,
              numberOfVariables, numberOfParameters, nodesPerCoordinateAxis,
              maximumMeshSize, timeStepping, std::move(profiler)),
-      _unknownsPerPatch((numberOfVariables + numberOfParameters) *
+      _dataPerPatch((numberOfVariables + numberOfParameters) *
                        power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
       _ghostLayerWidth(ghostLayerWidth),
-      _ghostValuesPerPatch((numberOfVariables + numberOfParameters) *
-                       power(nodesPerCoordinateAxis+2*ghostLayerWidth, DIMENSIONS + 0) - _unknownsPerPatch),
-      _unknownsPerPatchFace(
+      _ghostDataPerPatch((numberOfVariables + numberOfParameters) *
+                       power(nodesPerCoordinateAxis+2*ghostLayerWidth, DIMENSIONS + 0) - _dataPerPatch),
+      _dataPerPatchFace(
           (numberOfVariables + numberOfParameters)*power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
-      _unknownsPerPatchBoundary(
-          DIMENSIONS_TIMES_TWO *_unknownsPerPatchFace),
+      _dataPerPatchBoundary(
+          DIMENSIONS_TIMES_TWO *_dataPerPatchFace),
       _previousMinTimeStepSize(std::numeric_limits<double>::max()),
       _minTimeStamp(std::numeric_limits<double>::max()),
       _minTimeStepSize(std::numeric_limits<double>::max()),
       _minNextTimeStepSize(std::numeric_limits<double>::max()) {
-  assertion3(_unknownsPerPatch > 0, numberOfVariables, numberOfParameters,
+  assertion3(_dataPerPatch > 0, numberOfVariables, numberOfParameters,
              nodesPerCoordinateAxis);
 
   // register tags with profiler
@@ -65,7 +65,7 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
 }
 
 int exahype::solvers::FiniteVolumesSolver::getUnknownsPerPatch() const {
-  return _unknownsPerPatch;
+  return _dataPerPatch;
 }
 
 int exahype::solvers::FiniteVolumesSolver::getGhostLayerWidth() const {
@@ -73,11 +73,11 @@ int exahype::solvers::FiniteVolumesSolver::getGhostLayerWidth() const {
 }
 
 int exahype::solvers::FiniteVolumesSolver::getGhostValuesPerPatch() const {
-  return _ghostValuesPerPatch;
+  return _ghostDataPerPatch;
 }
 
 int exahype::solvers::FiniteVolumesSolver::getUnknownsPerFace() const {
-  return _unknownsPerPatchFace;
+  return _dataPerPatchFace;
 }
 
 double exahype::solvers::FiniteVolumesSolver::getPreviousMinTimeStepSize() const {
@@ -145,19 +145,29 @@ void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
   _maxCellSize     = _nextMaxCellSize;
   _nextMinCellSize = std::numeric_limits<double>::max();
   _nextMaxCellSize = -std::numeric_limits<double>::max(); // "-", min
+
+  setNextGridUpdateRequested();
+}
+
+/**
+ * Zero predictor and corrector time step size.
+ */
+void exahype::solvers::FiniteVolumesSolver::zeroTimeStepSizes() {
+  _minTimeStepSize = 0;
+  assertionEquals(_minNextTimeStepSize,std::numeric_limits<double>::max());
 }
 
 void exahype::solvers::FiniteVolumesSolver::rollbackToPreviousTimeStep() {
   switch (_timeStepping) {
     case TimeStepping::Global:
-      _minTimeStamp            = _minTimeStepSize-_previousMinTimeStepSize;
+      _minTimeStamp            = _minTimeStamp-_previousMinTimeStepSize;
       _minTimeStepSize         = _previousMinTimeStepSize;
 
       _previousMinTimeStepSize = std::numeric_limits<double>::max();
       _minNextTimeStepSize     = std::numeric_limits<double>::max();
       break;
     case TimeStepping::GlobalFixed:
-      _minTimeStamp             = _minTimeStepSize-_previousMinTimeStepSize;
+      _minTimeStamp             = _minTimeStamp-_previousMinTimeStepSize;
       _minTimeStepSize          = _previousMinTimeStepSize;
       break;
   }
@@ -211,7 +221,7 @@ exahype::solvers::Solver::SubcellPosition exahype::solvers::FiniteVolumesSolver:
 ///////////////////////////////////
 // MODIFY CELL DESCRIPTION
 ///////////////////////////////////
-bool exahype::solvers::FiniteVolumesSolver::enterCell(
+bool exahype::solvers::FiniteVolumesSolver::updateStateInEnterCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -230,6 +240,9 @@ bool exahype::solvers::FiniteVolumesSolver::enterCell(
                multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
                solverNumber);
     // Fine grid cell based adaptive mesh refinement operations.
+  } else if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
+    CellDescription& fineGridCellDescription = getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
+    updateNextGridUpdateRequested(fineGridCellDescription.getRefinementEvent());
   }
 
   return false;
@@ -316,7 +329,7 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
       if (!DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
         // Allocate volume DoF for limiter
-        const int size = _unknownsPerPatch+_ghostValuesPerPatch;
+        const int size = _dataPerPatch+_ghostDataPerPatch;
 
         waitUntilAllBackgroundTasksHaveTerminated();
         tarch::multicore::Lock lock(_heapSemaphore);
@@ -366,7 +379,7 @@ void exahype::solvers::FiniteVolumesSolver::ensureNecessaryMemoryIsAllocated(Cel
 //  }
 }
 
-bool exahype::solvers::FiniteVolumesSolver::leaveCell(
+bool exahype::solvers::FiniteVolumesSolver::updateStateInLeaveCell(
     exahype::Cell& fineGridCell,
     exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -376,12 +389,26 @@ bool exahype::solvers::FiniteVolumesSolver::leaveCell(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const int solverNumber) {
 //  assertionMsg(false,"Not implemented."); // TODO(Dominic): Implement.
+  int fineGridCellElement = tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+
+  if (fineGridCellElement!=exahype::solvers::Solver::NotFound) {
+    CellDescription& fineGridCellDescription = getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridCellElement);
+    updateNextGridUpdateRequested(fineGridCellDescription.getRefinementEvent());
+  }
+
   return false;
 }
 
 ///////////////////////////////////
 // CELL-LOCAL
 //////////////////////////////////
+bool exahype::solvers::FiniteVolumesSolver::evaluateRefinementCriterionAfterSolutionUpdate(
+      const int cellDescriptionsIndex,
+      const int element) {
+  // TODO(Dominic): Not implemented.
+  return false;
+}
+
 double exahype::solvers::FiniteVolumesSolver::startNewTimeStep(
     const int cellDescriptionsIndex,
     const int element,
@@ -405,6 +432,14 @@ double exahype::solvers::FiniteVolumesSolver::startNewTimeStep(
   }
 
   return std::numeric_limits<double>::max();
+}
+
+void exahype::solvers::FiniteVolumesSolver::zeroTimeStepSizes(const int cellDescriptionsIndex, const int element) {
+  CellDescription& cellDescription = getCellDescription(cellDescriptionsIndex,element);
+
+  if (cellDescription.getType()==CellDescription::Cell) {
+    cellDescription.setTimeStepSize(0.0);
+  }
 }
 
 void exahype::solvers::FiniteVolumesSolver::rollbackToPreviousTimeStep(
@@ -444,7 +479,7 @@ void exahype::solvers::FiniteVolumesSolver::setInitialConditions(
           cellDescription.getTimeStepSize());
     }
 
-    for (int i=0; i<_unknownsPerPatch+_ghostValuesPerPatch; i++) {
+    for (int i=0; i<_dataPerPatch+_ghostDataPerPatch; i++) {
       assertion3(std::isfinite(solution[i]),cellDescription.toString(),"setInitialConditions(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
   }
@@ -462,7 +497,7 @@ void exahype::solvers::FiniteVolumesSolver::updateSolution(
 
   double* solution    = DataHeap::getInstance().getData(cellDescription.getPreviousSolution()).data();
   double* newSolution = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
-  std::copy(newSolution,newSolution+_unknownsPerPatch+_ghostValuesPerPatch,solution); // Copy (current solution) in old solution field.
+  std::copy(newSolution,newSolution+_dataPerPatch+_ghostDataPerPatch,solution); // Copy (current solution) in old solution field.
 
 //  validateNoNansInFiniteVolumesSolution(cellDescription,cellDescriptionsIndex); // Comment in for debugging; checking afterwards is sufficient in normal mode.
 
@@ -1120,12 +1155,13 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  std::vector<double> timeStepDataToReduce(0,3);
+  std::vector<double> timeStepDataToReduce(0,4);
   timeStepDataToReduce.push_back(_minTimeStepSize);
+  timeStepDataToReduce.push_back(_gridUpdateRequested ? 1.0 : -1.0);
   timeStepDataToReduce.push_back(_minCellSize);
   timeStepDataToReduce.push_back(_maxCellSize);
 
-  assertion1(timeStepDataToReduce.size()==3,timeStepDataToReduce.size());
+  assertion1(timeStepDataToReduce.size()==4,timeStepDataToReduce.size());
   assertion1(std::isfinite(timeStepDataToReduce[0]),timeStepDataToReduce[0]);
   if (_timeStepping==TimeStepping::Global) {
     assertionNumericalEquals1(_minNextTimeStepSize,std::numeric_limits<double>::max(),
@@ -1137,7 +1173,8 @@ void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
     logDebug("sendDataToMaster(...)","Sending time step data: " <<
         "data[0]=" << timeStepDataToReduce[0] <<
         ",data[1]=" << timeStepDataToReduce[1] <<
-        ",data[2]=" << timeStepDataToReduce[2]);
+        ",data[2]=" << timeStepDataToReduce[2] <<
+        ",data[3]=" << timeStepDataToReduce[3]);
   }
 
   DataHeap::getInstance().sendData(
@@ -1157,7 +1194,7 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
     const int                                    workerRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  std::vector<double> receivedTimeStepData(3);
+  std::vector<double> receivedTimeStepData(4);
 
   if (true || tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
@@ -1168,27 +1205,31 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
       receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
-  assertion1(receivedTimeStepData.size()==3,receivedTimeStepData.size());
+  assertion1(receivedTimeStepData.size()==4,receivedTimeStepData.size());
   assertion1(receivedTimeStepData[0]>=0,receivedTimeStepData[0]);
   assertion1(std::isfinite(receivedTimeStepData[0]),receivedTimeStepData[0]);
   // The master solver has not yet updated its minNextTimeStepSize.
   // Thus it does not yet equal MAX_DOUBLE.
 
-  _minNextTimeStepSize = std::min( _minNextTimeStepSize, receivedTimeStepData[0] );
-  _nextMinCellSize     = std::min( _nextMinCellSize, receivedTimeStepData[1] );
-  _nextMaxCellSize     = std::max( _nextMaxCellSize, receivedTimeStepData[2] );
+  int index=0;
+  _minNextTimeStepSize      = std::min( _minNextTimeStepSize, receivedTimeStepData[index++] );
+  _nextGridUpdateRequested |= ( receivedTimeStepData[index++] > 0 ) ? true : false;
+  _nextMinCellSize          = std::min( _nextMinCellSize, receivedTimeStepData[index++] );
+  _nextMaxCellSize          = std::max( _nextMaxCellSize, receivedTimeStepData[index++] );
 
   if (true || tarch::parallel::Node::getInstance().getRank()==
       tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
     logDebug("mergeWithWorkerData(...)","Receiving time step data: " <<
              "data[0]=" << receivedTimeStepData[0] <<
              ",data[1]=" << receivedTimeStepData[1] <<
-             ",data[2]=" << receivedTimeStepData[2] );
+             ",data[2]=" << receivedTimeStepData[2] <<
+             ",data[3]=" << receivedTimeStepData[3] );
 
     logDebug("mergeWithWorkerData(...)","Updated time step fields: " <<
-             "_minNextTimeStepSize=" << _minNextTimeStepSize <<
-             ",_nextMinCellSize=" << _nextMinCellSize <<
-             ",_nextMaxCellSize=" << _nextMaxCellSize);
+             "_minNextTimeStepSize="     << _minNextTimeStepSize <<
+             "_nextGridUpdateRequested=" << _nextGridUpdateRequested <<
+             ",_nextMinCellSize="        << _nextMinCellSize <<
+             ",_nextMaxCellSize="        << _nextMaxCellSize);
   }
 }
 
@@ -1640,11 +1681,11 @@ void exahype::solvers::FiniteVolumesSolver::toString (std::ostream& out) const {
   out << ",";
   out << "_timeStepping:" << exahype::solvers::Solver::toString(_timeStepping); // only solver attributes
   out << ",";
-  out << "_unknownsPerPatchFace:" << _unknownsPerPatchFace;
+  out << "_unknownsPerPatchFace:" << _dataPerPatchFace;
   out << ",";
-  out << "_unknownsPerPatchBoundary:" << _unknownsPerPatchBoundary;
+  out << "_dataPerPatchBoundary:" << _dataPerPatchBoundary;
   out << ",";
-  out << "_unknownsPerPatch:" << _unknownsPerPatch;
+  out << "_unknownsPerPatch:" << _dataPerPatch;
   out << ",";
   out << "_previousMinTimeStepSize:" << _previousMinTimeStepSize;
   out << ",";

@@ -151,14 +151,14 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   bool refineInitialGridInTouchVertexLastTime() const;
 
   /**
-   * TODO(Dominic): Add docu.
+   * Return the merge mode that is currently active.
    */
   records::State::MergeMode getMergeMode() const {
     return _stateData.getMergeMode();
   }
 
   /**
-   * TODO(Dominic): Add docu.
+   * Return the send mode that is currently active.
    */
   records::State::SendMode getSendMode() const {
     return _stateData.getSendMode();
@@ -175,8 +175,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setReinitTimeStepData(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
-    // One of the two points where we need to reset this flag (cf. workflow in Runner).
-    _stateData.setLimiterDomainHasChanged(false);
   }
 
   void switchToPredictionAndFusedTimeSteppingInitialisationContext() {
@@ -219,15 +217,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setSendMode (records::State::SendMode::SendFaceData);
   }
 
-  void switchToPreAMRContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(true);
-    #endif
-    _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
-    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
-  }
-
   void switchToSolutionUpdateContext() {
     #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);
@@ -235,8 +224,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setReinitTimeStepData(false);
     _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
     _stateData.setSendMode (records::State::SendMode::SendNothing);
-    // One of the two points where we need to reset this flag (cf. workflow in Runner).
-    _stateData.setLimiterDomainHasChanged(false);
   }
 
   void switchToTimeStepSizeComputationContext() {
@@ -248,6 +235,15 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
 
+  void switchToPreAMRContext() {
+    #ifdef Parallel
+    _stateData.setFirstGridSetupIteration(true);
+    #endif
+    _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
+    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+    _stateData.setSendMode (records::State::SendMode::SendNothing);
+  }
+
   void switchToPostAMRContext() {
     #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);
@@ -257,12 +253,34 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
 
+  /**
+   * Merge and synchronise the time step sizes over different
+   * ranks.
+   *
+   * TODO Time step size merging might not be necessary.
+   */
   void switchToLimiterStatusSpreadingContext() {
     #ifdef Parallel
     _stateData.setFirstGridSetupIteration(false);
     #endif
     _stateData.setReinitTimeStepData(false);
-    // We are merging a limiter status but we do not use the merging and sending mappings. So, we can use any value here.
+    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+    _stateData.setSendMode (records::State::SendMode::SendNothing);
+  }
+
+  /**
+   * Additionally drop face data.
+   *
+   * Merge and synchronise the time step sizes over different
+   * ranks.
+   *
+   * TODO Time step size merging might not be necessary.
+   */
+  void switchToLimiterStatusSpreadingFusedTimeSteppingContext() {
+#ifdef Parallel
+    _stateData.setFirstGridSetupIteration(false);
+#endif
+    _stateData.setReinitTimeStepData(false);
     _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendMode::SendNothing);
   }
@@ -286,6 +304,15 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
   }
 
+  void switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext() {
+   #ifdef Parallel
+    _stateData.setFirstGridSetupIteration(false);
+    #endif
+    _stateData.setReinitTimeStepData(false);
+    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
+  }
+
   //
   void setStabilityConditionOfOneSolverWasViolated(bool state) {
     _stateData.setStabilityConditionOfOneSolverWasViolated(state);
@@ -306,7 +333,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   /**
    * Indicates that the fused time stepping
    * scheme is used in the runner
-   * instead of the original one.
+   * instead of the standard time stepping.
    */
   static bool fuseADERDGPhases()  {
     return FuseADERDGPhases;
@@ -318,25 +345,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
 
   double getTimeStepSizeWeightForPredictionRerun() const {
     return _stateData.getTimeStepSizeWeightForPredictionRerun();
-  }
-
-  /**
-   * Updates the limiterDomainHasChanged value.
-   * The reset of this value to false is performed in
-   *
-   * switchToSolutionUpdateContext
-   * switchToInitialConditionAndTimeStepSizeComputationContext
-   *
-   */
-  void updateLimiterDomainHasChanged(bool state) {
-    _stateData.setLimiterDomainHasChanged(_stateData.getLimiterDomainHasChanged() | state);
-  }
-
-  /**
-   * @deprecated
-   */
-  bool limiterDomainHasChanged() const {
-      return _stateData.getLimiterDomainHasChanged();
   }
 
   #ifdef Parallel

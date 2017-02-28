@@ -25,7 +25,7 @@ SUBROUTINE ADERRiemannSolverNonlinear(lQbndL,lFbndL,lQbndR,lFbndR,nv)
     ! Local variables 
     INTEGER           :: i,j,k,l
     REAL              :: aux(d), QavL(nVar), QavR(nVar), smax
-    REAL              :: LL(nVar), LR(nVar) 
+    REAL              :: LL(nVar), LR(nVar), Qav(nVar), ncp(nVar), Bn(nVar,nVar)
     
     !OPEN(UNIT=12, FILE="aoutput_lQbndL.txt", ACTION="write", STATUS="replace")
     !WRITE(12, '(ES24.16,1x)') , lQbndL
@@ -49,12 +49,17 @@ SUBROUTINE ADERRiemannSolverNonlinear(lQbndL,lFbndL,lQbndR,lFbndR,nv)
         ENDDO
     ENDDO
     !
+    Qav = 0.5*(QavL+QavR) 
+    !
     ! Here, we implement a very simple Rusanov scheme with scalar dissipation (smax*Id). 
     ! We can change this into a more sophisticated Osher or HLLEM Riemann solver whenever needed! 
     !
     CALL PDEEigenvalues(LL,QavL,nv) 
     CALL PDEEigenvalues(LR,QavR,nv) 
     smax = MAX( MAXVAL(ABS(LL)), MAXVAL(ABS(LR)) ) 
+    !
+    ! Non-conservative product with path conservative schemes 
+    CALL PDEMatrixB(Bn,Qav,nv) 
     !
     ! We now compute the numerical flux. Note that the scheme is at the moment written in 
     ! CONSERVATION FORM => no fluctuations, but real fluxes. 
@@ -63,7 +68,9 @@ SUBROUTINE ADERRiemannSolverNonlinear(lQbndL,lFbndL,lQbndR,lFbndR,nv)
     DO k = 1, nDOF(3)
       DO j = 1, nDOF(2)
             lFbndL(:,j,k) = 0.5*( lFbndR(:,j,k) + lFbndL(:,j,k) ) - 0.5*smax*( lQbndR(:,j,k) - lQbndL(:,j,k) ) 
-            lFbndR(:,j,k) = lFbndL(:,j,k) 
+            ncp = MATMUL( Bn, lQbndR(:,j,k) - lQbndL(:,j,k) )   
+            lFbndR(:,j,k) = lFbndL(:,j,k) - 0.5*ncp(:)
+            lFbndL(:,j,k) = lFbndL(:,j,k) + 0.5*ncp(:)            
         ENDDO
     ENDDO
     !

@@ -165,12 +165,10 @@ void exahype::Parser::readFile(const std::string& filename) {
   }
 
 //  For debugging purposes
-/*
-  std::cout << "_tokenStream=" << std::endl;
-  for (std::string str : _tokenStream) {
-    std::cout << "["<<str<<"]" << std::endl;
-  }
-*/
+//  std::cout << "_tokenStream=" << std::endl;
+//  for (std::string str : _tokenStream) {
+//    std::cout << "["<<str<<"]" << std::endl;
+//  }
 }
 
 bool exahype::Parser::isValid() const {
@@ -358,7 +356,11 @@ exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType()
   if (token.compare("dummy") == 0) {
     result = MulticoreOracleType::Dummy;
   } else if (token.compare("autotuning") == 0) {
-    result = MulticoreOracleType::Autotuning;
+    result = MulticoreOracleType::AutotuningWithRestartAndLearning;
+  } else if (token.compare("autotuning-without-learning") == 0) {
+    result = MulticoreOracleType::AutotuningWithoutLearning;
+  } else if (token.compare("autotuning-without-restart") == 0) {
+    result = MulticoreOracleType::AutotuningWithLearningButWithoutRestart;
   } else if (token.compare("sampling") == 0) {
     result = MulticoreOracleType::GrainSizeSampling;
   } else {
@@ -788,6 +790,13 @@ std::string exahype::Parser::getSelectorForPlotter(int solverNumber,
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber + 1, "plot",
                                     plotterNumber + 1, 11);
+  token += "," + getTokenAfter("solver", solverNumber + 1, "plot",
+                                      plotterNumber + 1, 12);
+  #if DIMENSIONS==3
+  token += "," + getTokenAfter("solver",solverNumber + 1, "plot",
+                                 plotterNumber + 1, 13);
+  #endif
+
   logDebug("getSelectorForPlotter()", "found token " << token);
   return (token != _noTokenFound) ? token : "";
 }

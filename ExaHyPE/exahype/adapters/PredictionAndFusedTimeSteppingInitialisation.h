@@ -22,8 +22,8 @@
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/Prediction.h"
  #include "exahype/mappings/FusedTimeSteppingInitialisation.h"
- #include "exahype/mappings/PostProcessing.h"
  #include "exahype/mappings/Sending.h"
+ #include "exahype/mappings/PostProcessing.h"
 
 
 
@@ -47,15 +47,15 @@ class exahype::adapters::PredictionAndFusedTimeSteppingInitialisation {
     typedef mappings::Merging Mapping1;
     typedef mappings::Prediction Mapping2;
     typedef mappings::FusedTimeSteppingInitialisation Mapping3;
-    typedef mappings::PostProcessing Mapping4;
-    typedef mappings::Sending Mapping5;
+    typedef mappings::Sending Mapping4;
+    typedef mappings::PostProcessing Mapping5;
 
      Mapping0  _map2PreProcessing;
      Mapping1  _map2Merging;
      Mapping2  _map2Prediction;
      Mapping3  _map2FusedTimeSteppingInitialisation;
-     Mapping4  _map2PostProcessing;
-     Mapping5  _map2Sending;
+     Mapping4  _map2Sending;
+     Mapping5  _map2PostProcessing;
 
 
   public:

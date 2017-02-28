@@ -54,7 +54,7 @@ private:
    * Total number of volume averages and ghost values in a patch.
    * This number does include ghost values.
    */
-  int _unknownsPerPatch;
+  int _dataPerPatch;
 
   /**
    * Width of the ghost layer used for
@@ -65,19 +65,19 @@ private:
   /**
    * Total number of ghost values surrounding a patch.
    */
-  int _ghostValuesPerPatch;
+  int _ghostDataPerPatch;
 
   /**
    * Total number of volume averages per face of the patch.
    * This number does not include ghost values.
    */
-  int _unknownsPerPatchFace;
+  int _dataPerPatchFace;
 
   /**
    * Total number of volume averages per boundary of the patch.
    * This number does not include ghost values.
    */
-  int _unknownsPerPatchBoundary;
+  int _dataPerPatchBoundary;
 
   /**
    * Minimum time step size of all patches
@@ -385,7 +385,7 @@ public:
    * The number of unknowns per patch.
    * This number does not include ghost layer values.
    */
-  int getUnknownsPerPatch() const;
+  int getUnknownsPerPatch() const; // TODO(Dominic): Rename
 
   /**
    * Get the width of the ghost layer of the patch.
@@ -395,7 +395,7 @@ public:
   /**
    * Get the total number of ghost values per patch.
    */
-  int getGhostValuesPerPatch() const;
+  int getGhostValuesPerPatch() const; // TODO(Dominic): Rename
 
   /**
    * This operation returns the number of unknowns per
@@ -403,7 +403,12 @@ public:
    *
    * This number does not include ghost values.
    */
-  int getUnknownsPerFace() const;
+  int getUnknownsPerFace() const; // TODO(Dominic): Rename
+
+
+  virtual int getTempUnknownsSize()              const {return getUnknownsPerPatch();} // TODO function should be renamed
+  virtual int getBndFaceSize()                   const {return getUnknownsPerFace();} // TODO function should be renamed
+  virtual int getTempStateSizedVectorsSize()     const {return getNumberOfVariables()+getNumberOfParameters();} //dataPoints // TODO function should be renamed
 
   /**
    * Run over all solvers and identify the minimal time step size.
@@ -436,6 +441,8 @@ public:
 
   void startNewTimeStep() override;
 
+  void zeroTimeStepSizes() override;
+
   /**
    * Roll back the time step data to the
    * ones of the previous time step.
@@ -462,7 +469,7 @@ public:
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
-  bool enterCell(
+  bool updateStateInEnterCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -472,7 +479,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
-  bool leaveCell(
+  bool updateStateInLeaveCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -485,10 +492,16 @@ public:
   ///////////////////////////////////
   // CELL-LOCAL
   //////////////////////////////////
+  bool evaluateRefinementCriterionAfterSolutionUpdate(
+        const int cellDescriptionsIndex,
+        const int element) override;
+
   double startNewTimeStep(
       const int cellDescriptionsIndex,
       const int element,
       double*   tempEigenvalues) override;
+
+  void zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) override;
 
   /**
    * Rolls the solver time step data back to the

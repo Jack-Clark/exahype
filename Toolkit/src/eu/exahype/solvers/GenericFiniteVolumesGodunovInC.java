@@ -128,11 +128,25 @@ public class GenericFiniteVolumesGodunovInC implements Solver {
       if (i<_numberOfVariables-1) boundaryValues += "\n";
     }
     
+    String ncp = "";
+    for (int i = 0; i < _numberOfVariables; i++) {
+      ncp += "  BgradQ[" + String.format("%" + digits + "d", i) + "] = 0.0;";
+      if (i<_numberOfVariables-1) ncp += "\n";
+    }
+    
+    String matrixb = "";
+    for (int i = 0; i < _numberOfVariables*_numberOfVariables; i++) {
+      matrixb += "  Bn[" + String.format("%" + digits + "d", i) + "] = 0.0;";
+      if (i<_numberOfVariables*_numberOfVariables-1) matrixb += "\n";
+    }
+    
     content = content.replaceAll("\\{\\{AdjustedSolutionValues\\}\\}",adjustedSolutionValues);
     content = content.replaceAll("\\{\\{Eigenvalues\\}\\}",eigenvalues);
     content = content.replaceAll("\\{\\{Flux\\}\\}",flux);
     content = content.replaceAll("\\{\\{Source\\}\\}",source);
     content = content.replaceAll("\\{\\{BoundaryValues\\}\\}",boundaryValues);
+    content = content.replaceAll("\\{\\{NonConservativeProduct\\}\\}",ncp);
+    content = content.replaceAll("\\{\\{MatrixB\\}\\}",matrixb);
     
     writer.write(content);
   }

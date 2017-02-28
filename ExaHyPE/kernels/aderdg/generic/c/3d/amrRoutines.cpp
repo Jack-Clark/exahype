@@ -18,6 +18,7 @@
 
 #include "kernels/GaussLegendreQuadrature.h"
 #include "kernels/DGMatrices.h"
+#include "kernels/KernelUtils.h"
 
 #include "string.h"
 
@@ -27,19 +28,15 @@ void singleLevelFaceUnknownsProlongation(
     const double* lQhbndCoarse,
     const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex,
     const int numberOfVariables, const int basisSize) {
+  kernels::idx3 idx(basisSize,basisSize,numberOfVariables);
+
   for (int m2 = 0; m2 < basisSize; ++m2) {
     for (int m1 = 0; m1 < basisSize; ++m1) {
       for (int ivar = 0; ivar < numberOfVariables; ++ivar) {
-        const int mNodeIndex     = basisSize*m2 + m1;
-        const int mDofStartIndex = mNodeIndex * numberOfVariables;
-
         for (int n2 = 0; n2 < basisSize; ++n2) {
           for (int n1 = 0; n1 < basisSize; ++n1) {
-            const int nNodeIndex     = basisSize*n2 + n1;
-            const int nDofStartIndex = nNodeIndex * numberOfVariables;
-
-            lQhbndFine[mDofStartIndex+ivar] +=
-                lQhbndCoarse[nDofStartIndex + ivar] *
+            lQhbndFine[idx(m2,m1,ivar)] +=
+                lQhbndCoarse[idx(n2,n1,ivar)] *
                 kernels::fineGridProjector1d[basisSize-1][subfaceIndex[0]][n1][m1] *
                 kernels::fineGridProjector1d[basisSize-1][subfaceIndex[1]][n2][m2];
           }
@@ -56,11 +53,13 @@ void kernels::aderdg::generic::c::faceUnknownsProlongation(double* lQhbndFine,
                                                            const int coarseGridLevel,
                                                            const int fineGridLevel,
                                                            const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex,
-                                                           const int numberOfVariables, const int basisSize){
+                                                           const int numberOfVariables,
+                                                           const int numberOfParameters,
+                                                           const int basisSize){
   const int levelDelta = fineGridLevel - coarseGridLevel;
   const int basisSize2 = basisSize*basisSize;
 
-  double * lQhbndFineTemp = new double[basisSize2*numberOfVariables];
+  double * lQhbndFineTemp = new double[basisSize2*(numberOfVariables+numberOfParameters)];
   double * lFhbndFineTemp = new double[basisSize2*numberOfVariables];
 
   double * pointerQhbnd1 = 0;
@@ -99,7 +98,7 @@ void kernels::aderdg::generic::c::faceUnknownsProlongation(double* lQhbndFine,
     assertion(subintervalIndex[1] < 3);
 
     // Zero the values of the first pointer.
-    memset(pointerQhbnd1, 0, basisSize2*numberOfVariables*sizeof(double));
+    memset(pointerQhbnd1, 0, basisSize2*(numberOfVariables+numberOfParameters)*sizeof(double));
     memset(pointerFhbnd1, 0, basisSize2*numberOfVariables*sizeof(double));
 
     // Apply the single level prolongation operator.
@@ -109,7 +108,7 @@ void kernels::aderdg::generic::c::faceUnknownsProlongation(double* lQhbndFine,
           pointerQhbnd1,
           lQhbndCoarse,
           subintervalIndex,
-          numberOfVariables,
+          numberOfVariables+numberOfParameters,
           basisSize);
 
       singleLevelFaceUnknownsProlongation(
@@ -124,7 +123,7 @@ void kernels::aderdg::generic::c::faceUnknownsProlongation(double* lQhbndFine,
           pointerQhbnd1,
           pointerQhbnd2,
           subintervalIndex,
-          numberOfVariables,
+          numberOfVariables+numberOfParameters,
           basisSize);
 
       singleLevelFaceUnknownsProlongation(
@@ -161,23 +160,22 @@ void singleLevelFaceUnknownsRestriction(
     const double* lQhbndFine,
     const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex,
     const int numberOfVariables, const int basisSize) {
+  kernels::idx3 idx(basisSize,basisSize,numberOfVariables);
+
   for (int m2 = 0; m2 < basisSize; ++m2) {
     for (int m1 = 0; m1 < basisSize; ++m1) {
+
       for (int ivar = 0; ivar < numberOfVariables; ++ivar) {
-        const int mNodeIndex     = basisSize*m2 + m1;
-        const int mDofStartIndex = mNodeIndex * numberOfVariables;
 
         for (int n2 = 0; n2 < basisSize; ++n2) {
           for (int n1 = 0; n1 < basisSize; ++n1) {
-            const int nNodeIndex     = basisSize*n2 + n1;
-            const int nDofStartIndex = nNodeIndex * numberOfVariables;
             
-            lQhbndCoarse[mDofStartIndex+ivar] +=
+            lQhbndCoarse[idx(m2,m1,ivar)] +=
                              kernels::gaussLegendreWeights[basisSize-1][n1] *
                              kernels::gaussLegendreWeights[basisSize-1][n2] *
                              kernels::fineGridProjector1d[basisSize-1][subfaceIndex[0]][m1][n1] *
                              kernels::fineGridProjector1d[basisSize-1][subfaceIndex[1]][m2][n2] *
-                             lQhbndFine[nDofStartIndex + ivar] /
+                             lQhbndFine[idx(n2,n1,ivar)] /
                              kernels::gaussLegendreWeights[basisSize-1][m1] /
                              kernels::gaussLegendreWeights[basisSize-1][m2] / 9.0;
           }
@@ -203,13 +201,15 @@ void kernels::aderdg::generic::c::faceUnknownsRestriction(double* lQhbndCoarse,
                                                           const int coarseGridLevel,
                                                           const int fineGridLevel,
                                                           const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex,
-                                                          const int numberOfVariables, const int basisSize){
+                                                          const int numberOfVariables,
+                                                          const int numberOfParameters,
+                                                          const int basisSize){
   const int levelDelta     = fineGridLevel - coarseGridLevel;
   const int basisSize2     = basisSize*basisSize;
 
-  double * lQhbndCoarseTemp1 = new double[basisSize2*numberOfVariables];
+  double * lQhbndCoarseTemp1 = new double[basisSize2*(numberOfVariables+numberOfParameters)];
   double * lFhbndCoarseTemp1 = new double[basisSize2*numberOfVariables];
-  double * lQhbndCoarseTemp2 = new double[basisSize2*numberOfVariables];
+  double * lQhbndCoarseTemp2 = new double[basisSize2*(numberOfVariables+numberOfParameters)];
   double * lFhbndCoarseTemp2 = new double[basisSize2*numberOfVariables];
 
   double * pointerQhbnd1 = 0;
@@ -238,7 +238,7 @@ void kernels::aderdg::generic::c::faceUnknownsRestriction(double* lQhbndCoarse,
     assertion(subintervalIndex[1] < 3);
 
     // Zero the values of of the first pair of pointers.
-    memset(pointerQhbnd1, 0, basisSize2*numberOfVariables*sizeof(double));
+    memset(pointerQhbnd1, 0, basisSize2*(numberOfVariables+numberOfParameters)*sizeof(double));
     memset(pointerFhbnd1, 0, basisSize2*numberOfVariables*sizeof(double));
 
     // Apply the single level restriction operator.
@@ -248,7 +248,7 @@ void kernels::aderdg::generic::c::faceUnknownsRestriction(double* lQhbndCoarse,
           pointerQhbnd1,
           lQhbndFine,
           subintervalIndex,
-          numberOfVariables,
+          numberOfVariables+numberOfParameters,
           basisSize);
 
       singleLevelFaceUnknownsRestriction(
@@ -262,7 +262,7 @@ void kernels::aderdg::generic::c::faceUnknownsRestriction(double* lQhbndCoarse,
           pointerQhbnd1,
           pointerQhbnd2,
           subintervalIndex,
-          numberOfVariables,
+          numberOfVariables+numberOfParameters,
           basisSize);
 
       singleLevelFaceUnknownsRestriction(
@@ -287,7 +287,7 @@ void kernels::aderdg::generic::c::faceUnknownsRestriction(double* lQhbndCoarse,
   }
 
   // Add restricted fine level unknowns to coarse level unknowns.
-  accumulate(lQhbndCoarse, pointerQhbnd2, basisSize2*numberOfVariables);
+  accumulate(lQhbndCoarse, pointerQhbnd2, basisSize2*(numberOfVariables+numberOfParameters));
   accumulate(lFhbndCoarse, pointerFhbnd2, basisSize2*numberOfVariables);
 
   // Clean up.
@@ -302,21 +302,19 @@ void singleLevelVolumeUnknownsProlongation(
     const double* luhCoarse,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
     const int numberOfVariables, const int basisSize) {
+  kernels::idx4 idx(basisSize,basisSize,basisSize,numberOfVariables);
+
   for (int m3 = 0; m3 < basisSize; ++m3) {
     for (int m2 = 0; m2 < basisSize; ++m2) {
       for (int m1 = 0; m1 < basisSize; ++m1) {
+
         for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-          const int mNodeIndex     = basisSize*basisSize*m3 + basisSize*m2 + m1;
-          const int mDofStartIndex = mNodeIndex * numberOfVariables;
 
           for (int n3 = 0; n3 < basisSize; ++n3) {
             for (int n2 = 0; n2 < basisSize; ++n2) {
               for (int n1 = 0; n1 < basisSize; ++n1) {
-                const int nNodeIndex     = basisSize*basisSize*n3 + basisSize*n2 + n1;
-                const int nDofStartIndex = nNodeIndex * numberOfVariables;
-
-                luhFine[mDofStartIndex+ivar]
-                        += luhCoarse[nDofStartIndex + ivar] *
+                luhFine[idx(m3,m2,m1,ivar)]
+                        += luhCoarse[idx(n3,n2,n1,ivar)] *
                         kernels::fineGridProjector1d[basisSize-1][subcellIndex[0]][n1][m1] *
                         kernels::fineGridProjector1d[basisSize-1][subcellIndex[1]][n2][m2] *
                         kernels::fineGridProjector1d[basisSize-1][subcellIndex[2]][n3][m3];
@@ -334,10 +332,14 @@ void kernels::aderdg::generic::c::volumeUnknownsProlongation(double* luhFine,
                                                              const int coarseGridLevel,
                                                              const int fineGridLevel,
                                                              const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
-                                                             const int numberOfVariables, const int basisSize){
+                                                             const int numberOfVariables,
+                                                             const int numberOfParameters,
+                                                             const int basisSize){
   const int levelDelta = fineGridLevel - coarseGridLevel;
 
-  double * luhFineTemp = new double[basisSize*basisSize*basisSize*numberOfVariables];
+  const int basisSize3 = basisSize*basisSize*basisSize;
+
+  double * luhFineTemp = new double[basisSize3*(numberOfVariables+numberOfParameters)];
 
   double * pointerUh1 = 0;
   double * pointerUh2 = 0;
@@ -373,7 +375,7 @@ void kernels::aderdg::generic::c::volumeUnknownsProlongation(double* luhFine,
     assertion(subintervalIndex[2] < 3);
 
     // Zero the values of the first pointer.
-    memset(pointerUh1, 0, basisSize*basisSize*basisSize*numberOfVariables*sizeof(double));
+    memset(pointerUh1, 0, basisSize3*(numberOfVariables+numberOfParameters)*sizeof(double));
 
     // Apply the single level prolongation operator.
     // Use the coarse level unknowns as input in the first iteration.
@@ -382,14 +384,14 @@ void kernels::aderdg::generic::c::volumeUnknownsProlongation(double* luhFine,
           pointerUh1,
           luhCoarse,
           subintervalIndex,
-          numberOfVariables,
+          numberOfVariables+numberOfParameters,
           basisSize);
     } else {
       singleLevelVolumeUnknownsProlongation(
           pointerUh1,
           pointerUh2,
           subintervalIndex,
-          numberOfVariables,
+          numberOfVariables+numberOfParameters,
           basisSize);
     }
 
@@ -415,27 +417,25 @@ void singleLevelVolumeUnknownsRestriction(
     const double* luhFine,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
     const int numberOfVariables, const int basisSize) {
+  kernels::idx4 idx(basisSize,basisSize,basisSize,numberOfVariables);
+
   for (int m3 = 0; m3 < basisSize; ++m3) {
     for (int m2 = 0; m2 < basisSize; ++m2) {
       for (int m1 = 0; m1 < basisSize; ++m1) {
+
         for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-          const int mNodeIndex     = basisSize*basisSize*m3 + basisSize*m2 + m1;
-          const int mDofStartIndex = mNodeIndex * numberOfVariables;
 
           for (int n3 = 0; n3 < basisSize; ++n3) {
             for (int n2 = 0; n2 < basisSize; ++n2) {
               for (int n1 = 0; n1 < basisSize; ++n1) {
-                const int nNodeIndex     = basisSize*basisSize*n3 + basisSize*n2 + n1;
-                const int nDofStartIndex = nNodeIndex * numberOfVariables;
-
-                luhCoarse[mDofStartIndex+ivar] +=
+                luhCoarse[idx(m3,m2,m1,ivar)] +=
                     kernels::gaussLegendreWeights[basisSize-1][n1] *
                     kernels::gaussLegendreWeights[basisSize-1][n2] *
                     kernels::gaussLegendreWeights[basisSize-1][n3] *
                     kernels::fineGridProjector1d[basisSize-1][subcellIndex[0]][m1][n1] *
                     kernels::fineGridProjector1d[basisSize-1][subcellIndex[1]][m2][n2] *
                     kernels::fineGridProjector1d[basisSize-1][subcellIndex[2]][m3][n3] *
-                    luhFine[nDofStartIndex + ivar] /
+                    luhFine[idx(n3,n2,n1,ivar)] /
                     kernels::gaussLegendreWeights[basisSize-1][m1] /
                     kernels::gaussLegendreWeights[basisSize-1][m2] /
                     kernels::gaussLegendreWeights[basisSize-1][m3] / 27.0;
@@ -454,11 +454,15 @@ void kernels::aderdg::generic::c::volumeUnknownsRestriction(
     const int coarseGridLevel,
     const int fineGridLevel,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
-    const int numberOfVariables, const int basisSize){
-  const int levelDelta     = fineGridLevel - coarseGridLevel;
+    const int numberOfVariables,
+    const int numberOfParameters,
+    const int basisSize){
+  const int levelDelta    = fineGridLevel - coarseGridLevel;
 
-  double * luhCoarseTemp1 = new double[basisSize*basisSize*basisSize*numberOfVariables];
-  double * luhCoarseTemp2 = new double[basisSize*basisSize*basisSize*numberOfVariables];
+  const int basisSize3     = basisSize*basisSize*basisSize;
+
+  double * luhCoarseTemp1 = new double[basisSize3*(numberOfVariables+numberOfParameters)];
+  double * luhCoarseTemp2 = new double[basisSize3*(numberOfVariables+numberOfParameters)];
 
   double * pointerUh1 = 0;
   double * pointerUh2 = 0;
@@ -485,7 +489,7 @@ void kernels::aderdg::generic::c::volumeUnknownsRestriction(
     assertion(subintervalIndex[2] < 3);
 
     // Zero the values of the first pointer.
-    memset(pointerUh1, 0, basisSize*basisSize*basisSize*numberOfVariables*sizeof(double));
+    memset(pointerUh1, 0, basisSize3*(numberOfVariables+numberOfParameters)*sizeof(double));
 
     // Apply the single level restriction operator.
     // Use the fine level unknowns as input in the first iteration.
@@ -494,14 +498,14 @@ void kernels::aderdg::generic::c::volumeUnknownsRestriction(
           pointerUh1,
           luhFine,
           subintervalIndex,
-          numberOfVariables,
+          numberOfVariables+numberOfParameters,
           basisSize);
     } else {
       singleLevelVolumeUnknownsRestriction(
           pointerUh1,
           pointerUh2,
           subintervalIndex,
-          numberOfVariables,
+          numberOfVariables+numberOfParameters,
           basisSize);
     }
 
@@ -517,7 +521,7 @@ void kernels::aderdg::generic::c::volumeUnknownsRestriction(
   }
 
   // Add restricted fine level unknowns to coarse level unknowns.
-  accumulate(luhCoarse,pointerUh2,basisSize*basisSize*basisSize*numberOfVariables);
+  accumulate(luhCoarse,pointerUh2,basisSize3*(numberOfVariables+numberOfParameters));
 
   // Clean up.
   delete [] luhCoarseTemp1;

@@ -320,8 +320,7 @@ public:
   static bool limiterDomainOfOneSolverHasChanged();
 
   /**
-   * TODO(Dominic): Docu
-   *
+   * Create a limiting ADER-DG solver.
    *
    * <h2>Discrete maximum principle</h2>
    * By default this constructor initialises the maximum relaxation
@@ -374,7 +373,13 @@ public:
     _limiter->setMinTimeStepSize(_solver->getMinCorrectorTimeStepSize());
   }
 
+  /**
+   * We always override the limiter time step
+   * data by the ADER-DG one before a solution update.
+   */
   void startNewTimeStep() override;
+
+  void zeroTimeStepSizes() override;
 
   bool getLimiterDomainHasChanged() {
     return _limiterDomainHasChanged;
@@ -394,20 +399,13 @@ public:
    */
   void rollbackToPreviousTimeStep();
 
-  void reconstructStandardTimeSteppingDataAfterRollback();
-
   void reinitialiseTimeStepData() override;
 
   void updateNextMinCellSize(double minCellSize) override;
-
   void updateNextMaxCellSize(double maxCellSize) override;
-
   double getNextMinCellSize() const override;
-
   double getNextMaxCellSize() const override;
-
   double getMinCellSize() const override;
-
   double getMaxCellSize() const override;
 
   bool isValidCellDescriptionIndex(
@@ -461,7 +459,7 @@ public:
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
-  bool enterCell(
+  bool updateStateInEnterCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -471,7 +469,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
-  bool leaveCell(
+  bool updateStateInLeaveCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -484,11 +482,16 @@ public:
   ///////////////////////////////////
   // CELL-LOCAL
   //////////////////////////////////
+  bool evaluateRefinementCriterionAfterSolutionUpdate(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
   double startNewTimeStep(
       const int cellDescriptionsIndex,
       const int element,
       double*   tempEigenvalues) override;
 
+  void zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) override;
 
   void reconstructStandardTimeSteppingData(const int cellDescriptionsIndex,int element) const {
     _solver->reconstructStandardTimeSteppingData(cellDescriptionsIndex,element);
@@ -513,13 +516,6 @@ public:
       const int solverElement);
 
   /**
-   * Similar to reconstructStandardTimeSteppingData for roll backs
-   */
-  void reconstructStandardTimeSteppingDataAfterRollback(
-      const int cellDescriptionsIndex,
-      const int solverElement) const;
-
-  /**
    * TODO(Dominic): I need the whole limiter recomputation
    * procedure also for the initial conditions.
    *
@@ -533,25 +529,11 @@ public:
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
 
   /**
-   * Adds a limiter patch to the initially troubled cells, their
-   * neighbours, and their neighbour's neighbours.
-   * Further imposes finite volumes boundary conditions onto the limiter
-   * solution in cells with limiter status Troubled and NeighbourIsTroubled and
-   * then projects this solution onto the DG solver space for those cells.
-   * Finally, projects the ADER-DG initial conditions onto
-   * the FV limiter space for cells with limiter status
-   * NeighbourIsNeighbourOfTroubledCell.
-   */
-  void initialiseLimiter(
-      const int cellDescriptionsIndex,
-      const int element,
-      exahype::Cell& fineGridCell,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) const;
-
-  /**
    * This method assumes the ADERDG solver's cell-local limiter status has
    * already been determined.
+   *
+   * Before performing an update with the limiter,
+   * set the ADER-DG time step sizes.
    *
    * \see determineLimiterStatusAfterLimiterStatusSpreading(...)
    */
@@ -676,8 +658,8 @@ public:
    *
    * |New Status | Action                                                                                                                                      |
    * ----------------------------------------------------------------------------------------------------------------------------------------------------------|
-   * |O          | Do nothing. Solver solution has been evolved correctly before.                                                                              |
-   * |T/NT       | Evolve FV solver project result onto the ADER-DG space.                                                                                     |
+   * |O          | Do nothing. Solver solution has been evolved correctly before. DG solution is correct.                                                                             |
+   * |T/NT       | Evolve FV solver. Project result onto the ADER-DG space. Recompute the space-time predictor if not initial recomputation.                                                                                  |
    * |NNT        | Evolve solver and project its solution onto the limiter solution space. (We had to do a rollback beforehand in the reinitialisation phase.) |
    *
    * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
@@ -701,10 +683,38 @@ public:
   void recomputeSolution(
       const int cellDescriptionsIndex,
       const int element,
-      double** tempStateSizedArrays,
-      double** tempUnknowns,
+      exahype::solvers::SolutionUpdateTemporaryVariables& solutionUpdateTemporaryVariables,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
+
+  /**
+   * !!! Only for fused time stepping !!!
+   *
+   * Recompute the predictor in particular cells.
+   *
+   * We perform the following actions based on the
+   * new and old limiter status:
+   *
+   * |New Status | Old Status | Action                                                                                                                                      |
+   * ----------------------------------------------------------------------------------------------------------------------------------------------------------|
+   * |O/NNTT     | O/NT/NNT   | Do nothing. Underlying DG solution has not changed.
+   * |           | T          | Recompute predictor. Cell was skipped before in predictor computation
+   * |           |            | since it is marked T. See mapping Prediction::enterCell.
+   * |NT         | *          | Recompute predictor. DG solution has been recomputed.
+   * |T          | *          | Not necesssary to compute predictor
+   *
+   * Legend: O: Ok, T: Troubled, NT: NeighbourIsTroubledCell, NNT: NeighbourIsNeighbourOfTroubledCell
+   *
+   * We do not overwrite the old limiter status set in this method.
+   * We compute the new limiter status based on the merged limiter statuses associated
+   * with the faces.
+   */
+  void recomputePredictor(
+      const int cellDescriptionsIndex,
+        const int element,
+        exahype::solvers::PredictionTemporaryVariables& predictionTemporaryVariables,
+        exahype::Vertex* const fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
 
   void preProcess(
       const int cellDescriptionsIndex,

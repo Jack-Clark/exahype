@@ -81,8 +81,10 @@ echo " */"
 echo
 
 cd "$peano_path"
-if which svn &>/dev/null && svn info >/dev/null 2>&1; then
+if which svn &>/dev/null && svn info --show-item revision &>/dev/null; then
 	echo "/* Information collected with $(svn --version | head -n1) */"
+
+	# problem with old svn (1.6): --show-item is not available
 	
 	COMMIT="$(svn info --show-item revision)"
 	# TODO: Determine whether --show-item is a remote (ie. over internet) action. If so, remove.
@@ -96,8 +98,17 @@ else
 	echo "#define PEANO_SVN_INFO \"No svn/repository available\""
 fi
 
-### Add any other repository dependency here
-### if you like.
+###
+### Peano version check
+###
 
+echo "#include \"peano/version.h\""
 echo 
 echo "#endif /* EXAHYPE_BUILD_INFO_H */"
+echo "#if PEANO_VERSION<2509 "
+echo "#error Old Peano version. Version 2509 required. Please update your Peano installation."
+echo "#endif"
+
+
+### Add any other repository dependency here
+### if you like.

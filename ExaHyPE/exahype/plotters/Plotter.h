@@ -197,6 +197,8 @@ class exahype::plotters::Plotter {
   Device*                _device;
 
  public:
+  Plotter(const int solverConfig,const int plotterConfig,const exahype::Parser& parser,Device* device);
+
   /**
    * @param solverConfig Number of the underlying solver. This number is important to
    *               parse the file: the constructor asks parser for the \p solverNumber-th

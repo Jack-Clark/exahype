@@ -22,12 +22,17 @@ public class IOUtils {
    * http://stackoverflow.com/questions/13269556/strange-behavior-of-class-getresource-and-classloader-getresource-in-executa
    */
   public static String convertRessourceContentToString(String relativePath) {
-    InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(relativePath);
-    java.util.Scanner s = new java.util.Scanner(in);
-    Scanner sNew = s.useDelimiter("\\A");
-    String content = sNew.hasNext() ? sNew.next() : "";
-    sNew.close();
-    s.close();
-    return content;
+    try {
+       InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(relativePath);
+       java.util.Scanner s = new java.util.Scanner(in);
+       Scanner sNew = s.useDelimiter("\\A");
+       String content = sNew.hasNext() ? sNew.next() : "";
+       sNew.close();
+       s.close();
+       return content;
+    } catch (NullPointerException exc) {
+       // the InputStream is NULL if relativePath does not exist.
+       throw new IllegalArgumentException("Error: Toolkit file "+relativePath+" not found ("+exc.toString()+") during loading in convertRessourceContentToString. Make sure it is compiled into the toolkit");
+    }
   } 
 }

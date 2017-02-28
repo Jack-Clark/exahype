@@ -27,34 +27,24 @@ using std::endl;
 using std::cout;
 
 extern "C" {
-void adervolumeintegralnonlinear_(double* lduh, double* lFhi_x, double* lFhi_y,
-                         double* lFhi_z, double* dx);
+void adervolumeintegralnonlinear_(double* lduh, const double* const lFhi_x, const double* const lFhi_y,
+                         const double* const lFhi_z, const double* const lShi, const double* const dx);
 }
 
 void kernels::aderdg::generic::fortran::volumeIntegralNonlinear(
     double* lduh, const double* const lFhi,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const int numberOfVariables, const int numberOfParameters, const int basisSize) {
-  // todo Angelika
-  // Please remove the typedefs in generic kernels again since numberOf(...)Dof
-  // is not
-  // a compile time variable anymore
 
-  // circumvent 'const double'
-  double* lFhiFortran = new double[numberOfVariables * DIMENSIONS * basisSize *
-                                   basisSize * basisSize];
-  for (int i = 0;
-       i < numberOfVariables * DIMENSIONS * basisSize * basisSize * basisSize;
-       i++) {
-    lFhiFortran[i] = lFhi[i];
-  }
   // lFhiFortran = [ lFhi_x | lFhi_y | lFhi_z ]
-  double* lFhi_x =
-      &lFhiFortran[0 * numberOfVariables * basisSize * basisSize * basisSize];
-  double* lFhi_y =
-      &lFhiFortran[1 * numberOfVariables * basisSize * basisSize * basisSize];
-  double* lFhi_z =
-      &lFhiFortran[2 * numberOfVariables * basisSize * basisSize * basisSize];
+  const double* const lFhi_x =
+      &lFhi[0 * numberOfVariables * basisSize * basisSize * basisSize];
+  const double* const lFhi_y =
+      &lFhi[1 * numberOfVariables * basisSize * basisSize * basisSize];
+  const double* const lFhi_z =
+      &lFhi[2 * numberOfVariables * basisSize * basisSize * basisSize];
+  const double* const lShi =
+      &lFhi[3 * numberOfVariables * basisSize * basisSize * basisSize];
 
   // std::ofstream ofs;
   // ofs.open ("boutput_lFhi.txt", std::ofstream::out);
@@ -82,13 +72,6 @@ void kernels::aderdg::generic::fortran::volumeIntegralNonlinear(
   // cout << "-------------lFhi in volumeIntegral.cpph------------------" <<
   // "\n";
 
-  double* dxTemp = new double[3];
-  dxTemp[0] = dx[0];
-  dxTemp[1] = dx[1];
-  dxTemp[2] = dx[2];
+  adervolumeintegralnonlinear_(lduh, lFhi_x, lFhi_y, lFhi_z, lShi, dx.data());
 
-  adervolumeintegralnonlinear_(lduh, lFhi_x, lFhi_y, lFhi_z, dxTemp);
-
-  delete[] lFhiFortran;
-  delete[] dxTemp;
 }

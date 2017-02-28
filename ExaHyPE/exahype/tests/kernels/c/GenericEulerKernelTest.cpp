@@ -10,7 +10,7 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #include "exahype/tests/kernels/c/GenericEulerKernelTest.h"
 
 #include "tarch/compiler/CompilerSpecificSettings.h"
@@ -41,13 +41,13 @@ namespace c {
 
 
 GenericEulerKernelTest::GenericEulerKernelTest()
-    : tarch::tests::TestCase("exahype::tests::c::GenericEulerKernelTest") {}
+: tarch::tests::TestCase("exahype::tests::c::GenericEulerKernelTest") {}
 
 GenericEulerKernelTest::~GenericEulerKernelTest() {}
 
 void GenericEulerKernelTest::run() {
   testMethod(testPDEFluxes);
-  logWarning("run()","Test testSpaceTimePredictorLinear is disabled!");
+  logWarning("run()","Test testSpaceTimePredictorLinear is failing. Test data might not be correct anymore.");
 //  testMethod(testSpaceTimePredictorLinear);
   testMethod(testSpaceTimePredictorNonlinear);
   testMethod(testVolumeIntegralLinear);
@@ -87,12 +87,12 @@ void GenericEulerKernelTest::testEquidistantGridProjection() {
       double value = 0.0;
       dfor(ii,order+1) { // Gauss-Legendre node indices
         int iGauss = peano::utils::dLinearisedWithoutLookup(ii,order + 1);
-            value +=  kernels::basisFunctions[order][ii(0)](i(0)/order) *
-                      kernels::basisFunctions[order][ii(1)](i(1)/order) *
-                      #ifdef Dim3
-                      kernels::basisFunctions[order][ii(2)](i(2)/order) *
-                      #endif
-                      u[iGauss * numberOfVariables + unknown];
+        value +=  kernels::basisFunctions[order][ii(0)](i(0)/order) *
+            kernels::basisFunctions[order][ii(1)](i(1)/order) *
+            #ifdef Dim3
+            kernels::basisFunctions[order][ii(2)](i(2)/order) *
+            #endif
+            u[iGauss * numberOfVariables + unknown];
       }
       assertion(tarch::la::equals(value,1.0,1e-6)); // todo precision issues
     }
@@ -100,23 +100,23 @@ void GenericEulerKernelTest::testEquidistantGridProjection() {
 
   // via equidistant grid projection
   dfor(i,order+1) {
-      for (int unknown=0; unknown < numberOfVariables; unknown++) {
-        std::ostringstream identifier;
-        identifier << "Q" << unknown;
+    for (int unknown=0; unknown < numberOfVariables; unknown++) {
+      std::ostringstream identifier;
+      identifier << "Q" << unknown;
 
-        double value = 0.0;
-        dfor(ii,order+1) { // Gauss-Legendre node indices
-          int iGauss = peano::utils::dLinearisedWithoutLookup(ii,order + 1);
-          value +=  kernels::equidistantGridProjector1d[order][ii(0)][i(0)] *
-                    kernels::equidistantGridProjector1d[order][ii(1)][i(1)] *
-                    #ifdef Dim3
-                    kernels::equidistantGridProjector1d[order][ii(2)][i(2)] *
-                    #endif
-                    u[iGauss * numberOfVariables + unknown];
-        }
-        assertion(tarch::la::equals(value,1.0,1e-6)); // todo precision issues
+      double value = 0.0;
+      dfor(ii,order+1) { // Gauss-Legendre node indices
+        int iGauss = peano::utils::dLinearisedWithoutLookup(ii,order + 1);
+        value +=  kernels::equidistantGridProjector1d[order][ii(0)][i(0)] *
+            kernels::equidistantGridProjector1d[order][ii(1)][i(1)] *
+            #ifdef Dim3
+            kernels::equidistantGridProjector1d[order][ii(2)][i(2)] *
+            #endif
+            u[iGauss * numberOfVariables + unknown];
       }
+      assertion(tarch::la::equals(value,1.0,1e-6)); // todo precision issues
     }
+  }
 }
 
 }  // namespace c

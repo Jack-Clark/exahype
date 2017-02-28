@@ -87,41 +87,47 @@ class exahype::mappings::SolutionRecomputation {
    */
   exahype::State _localState;
 
-  /**
-   * An array of 5 pointers to arrays of a length that equals the
-   * number of variables per solver.
-   *
-   * Temporary variables per solver for storing state sized (=number of variables)
-   * quantities like eigenvalues or averaged states.
-   */
-  double*** _tempStateSizedVectors = nullptr;
+  exahype::solvers::PredictionTemporaryVariables     _predictionTemporaryVariables;
 
-  /**
-   * Temporary variable per solver for storing square matrices
-   * of the size number of variables times number of variables.
-   */
-  double*** _tempStateSizedSquareMatrices = nullptr;
+  exahype::solvers::MergingTemporaryVariables        _mergingTemporaryVariables;
 
-  /**
-   * An array of pointers to arrays of a length that equals the
-   * number of solution unknowns per solver.
-   *
-   * These temporary variables are only used by the finite  volumes
-   * solver.
-   */
-  double*** _tempUnknowns = nullptr;
+  exahype::solvers::SolutionUpdateTemporaryVariables _solutionUpdateTemporaryVariables;
 
-  /**
-   * Temporary variable per solver for storing
-   * space-time face unknowns.
-   */
-//  double**  _tempSpaceTimeFaceUnknownsArray  = nullptr; todo
-
-  /**
-   * Temporary variable per solver for storing
-   * face unknowns.
-   */
-  double***  _tempFaceUnknowns = nullptr;
+//  /**
+//   * An array of 5 pointers to arrays of a length that equals the
+//   * number of variables per solver.
+//   *
+//   * Temporary variables per solver for storing state sized (=number of variables)
+//   * quantities like eigenvalues or averaged states.
+//   */
+//  double*** _tempStateSizedVectors = nullptr;
+//
+//  /**
+//   * Temporary variable per solver for storing square matrices
+//   * of the size number of variables times number of variables.
+//   */
+//  double*** _tempStateSizedSquareMatrices = nullptr;
+//
+//  /**
+//   * An array of pointers to arrays of a length that equals the
+//   * number of solution unknowns per solver.
+//   *
+//   * These temporary variables are only used by the finite  volumes
+//   * solver.
+//   */
+//  double*** _tempUnknowns = nullptr;
+//
+//  /**
+//   * Temporary variable per solver for storing
+//   * space-time face unknowns.
+//   */
+////  double**  _tempSpaceTimeFaceUnknownsArray  = nullptr; todo
+//
+//  /**
+//   * Temporary variable per solver for storing
+//   * face unknowns.
+//   */
+//  double***  _tempFaceUnknowns = nullptr;
 
   /**
    * Initialises the temporary variables.
@@ -135,7 +141,7 @@ class exahype::mappings::SolutionRecomputation {
    * solvers in exahype::solvers::RegisteredSolvers
    * are not copied for every thread.
    */
-  void prepareTemporaryVariables();
+  void initialiseTemporaryVariables();
 
   /**
    * Deletes the temporary variables.

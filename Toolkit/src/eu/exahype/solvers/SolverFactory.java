@@ -41,7 +41,7 @@ public class SolverFactory {
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
       return new eu.exahype.solvers.OptimisedADERDG(_dimensions,
-          numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
+          numberOfVariables, numberOfParameters, namingSchemeNames, order, _microarchitecture, _pathToLibxsmm,
           _enableProfiler, hasConstants, false);
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {

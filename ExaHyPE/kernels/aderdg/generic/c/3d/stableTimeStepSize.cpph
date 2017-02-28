@@ -10,7 +10,8 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+#include "../../../../KernelUtils.h"
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -25,23 +26,29 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
     const double* const luh,
     double* lambda,
     const tarch::la::Vector<DIMENSIONS, double>& dx) {
-  const int numberOfVariables = solver.getNumberOfVariables();
-  const int basisSize = solver.getNodesPerCoordinateAxis();
-  const double PNPM[10] = {1.0,   0.33,  0.17, 0.1,  0.069,
-                           0.045, 0.038, 0.03, 0.02, 0.015};
-
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::Order+1;
+  constexpr double PNPM[10]        = {1.0,   0.33,  0.17, 0.1,  0.069,
+                                      0.045, 0.038, 0.03, 0.02, 0.015};
+  
+  idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
+  
   double dt = std::numeric_limits<double>::max();
-
-  for (int ii = 0; ii < basisSize; ii++) {
-    for (int jj = 0; jj < basisSize; jj++) {
-      for (int kk = 0; kk < basisSize; kk++) {
-        const int nodeIndex = ii + basisSize * jj + basisSize * basisSize * kk;
-        const int dofStartIndex = nodeIndex * numberOfVariables;
-
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        // !!
+        // TODO(Dominic): For refactoring purposes. Remove old indexing method.
+        const int nodeIndex = i + basisSize * j + basisSize * basisSize * k;
+        const int dofStartIndex = nodeIndex * (numberOfVariables+numberOfParameters);
+        assertion(dofStartIndex==idx_luh(k,j,i,0));
+        // !!
+         
         double denominator = 0.0;
         for (int d = 0; d < DIMENSIONS; d++) {
-          solver.eigenvalues(&luh[dofStartIndex], d, lambda);
-
+          solver.eigenvalues(&luh[idx_luh(i,j,k,0)], d, lambda);
+          
           double maxEigenvalue = 0.0;
           for (int ivar = 0; ivar < numberOfVariables; ivar++) {
             maxEigenvalue = std::max(fabs(lambda[ivar]), maxEigenvalue);
@@ -49,7 +56,7 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
           denominator += maxEigenvalue / dx[d];
         }
 
-        dt = std::min(dt, EXAHYPE_CFL_FACTOR * PNPM[basisSize - 1] /
+        dt = std::min(dt, EXAHYPE_CFL_FACTOR * PNPM[basisSize - 1] / // TODO(Dominic): Move CFL_Factor into solver.
                               denominator);  // order N = basisSize-1
       }
     }

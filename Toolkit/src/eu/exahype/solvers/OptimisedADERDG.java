@@ -2,6 +2,7 @@ package eu.exahype.solvers;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Set;
 
 import eu.exahype.IOUtils;
 
@@ -11,6 +12,7 @@ public class OptimisedADERDG implements Solver {
   private int     _dimensions;
   private int     _numberOfVariables;
   private int     _numberOfParameters;
+  private Set<String> _namingSchemeNames;
   private int     _order;
 //  private int   _patchSize;
   private String  _microarchitecture;
@@ -20,11 +22,12 @@ public class OptimisedADERDG implements Solver {
   private boolean _isLinear;
   private boolean _isFortran;
 
-  public OptimisedADERDG(int dimensions, int numberOfVariables, int numberOfParameters,
+  public OptimisedADERDG(int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
       int order,String microarchitecture, String pathToLibxsmm, boolean enableProfiler, boolean hasConstants,boolean isLinear) {
     _dimensions         = dimensions;
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
+    _namingSchemeNames  = namingSchemeNames;
     _order              = order;
 //    _patchSize = patchSize;
     _microarchitecture  = microarchitecture;
@@ -101,6 +104,12 @@ public class OptimisedADERDG implements Solver {
     content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
     content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order));
 
+    String namingSchemes = "";
+    for (String name : _namingSchemeNames) {
+      namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
+    }
+    content = content.replaceAll("\\{\\{NamingSchemes\\}\\}", namingSchemes);
+    
     writer.write(content);
   }
   
@@ -323,6 +332,6 @@ public class OptimisedADERDG implements Solver {
   
   @Override
   public boolean supportsVariables() {
-    return false;
+    return true;
   }
 }

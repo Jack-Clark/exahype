@@ -28,18 +28,25 @@ namespace exahype {
 namespace tests {
 namespace c {
 
+/*
+ * Q stores parameters, F doesn't.
+ */
 void ElasticityKernelTest::flux(const double *Q, double **F) {
-  for (int i = 0; i < kNumberOfVariables; i++) {
+  constexpr int nVar       = NumberOfVariables;
+  constexpr int nPar       = NumberOfParameters;
+  constexpr int nData      = nVar+nPar;
+
+  for (int i = 0; i < nData; i++) {
     assertion2(std::isfinite(Q[i]), Q[i], i);
   }
 
-  double *f = F[0];
-  double *g = F[1];
+  double *f = F[0]; // ~nVar
+  double *g = F[1]; // ~nVar
   // double* h = F[2];
 
-  std::fill(f, f + kNumberOfVariables, 0.0);
-  std::fill(g, g + kNumberOfVariables, 0.0);
-  // std::fill(h, h + kNumberOfVariables, 0.0);
+  std::fill_n (f, nVar, 0.0);
+  std::fill_n (g, nVar, 0.0);
+//  std::fill_n (h, nVar, 0.0);
 
   double lam = Q[9];          // par(2)
   double mu = Q[10];          // par(2)
@@ -76,22 +83,27 @@ void ElasticityKernelTest::flux(const double *Q, double **F) {
   //  h[9 - 1] = - irho *Q[5 - 1];
 
   for (int i = 0; i < DIMENSIONS; i++) {
-    for (int j = 0; j < kNumberOfVariables; j++) {
+    for (int j = 0; j < nVar; j++) {
       assertion3(std::isfinite(F[i][j]), F[i][j], i, j);
     }
   }
 }
 
+/*
+ * Q stores parameters, S doesn't.
+ */
 void ElasticityKernelTest::source(const double *Q, double *S) {
-  std::fill(S, S + kNumberOfVariables, 0.0);
+  constexpr int nVar       = NumberOfVariables;
+
+  std::fill_n (S, nVar, 0.0);
 }
 
 void ElasticityKernelTest::eigenvalues(const double *const Q,
                                            const int normalNonZeroIndex,
                                            double *lambda) {
-  std::fill(lambda, lambda + kNumberOfParameters, 0.0);
+  constexpr int nVar  = NumberOfVariables;
 
-  std::fill(lambda, lambda + kNumberOfVariables, 0.0);
+  std::fill_n (lambda, nVar, 0.0); // We can ignore the parameters here
 
   double lam = Q[9];    // par(1)
   double mu = Q[10];    // par(2)
@@ -113,23 +125,27 @@ void ElasticityKernelTest::eigenvalues(const double *const Q,
   lambda[9 - 1] = +cp;
 }
 
+/*
+ * Q stores parameters, gradQ and BgradQ doesn't.
+ */
 void ElasticityKernelTest::ncp(const double *const Q,
                                    const double *const gradQ, double *BgradQ) {
-  std::fill(BgradQ, BgradQ + kNumberOfVariables * DIMENSIONS, 0.0);
+  constexpr int nVar  = NumberOfVariables;
 
-  double lam = Q[kNumberOfVariables - kNumberOfParameters];     // par(1)
-  double mu = Q[kNumberOfVariables - kNumberOfParameters + 1];  // par(2)
-  double irho =
-      1.0 / Q[kNumberOfVariables - kNumberOfParameters + 2];  // 1.0 / par(3)
+  std::fill_n (BgradQ, nVar * DIMENSIONS, 0.0); // !!! For the linear kernels, BgradQ is a nVar*dim sized 2-tensor
+
+  double lam  = Q[NumberOfVariables];           // par(1)
+  double mu   = Q[NumberOfVariables + 1];       // par(2)
+  double irho = 1.0 / Q[NumberOfVariables + 2]; // 1.0 / par(3)
 
   assert(std::isfinite(irho));
 
-  const double *gradQx = gradQ + 0 * kNumberOfVariables;
-  const double *gradQy = gradQ + 1 * kNumberOfVariables;
+  const double *gradQx = gradQ + 0 * nVar;
+  const double *gradQy = gradQ + 1 * nVar;
   //  const double *gradQz = gradQ + 2 * kNumberOfVariables;
 
-  double *BgradQx = BgradQ + 0 * kNumberOfVariables;
-  double *BgradQy = BgradQ + 1 * kNumberOfVariables;
+  double *BgradQx = BgradQ + 0 * nVar;
+  double *BgradQy = BgradQ + 1 * nVar;
   //  double *BgradQz = BgradQ + 2 * kNumberOfVariables;
 
   BgradQx[1 - 1] = -(lam + 2 * mu) * gradQx[7 - 1];
@@ -166,9 +182,12 @@ void ElasticityKernelTest::ncp(const double *const Q,
 
 void ElasticityKernelTest::matrixb(const double *const Q,
                                        const int normalNonZero, double *Bn) {
-  std::fill(Bn, Bn + kNumberOfVariables * kNumberOfVariables, 0.0);
+  constexpr int nVar       = NumberOfVariables;
+  constexpr int nVar2      = nVar*nVar;
 
-  kernels::idx2 idx_Bn(kNumberOfVariables, kNumberOfVariables);
+  std::fill_n (Bn, nVar2, 0.0);
+
+  kernels::idx2 idx_Bn(nVar, nVar);
 
   double lam = Q[9];          // par(1)
   double mu = Q[10];          // par(2)
@@ -217,88 +236,74 @@ void ElasticityKernelTest::testRiemannSolverLinear() {
   logInfo("ElasticityKernelTest::testRiemannSolverLinear()",
           "Test Riemann solver linear, ORDER=4, DIM=2");
 
-  double *qL = new double[kBasisSize * kNumberOfVariables];
-  double *qR = new double[kBasisSize * kNumberOfVariables];
+  constexpr int nVar       = NumberOfVariables;
+  constexpr int nPar       = NumberOfParameters;
+  constexpr int nData      = nVar+nPar;
+  constexpr int basisSize  = (Order+1);
 
-  kernels::idx2 idx_q(kBasisSize, kNumberOfVariables);
-  kernels::idx2 idx_q_in(kBasisSize, kNumberOfVariables - kNumberOfParameters);
-  kernels::idx2 idx_param_in(kBasisSize, kNumberOfParameters);
+  double *qL = new double[basisSize * nData];
+  double *qR = new double[basisSize * nData];
 
-  for (int i = 0; i < kBasisSize; i++) {
-    for (int j = 0; j < kNumberOfVariables - kNumberOfParameters; j++) {
-      qL[idx_q(i, j)] = exahype::tests::testdata::elasticity::
-          testRiemannSolverLinear::qL_IN[idx_q_in(i, j)];
-      qR[idx_q(i, j)] = exahype::tests::testdata::elasticity::
-          testRiemannSolverLinear::qR_IN[idx_q_in(i, j)];
-    }
+  kernels::idx2 idx_q(basisSize, nData);
 
-    for (int j = 0; j < kNumberOfParameters; j++) {
-      qL[idx_q(i, j + kNumberOfVariables - kNumberOfParameters)] =
-          exahype::tests::testdata::elasticity::testRiemannSolverLinear::
-              paramL_IN[idx_param_in(i, j)];
-      qR[idx_q(i, j + kNumberOfVariables - kNumberOfParameters)] =
-          exahype::tests::testdata::elasticity::testRiemannSolverLinear::
-              paramR_IN[idx_param_in(i, j)];
-    }
+  kernels::idx2 idx_q_in(basisSize, nVar);
+
+  kernels::idx2 idx_param_in(basisSize, nPar);
+
+  for (int i = 0; i < basisSize; i++) {
+    // copy variables
+    std::copy_n (exahype::tests::testdata::elasticity::testRiemannSolverLinear::qL_IN + idx_q_in(i, 0),
+                 nVar, qL + idx_q(i, 0));
+    std::copy_n (exahype::tests::testdata::elasticity::testRiemannSolverLinear::qR_IN + idx_q_in(i, 0),
+                 nVar, qR + idx_q(i, 0));
+
+    // append copied parameters
+    std::copy_n (exahype::tests::testdata::elasticity::testRiemannSolverLinear::paramL_IN + idx_param_in(i, 0),
+                 nPar, qL + idx_q(i, nVar));
+    std::copy_n (exahype::tests::testdata::elasticity::testRiemannSolverLinear::paramR_IN + idx_param_in(i, 0),
+                 nPar, qR + idx_q(i, nVar));
   }
-
-  double *FL = new double[kBasisSize * kNumberOfVariables];
-  double *FR = new double[kBasisSize * kNumberOfVariables];
-  std::fill(FL, FL + kBasisSize * kNumberOfVariables,
-            std::numeric_limits<double>::quiet_NaN());
-  std::fill(FR, FR + kBasisSize * kNumberOfVariables,
-            std::numeric_limits<double>::quiet_NaN());
-
-  kernels::idx2 idx_F(kBasisSize, kNumberOfVariables);
-  kernels::idx2 idx_F_in(kBasisSize, kNumberOfVariables - kNumberOfParameters);
-
-  for (int i = 0; i < kBasisSize; i++) {
-    for (int j = 0; j < kNumberOfVariables - kNumberOfParameters; j++) {
-      FL[idx_F(i, j)] = exahype::tests::testdata::elasticity::
-          testRiemannSolverLinear::FL_IN[idx_F_in(i, j)];
-      FR[idx_F(i, j)] = exahype::tests::testdata::elasticity::
-          testRiemannSolverLinear::FR_IN[idx_F_in(i, j)];
-    }
-  }
+  double *FL = new double[basisSize * nVar]; // no params here
+  double *FR = new double[basisSize * nVar]; // no params here
 
   const double dt = 1.916666666666667E-004;
 
   // temp variables:
-  double  *tempFaceUnknowns      = new double[kBasisSize*kNumberOfVariables]; // nDOF(1) * nVar
-  double **tempStateSizedVectors = new double*[5];
-  tempStateSizedVectors[0] = new double[kNumberOfVariables*kNumberOfVariables]; // nVar
-  tempStateSizedVectors[1] = tempStateSizedVectors[0]+kNumberOfVariables;
-  tempStateSizedVectors[2] = tempStateSizedVectors[1]+kNumberOfVariables;
-  tempStateSizedVectors[3] = tempStateSizedVectors[2]+kNumberOfVariables;
-  tempStateSizedVectors[4] = tempStateSizedVectors[3]+kNumberOfVariables;
-  double **tempStateSizedSquareMatrices = new double*[3];
-  tempStateSizedSquareMatrices[0] = new double[3*kNumberOfVariables*kNumberOfVariables]; // nVar*nVar
-  tempStateSizedSquareMatrices[1] = tempStateSizedSquareMatrices[0]+kNumberOfVariables*kNumberOfVariables;
-  tempStateSizedSquareMatrices[2] = tempStateSizedSquareMatrices[1]+kNumberOfVariables*kNumberOfVariables;
+  double  *tempFaceUnknowns      = new double[basisSize*nData]; // nDOF(1) * nData
+  double **tempDataVectors = new double*[5];
+  tempDataVectors[0] = new double[5*nData]; // ~nData
+  tempDataVectors[1] = tempDataVectors[0]+nData;
+  tempDataVectors[2] = tempDataVectors[1]+nData;
+  tempDataVectors[3] = tempDataVectors[2]+nData;
+  tempDataVectors[4] = tempDataVectors[3]+nData;
+  double **tempStateSizedSquareMatrices = new double*[3]; // ~nVar*nVar
+  tempStateSizedSquareMatrices[0] = new double[3*nVar*nVar];
+  tempStateSizedSquareMatrices[1] = tempStateSizedSquareMatrices[0]+nVar*nVar;
+  tempStateSizedSquareMatrices[2] = tempStateSizedSquareMatrices[1]+nVar*nVar;
 
   // TODO(Dominic): Fix test
   kernels::aderdg::generic::c::riemannSolverLinear<ElasticityKernelTest>(*this,
       FL, FR, qL, qR,
-      tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,
+      tempFaceUnknowns,tempDataVectors,tempStateSizedSquareMatrices,
       dt, 1 /* normalNonZero */);
 
-  kernels::idx2 idx_F_out(kBasisSize, kNumberOfVariables - kNumberOfParameters);
+  kernels::idx2 idx_F(basisSize, nVar);
 
-  for (int i = 0; i < kBasisSize; i++) {
-    for (int j = 0; j < kNumberOfVariables - kNumberOfParameters; j++) {
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < nVar; j++) {
       validateNumericalEqualsWithEpsWithParams1(
           FL[idx_F(i, j)], exahype::tests::testdata::elasticity::
-                               testRiemannSolverLinear::FL_OUT[idx_F_out(i, j)],
-          eps, idx_F_out(i, j));
+                               testRiemannSolverLinear::FL_OUT[idx_F(i, j)],
+          eps, idx_F(i, j));
     }
   }
 
-  for (int i = 0; i < kBasisSize; i++) {
-    for (int j = 0; j < kNumberOfVariables - kNumberOfParameters; j++) {
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < nVar; j++) {
       validateNumericalEqualsWithEpsWithParams1(
           FR[idx_F(i, j)], exahype::tests::testdata::elasticity::
-                               testRiemannSolverLinear::FR_OUT[idx_F_out(i, j)],
-          eps, idx_F_out(i, j));
+                               testRiemannSolverLinear::FR_OUT[idx_F(i, j)],
+          eps, idx_F(i, j));
     }
   }
 
@@ -306,8 +311,8 @@ void ElasticityKernelTest::testRiemannSolverLinear() {
   delete[] qR;
   delete[] FL;
   delete[] FR;
-  delete[] tempStateSizedVectors[0];
-  delete[] tempStateSizedVectors;
+  delete[] tempDataVectors[0];
+  delete[] tempDataVectors;
   delete[] tempStateSizedSquareMatrices[0];
   delete[] tempStateSizedSquareMatrices;
   delete[] tempFaceUnknowns;
@@ -317,49 +322,53 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
   logInfo("ElasticityKernelTest::testSpaceTimePredictorLinear()",
           "Test SpaceTimePredictor linear, ORDER=4, DIM=2");
 
-  double *luh = new double[kNumberOfVariables * kBasisSize * kBasisSize];
-  kernels::idx3 idx_luh(kBasisSize, kBasisSize, kNumberOfVariables);
-  kernels::idx3 idx_luh_IN(kBasisSize, kBasisSize,
-                           kNumberOfVariables - kNumberOfParameters);
-  kernels::idx3 idx_param_IN(kBasisSize, kBasisSize, kNumberOfParameters);
+  constexpr int nVar       = NumberOfVariables;
+  constexpr int nPar       = NumberOfParameters;
+  constexpr int nData      = nVar+nPar;
+  constexpr int basisSize  = (Order+1);
+  constexpr int basisSize2 = basisSize*basisSize;
+  constexpr int basisSize3 = basisSize2*basisSize;
+
+  double *luh = new double[nData * basisSize2];
+  kernels::idx3 idx_luh(basisSize, basisSize, nData);
+  kernels::idx3 idx_luh_IN(basisSize, basisSize, nVar);
+  kernels::idx3 idx_param_IN(basisSize, basisSize, nPar);
 
   // Assemble luh = concatenate dofs and parameters
-  for (int i = 0; i < kBasisSize; i++) {
-    for (int j = 0; j < kBasisSize; j++) {
-      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
-        luh[idx_luh(i, j, k)] = exahype::tests::testdata::elasticity::
-            testSpaceTimePredictorLinear::luh_IN[idx_luh_IN(i, j, k)];
-      }
-      for (int k = 0; k < kNumberOfParameters; k++) {
-        luh[idx_luh(i, j, k + kNumberOfVariables - kNumberOfParameters)] =
-            exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::
-                param_IN[idx_param_IN(i, j, k)];
-      }
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      std::copy_n (exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::luh_IN + idx_luh_IN(i, j, 0),
+                   nVar, luh + idx_luh(i, j, 0));
+      std::copy_n (exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::param_IN + idx_param_IN(i, j, 0),
+                   nPar, luh + idx_luh(i, j, nVar));
     }
   }
 
-  // TODO: Unused
   // Inputs:
-  double** tempSpaceTimeUnknowns = new double*[1];
-  tempSpaceTimeUnknowns[0] = new double[kNumberOfVariables*kBasisSize*kBasisSize*(kBasisSize+1)];  // lQi; nVar * nDOFx * nDOFy * (nDOFt+1); nDOF+1 only here
+  double** tempSpaceTimeUnknowns = new double*[2];
+  tempSpaceTimeUnknowns[0] = new double[2* nData*basisSize2*(basisSize+1)];  // lQi; nVar * nDOFx * nDOFy * (nDOFt+1); nDOF+1 only here
+  tempSpaceTimeUnknowns[1] = tempSpaceTimeUnknowns[0] + nData*basisSize2*(basisSize+1);  // lQi; nVar * nDOFx * nDOFy * (nDOFt+1); nDOF+1 only here
 
+  // TODO(Dominic): new() and eventually malloc file for the flux unknowns on my machine. Interesting.
   double** tempSpaceTimeFluxUnknowns = new double*[2];
-  tempSpaceTimeFluxUnknowns[0] = new double[(DIMENSIONS+1)*kNumberOfVariables*kBasisSize*kBasisSize*kBasisSize];  // lFi+source; (dim+1) * nVar * nDOFx * nDOFy * nDOFt
-  tempSpaceTimeFluxUnknowns[1] = new double[DIMENSIONS*kNumberOfVariables*kBasisSize*kBasisSize*kBasisSize];  // gradQ; dim * nVar * nDOFx * nDOFy * nDOFt
+  tempSpaceTimeFluxUnknowns[0] = (double*)std::malloc((2+1)*nVar*basisSize3);  // lFi+source; (dim+1) * nVar * nDOFx * nDOFy * nDOFt;
+  tempSpaceTimeFluxUnknowns[1] = (double*)std::malloc((2+1)*nVar*basisSize3);  // gradQ; dim * nVar * nDOFx * nDOFy * nDOFt
 
   double* tempStateSizedVector = nullptr;
 
   // Outputs:
-  double *tempUnknowns     = new double[kNumberOfVariables*kBasisSize*kBasisSize*kBasisSize];     // lQhi; nVar * nDOFx * nDOFz
-  double *tempFluxUnknowns = new double[(DIMENSIONS+1)*kNumberOfVariables*kBasisSize*kBasisSize]; // lFh+source,nVar * nDOFx * nDOFy * (dim+1)
-  double *lQbnd = new double[kNumberOfVariables * kBasisSize * 2 * DIMENSIONS];
-  double *lFbnd = new double[kNumberOfVariables * kBasisSize * 2 * DIMENSIONS];
+  double *tempUnknowns     = new double[nData*basisSize3];     // lQhi; nVar * nDOFx * nDOFz
+  double *tempFluxUnknowns = new double[(DIMENSIONS+1)*nVar*basisSize2]; // lFh+source,nVar * nDOFx * nDOFy * (dim+1)
+  double *lQbnd = new double[nData * basisSize * 2 * DIMENSIONS];
+  double *lFbnd = new double[nVar  * basisSize * 2 * DIMENSIONS];
 
-  kernels::idx3 idx_lQhi(kBasisSize, kBasisSize, kNumberOfVariables);
-  kernels::idx4 idx_lFhi(DIMENSIONS, kBasisSize, kBasisSize,
-                         kNumberOfVariables);
-  kernels::idx3 idx_lQbnd(2 * DIMENSIONS, kBasisSize, kNumberOfVariables);
-  kernels::idx3 idx_lFbnd(2 * DIMENSIONS, kBasisSize, kNumberOfVariables);
+  kernels::idx3 idx_lQhi(basisSize, basisSize, nData);
+
+  kernels::idx4 idx_lFhi(DIMENSIONS, basisSize, basisSize, nVar);
+
+  kernels::idx3 idx_lQbnd(2 * DIMENSIONS, basisSize, nData);
+
+  kernels::idx3 idx_lFbnd(2 * DIMENSIONS, basisSize, nVar);
 
   const tarch::la::Vector<DIMENSIONS, double> dx(38.4615384615385,
                                                  35.7142857142857);
@@ -373,48 +382,41 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
       tempUnknowns,tempFluxUnknowns,
       tempStateSizedVector,
-      luh, dx, dt, nullptr);
+      luh, dx, dt, tempSpaceTimeUnknowns[1]);
 
-  // Check result
-  kernels::idx3 idx_lQhi_OUT(kBasisSize, kBasisSize,
-                             kNumberOfVariables - kNumberOfParameters,
-                             __LINE__);
-  for (int i = 0; i < kBasisSize; i++) {
-    for (int j = 0; j < kBasisSize; j++) {
-      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
-        validateNumericalEqualsWithEpsWithParams1(
-            tempUnknowns[idx_lQhi(i, j, k)],
-            exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::
-                lQhi_OUT[idx_lQhi_OUT(i, j, k)],
-            eps, idx_lQhi_OUT(i, j, k));
-      }
-    }
-  }
-
-  kernels::idx4 idx_lFhi_OUT(DIMENSIONS, kBasisSize, kBasisSize,
-                             kNumberOfVariables - kNumberOfParameters,
-                             __LINE__);
   for (int i = 0; i < DIMENSIONS; i++) {
-    for (int j = 0; j < kBasisSize; j++) {
-      for (int k = 0; k < kBasisSize; k++) {
-        for (int l = 0; l < kNumberOfVariables - kNumberOfParameters; l++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < nVar; l++) {
           validateNumericalEqualsWithEpsWithParams1(
               tempFluxUnknowns[idx_lFhi(i, j, k, l)],
               exahype::tests::testdata::elasticity::
-                  testSpaceTimePredictorLinear::lFhi_OUT[idx_lFhi_OUT(i, j, k,
+                  testSpaceTimePredictorLinear::lFhi_OUT[idx_lFhi(i, j, k,
                                                                       l)],
-              eps, idx_lFhi_OUT(i, j, k, l));
+              eps, idx_lFhi(i, j, k, l));
         }
       }
     }
   }
 
-  kernels::idx3 idx_lQbnd_OUT(2 * DIMENSIONS, kBasisSize,
-                              kNumberOfVariables - kNumberOfParameters,
-                              __LINE__);
+  // Check result
+  kernels::idx3 idx_lQhi_OUT(basisSize, basisSize, nVar);
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < nVar; k++) {
+        validateNumericalEqualsWithEpsWithParams1(
+            tempUnknowns[idx_lQhi(i, j, k)],
+            exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::
+            lQhi_OUT[idx_lQhi_OUT(i, j, k)],
+            eps, idx_lQhi_OUT(i, j, k));
+      }
+    }
+  }
+
+  kernels::idx3 idx_lQbnd_OUT(2 * DIMENSIONS, basisSize, nVar, __LINE__);
   for (int i = 0; i < 2 * DIMENSIONS; i++) {
-    for (int j = 0; j < kBasisSize; j++) {
-      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < nVar; k++) {
         validateNumericalEqualsWithEpsWithParams1(
             lQbnd[idx_lQbnd(i, j, k)],
             exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::
@@ -424,17 +426,14 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
     }
   }
 
-  kernels::idx3 idx_lFbnd_OUT(2 * DIMENSIONS, kBasisSize,
-                              kNumberOfVariables - kNumberOfParameters,
-                              __LINE__);
   for (int i = 0; i < 2 * DIMENSIONS; i++) {
-    for (int j = 0; j < kBasisSize; j++) {
-      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < nVar; k++) {
         validateNumericalEqualsWithEpsWithParams1(
             lFbnd[idx_lFbnd(i, j, k)],
             exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::
-                lFbnd_OUT[idx_lFbnd_OUT(i, j, k)],
-            eps, idx_lFbnd_OUT(i, j, k));
+                lFbnd_OUT[idx_lFbnd(i, j, k)],
+            eps, idx_lFbnd(i, j, k));
       }
     }
   }
@@ -446,8 +445,8 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
   delete[] tempSpaceTimeUnknowns[0];
   delete[] tempSpaceTimeUnknowns;
 
-  delete[] tempSpaceTimeFluxUnknowns[0];
   delete[] tempSpaceTimeFluxUnknowns[1];
+  delete[] tempSpaceTimeFluxUnknowns[0];
   delete[] tempSpaceTimeFluxUnknowns;
 
   delete[] tempUnknowns;
@@ -458,21 +457,23 @@ void ElasticityKernelTest::testVolumeIntegralLinear() {
   logInfo("ElasticityKernelTest::testVolumeIntegralLinear()",
           "Test VolumeIntegral linear, ORDER=4, DIM=2");
 
-  double *lFhi = new double[(DIMENSIONS + 1) * kBasisSize * kBasisSize *
-                            kNumberOfVariables];
+  constexpr int nVar       = NumberOfVariables;
+  constexpr int nPar       = NumberOfParameters;
+  constexpr int basisSize  = (Order+1);
+  constexpr int basisSize2 = basisSize*basisSize;
+
+  double *lFhi = new double[(DIMENSIONS + 1) * basisSize2 * nVar];
   std::fill(
       lFhi,
-      lFhi + (DIMENSIONS + 1) * kBasisSize * kBasisSize * kNumberOfVariables,
+      lFhi + (DIMENSIONS + 1) * basisSize * basisSize * nVar,
       std::numeric_limits<double>::quiet_NaN());
-  kernels::idx4 idx_lFhi(DIMENSIONS + 1, kBasisSize, kBasisSize,
-                         kNumberOfVariables);
-  kernels::idx4 idx_lFhi_IN(DIMENSIONS, kBasisSize, kBasisSize,
-                            kNumberOfVariables - kNumberOfParameters);
+  kernels::idx4 idx_lFhi(DIMENSIONS + 1, basisSize, basisSize, nVar);
+  kernels::idx4 idx_lFhi_IN(DIMENSIONS, basisSize, basisSize, nVar);
 
   for (int i = 0; i < DIMENSIONS; i++) {
-    for (int j = 0; j < kBasisSize; j++) {
-      for (int k = 0; k < kBasisSize; k++) {
-        for (int l = 0; l < kNumberOfVariables - kNumberOfParameters; l++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < nVar; l++) {
           lFhi[idx_lFhi(i, j, k, l)] = exahype::tests::testdata::elasticity::
               testVolumeIntegralLinear::lFhi_IN[idx_lFhi_IN(i, j, k, l)];
         }
@@ -480,22 +481,21 @@ void ElasticityKernelTest::testVolumeIntegralLinear() {
     }
   }
 
-  double *lduh = new double[kBasisSize * kBasisSize * kNumberOfVariables];
-  kernels::idx3 idx_lduh(kBasisSize, kBasisSize, kNumberOfVariables);
-  kernels::idx3 idx_lduh_OUT(kBasisSize, kBasisSize,
-                             kNumberOfVariables - kNumberOfParameters);
+  double *lduh = new double[basisSize * basisSize * nVar];
+  kernels::idx3 idx_lduh(basisSize, basisSize, nVar);
+  kernels::idx3 idx_lduh_OUT(basisSize, basisSize, nVar);
 
   const tarch::la::Vector<DIMENSIONS, double> dx(38.4615384615385,
                                                  35.7142857142857);
 
   // Execute kernel
   kernels::aderdg::generic::c::volumeIntegralLinear(
-      lduh, lFhi, dx, kNumberOfVariables, kNumberOfParameters, kBasisSize);
+      lduh, lFhi, dx, nVar, nPar, basisSize);
 
   // Compare
-  for (int i = 0; i < kBasisSize; i++) {
-    for (int j = 0; j < kBasisSize; j++) {
-      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < nVar; k++) {
         validateNumericalEqualsWithEpsWithParams1(
             lduh[idx_lduh(i, j, k)],
             exahype::tests::testdata::elasticity::testVolumeIntegralLinear::
@@ -513,56 +513,36 @@ void ElasticityKernelTest::testSurfaceIntegralLinear() {
   logInfo("ElasticityKernelTest::testSurfaceIntegralLinear()",
           "Test SurfaceIntegral linear, ORDER=4, DIM=2");
 
-  double *lFbnd = new double[2 * DIMENSIONS * kBasisSize * kNumberOfVariables];
-  kernels::idx3 idx_lFbnd(2 * DIMENSIONS, kBasisSize, kNumberOfVariables);
-  kernels::idx3 idx_lFbnd_IN(2 * DIMENSIONS, kBasisSize,
-                             kNumberOfVariables - kNumberOfParameters);
+  constexpr int nVar       = NumberOfVariables;
+  constexpr int basisSize  = (Order+1);
+  constexpr int basisSize2 = basisSize*basisSize;
 
-  std::fill(lFbnd, lFbnd + 2 * DIMENSIONS * kBasisSize * kNumberOfVariables,
-            std::numeric_limits<double>::quiet_NaN());
+  double *lFbnd = new double[2 * DIMENSIONS * basisSize * nVar];
+  std::copy_n (exahype::tests::testdata::elasticity::testSurfaceIntegralLinear::lFbnd_IN,
+               2 * DIMENSIONS * basisSize * nVar, lFbnd);
 
-  for (int i = 0; i < 2 * DIMENSIONS; i++) {
-    for (int j = 0; j < kBasisSize; j++) {
-      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
-        lFbnd[idx_lFbnd(i, j, k)] = exahype::tests::testdata::elasticity::
-            testSurfaceIntegralLinear::lFbnd_IN[idx_lFbnd_IN(i, j, k)];
-      }
-    }
-  }
-
-  double *lduh = new double[kBasisSize * kBasisSize * kNumberOfVariables];
-  kernels::idx3 idx_lduh(kBasisSize, kBasisSize, kNumberOfVariables);
-  kernels::idx3 idx_lduh_INOUT(kBasisSize, kBasisSize,
-                               kNumberOfVariables - kNumberOfParameters);
-
-  std::fill(lduh, lduh + kBasisSize * kBasisSize * kNumberOfVariables,
-            std::numeric_limits<double>::quiet_NaN());
-
-  for (int i = 0; i < kBasisSize; i++) {
-    for (int j = 0; j < kBasisSize; j++) {
-      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
-        lduh[idx_lduh(i, j, k)] = exahype::tests::testdata::elasticity::
-            testSurfaceIntegralLinear::lduh_IN[idx_lduh_INOUT(i, j, k)];
-      }
-    }
-  }
+  double *lduh = new double[basisSize2 * nVar];
+  std::copy_n (exahype::tests::testdata::elasticity::testSurfaceIntegralLinear::lduh_IN,
+               basisSize2 * nVar, lduh);
 
   const tarch::la::Vector<DIMENSIONS, double> dx(38.4615384615385,
                                                  35.7142857142857);
-
   // Execute kernel
   kernels::aderdg::generic::c::surfaceIntegralLinear(
-      lduh, lFbnd, dx, kNumberOfVariables, kBasisSize);
+      lduh, lFbnd, dx, nVar, basisSize);
 
   // Compare
-  for (int i = 0; i < kBasisSize; i++) {
-    for (int j = 0; j < kBasisSize; j++) {
-      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
+  kernels::idx3 idx_lduh(basisSize, basisSize, nVar);
+  kernels::idx3 idx_lFbnd(2 * DIMENSIONS, basisSize, nVar);
+
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < nVar; k++) {
         validateNumericalEqualsWithEpsWithParams1(
             lduh[idx_lduh(i, j, k)],
             exahype::tests::testdata::elasticity::testSurfaceIntegralLinear::
-                lduh_OUT[idx_lduh_INOUT(i, j, k)],
-            eps, idx_lduh_INOUT(i, j, k));
+                lduh_OUT[idx_lduh(i, j, k)],
+            eps, idx_lduh(i, j, k));
       }
     }
   }

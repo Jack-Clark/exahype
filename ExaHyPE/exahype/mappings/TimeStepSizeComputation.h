@@ -80,25 +80,17 @@ class exahype::mappings::TimeStepSizeComputation {
    */
   std::vector<double> _maxCellSizes;
 
-  double** _tempEigenValues = nullptr;
+  /**
+   * Per Solver, a bunch of temporary variables necessary for
+   * performing a time step update in a cell.
+   */
+  exahype::solvers::TimeStepSizeComputationTemporaryVariables _temporaryVariables;
 
   /**
    * Prepare a appropriately sized vector _minTimeStepSizes
    * with elements initiliased to MAX_DOUBLE.
    */
   void prepareLocalTimeStepVariables();
-
-  /**
-   * Per solver, allocate a temporary eigenvalues
-   * array.
-   */
-  void prepareTemporaryVariables();
-
-  /**
-   * Free memory reserved for the eigenvalue vectors we have
-   * allocated per solver.
-   */
-  void deleteTemporaryVariables();
 
   /**
    * Reinitialises the corrector and predictor time step sizes of an ADER-DG solver

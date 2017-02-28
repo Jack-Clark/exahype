@@ -32,28 +32,28 @@ void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
 }
 
 double {{Project}}::Abstract{{Solver}}::stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) {
-  double maxAdmissibleDt = kernels::finitevolumes::godunov::c::stableTimeStepSize<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,tempEigenvalues,dx,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  double maxAdmissibleDt = kernels::finitevolumes::godunov::c::stableTimeStepSize<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,tempEigenvalues,dx);
   return maxAdmissibleDt;
 }
 
 void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) {
-  maxAdmissibleDt = kernels::finitevolumes::godunov::c::solutionUpdate<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhNew,luh,tempStateSizedArrays,tempUnknowns,dx,dt,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  maxAdmissibleDt = kernels::finitevolumes::godunov::c::solutionUpdate<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhNew,luh,tempStateSizedArrays,tempUnknowns,dx,dt);
 }
 
 void {{Project}}::Abstract{{Solver}}::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
-  kernels::finitevolumes::godunov::c::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::finitevolumes::godunov::c::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
 }
 
 void {{Project}}::Abstract{{Solver}}::ghostLayerFilling(double* luh,const double* luhNeighbour,const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
-  kernels::finitevolumes::godunov::c::ghostLayerFilling(luh,luhNeighbour,neighbourPosition,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::finitevolumes::godunov::c::ghostLayerFilling<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,luhNeighbour,neighbourPosition);
 }
 
 void {{Project}}::Abstract{{Solver}}::ghostLayerFillingAtBoundary(double* luh,const double* luhbnd,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
-  kernels::finitevolumes::godunov::c::ghostLayerFillingAtBoundary(luh,luhbnd,boundaryPosition,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::finitevolumes::godunov::c::ghostLayerFillingAtBoundary<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,luhbnd,boundaryPosition);
 }
 
 void {{Project}}::Abstract{{Solver}}::boundaryLayerExtraction(double* luhbnd,const double* luh,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
-  kernels::finitevolumes::godunov::c::boundaryLayerExtraction(luhbnd,luh,boundaryPosition,getNumberOfVariables(),getNodesPerCoordinateAxis());
+  kernels::finitevolumes::godunov::c::boundaryLayerExtraction<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhbnd,luh,boundaryPosition);
 }
 
 void {{Project}}::Abstract{{Solver}}::boundaryConditions(double* luhbndOutside,const double* const luhbndInside,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {

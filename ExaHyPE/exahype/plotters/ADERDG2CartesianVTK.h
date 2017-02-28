@@ -17,6 +17,7 @@
 #include "exahype/plotters/Plotter.h"
 
 #include "tarch/plotter/griddata/blockstructured/PatchWriterUnstructured.h"
+#include "tarch/plotter/griddata/VTUTimeSeriesWriter.h"
 
 namespace exahype {
   namespace plotters {
@@ -26,6 +27,11 @@ namespace exahype {
     class ADERDG2CartesianVerticesVTKBinary;
     class ADERDG2CartesianCellsVTKAscii;
     class ADERDG2CartesianCellsVTKBinary;
+
+    class ADERDG2CartesianVerticesVTUAscii;
+    class ADERDG2CartesianVerticesVTUBinary;
+    class ADERDG2CartesianCellsVTUAscii;
+    class ADERDG2CartesianCellsVTUBinary;
   }
 }
 
@@ -33,15 +39,32 @@ namespace exahype {
  * Common VTK class. Usually not used directly but through one of the subclasses.
  */
 class exahype::plotters::ADERDG2CartesianVTK: public exahype::plotters::Plotter::Device {
+ protected:
+   enum class PlotterType {
+     BinaryVTK,
+     ASCIIVTK,
+     BinaryVTU,
+     ASCIIVTU
+   };
  private:
   int           _fileCounter;
-  const bool    _isBinary;
+  const PlotterType _plotterType;
   const bool    _plotCells;
   std::string   _filename;
   int           _order;
   int           _solverUnknowns;
   int           _writtenUnknowns;
   std::string   _select;
+
+  /**
+   * Is obviously only used if we use vtu instead of the vtk legacy format.
+   */
+  tarch::plotter::griddata::VTUTimeSeriesWriter _timeSeriesWriter;
+
+  /**
+   * To memorise the time argument from startPlotter(). We need it when we close the plotter for the time series.
+   */
+  double _time;
 
 
   tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestLeftBottomFront;
@@ -73,7 +96,7 @@ class exahype::plotters::ADERDG2CartesianVTK: public exahype::plotters::Plotter:
     double timeStamp
   );
  public:
-  ADERDG2CartesianVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool isBinary, bool plotCells);
+  ADERDG2CartesianVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, PlotterType plotterType, bool plotCells);
   virtual ~ADERDG2CartesianVTK();
 
   virtual void init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select);
@@ -117,5 +140,32 @@ class exahype::plotters::ADERDG2CartesianCellsVTKBinary: public exahype::plotter
     ADERDG2CartesianCellsVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
 };
 
+
+class exahype::plotters::ADERDG2CartesianVerticesVTUAscii: public exahype::plotters::ADERDG2CartesianVTK {
+  public:
+    static std::string getIdentifier();
+    ADERDG2CartesianVerticesVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
+
+
+class exahype::plotters::ADERDG2CartesianVerticesVTUBinary: public exahype::plotters::ADERDG2CartesianVTK {
+  public:
+    static std::string getIdentifier();
+    ADERDG2CartesianVerticesVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
+
+
+class exahype::plotters::ADERDG2CartesianCellsVTUAscii: public exahype::plotters::ADERDG2CartesianVTK {
+  public:
+    static std::string getIdentifier();
+    ADERDG2CartesianCellsVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
+
+
+class exahype::plotters::ADERDG2CartesianCellsVTUBinary: public exahype::plotters::ADERDG2CartesianVTK {
+  public:
+    static std::string getIdentifier();
+    ADERDG2CartesianCellsVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
 
 #endif

@@ -24,17 +24,20 @@
  #include "exahype/adapters/PlotAndADERDGTimeStep.h" 
  #include "exahype/adapters/PredictionRerun.h" 
  #include "exahype/adapters/LimiterStatusSpreading.h" 
+ #include "exahype/adapters/LimiterStatusSpreadingFusedTimeStepping.h" 
  #include "exahype/adapters/LimiterStatusMergingAndSpreadingMPI.h" 
  #include "exahype/adapters/LimiterStatusMergingMPI.h" 
  #include "exahype/adapters/Reinitialisation.h" 
  #include "exahype/adapters/SolutionRecomputationAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/SolutionUpdate.h" 
- #include "exahype/adapters/PostAMRDropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/TimeStepSizeComputation.h" 
  #include "exahype/adapters/Prediction.h" 
  #include "exahype/adapters/PredictionAndPlot.h" 
  #include "exahype/adapters/PredictionAndPlot2d.h" 
+ #include "exahype/adapters/DropMPIMetadataMessagesAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/TimeStepDataMerging.h" 
+ #include "exahype/adapters/TimeStepDataMergingAndDropIncomingMPIMessages.h" 
 
 
 namespace peano {

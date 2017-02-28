@@ -58,7 +58,7 @@ void kernels::aderdg::generic::fortran::riemannSolverNonlinear(
     const double dt,
     const int normalNonZero){
 
-  double* nv = new double[3];
+  double nv[3];
   nv[0] = 0.0;
   nv[1] = 0.0;
   nv[2] = 0.0;
@@ -95,5 +95,4 @@ void kernels::aderdg::generic::fortran::riemannSolverNonlinear(
   // }
   // ofs.close();
 
-  delete[] nv;
 }

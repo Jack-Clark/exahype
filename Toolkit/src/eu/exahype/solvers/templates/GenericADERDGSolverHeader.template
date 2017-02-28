@@ -107,10 +107,20 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      */
     void boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int dir,const double * const fluxIn,const double* const stateIn,double *fluxOut,double* stateOut);
     
+   /**
+     * !!! Warning: BgradQ is a vector of size NumberOfVariables if you
+     * use the ADER-DG kernels for nonlinear PDEs. If you use 
+     * the kernels for linear PDEs, it is a tensor with dimensions
+     * Dim x NumberOfVariables.
+     * 
+     */
     void ncp(const double* const Q,const double* const gradQ,double* BgradQ);
+    
     void matrixb(const double* const Q,const int d,double* Bn);
-    bool isDummyKRequired() const override;
-    void dummyK_Value(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
+    
+    bool hasToApplyPointSource() const override;
+    
+    void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
     
     /**
      * Evaluate the refinement criterion within a cell.

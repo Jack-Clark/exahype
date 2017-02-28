@@ -24,7 +24,6 @@
 #include "exahype/VertexOperations.h"
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
-
 peano::CommunicationSpecification
 exahype::mappings::SolutionRecomputation::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -84,157 +83,24 @@ exahype::mappings::SolutionRecomputation::descendSpecification() {
 tarch::logging::Log exahype::mappings::SolutionRecomputation::_log(
     "exahype::mappings::SolutionRecomputation");
 
-void exahype::mappings::SolutionRecomputation::prepareTemporaryVariables() {
-  assertion(_tempStateSizedVectors       ==nullptr);
-  assertion(_tempStateSizedSquareMatrices==nullptr);
-  assertion(_tempFaceUnknowns            ==nullptr);
-  assertion(_tempUnknowns                ==nullptr);
-
-  int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-  _tempStateSizedVectors        = new double**[numberOfSolvers];
-  _tempStateSizedSquareMatrices = new double**[numberOfSolvers];
-  _tempFaceUnknowns             = new double**[numberOfSolvers];
-  _tempUnknowns                 = new double**[numberOfSolvers];
-//    _tempSpaceTimeFaceUnknownsArray = new double* [numberOfSolvers]; todo
-
-  int solverNumber=0;
-  for (auto solver : exahype::solvers::RegisteredSolvers) {
-    int numberOfStateSizedVectors  = 0; // TOOD(Dominic): Check if we need number of parameters too
-    int numberOfStateSizedMatrices = 0;
-    int numberOfFaceUnknowns       = 0;
-    int lengthOfFaceUnknowns       = 0;
-    int numberOfUnknowns           = 0;
-    int lengthOfUnknowns           = 0;
-    switch (solver->getType()) {
-      case exahype::solvers::Solver::Type::ADERDG:
-        numberOfStateSizedVectors  = 6; // See riemannSolverNonlinear
-        numberOfStateSizedMatrices = 3; // See riemannSolverLinear
-        numberOfFaceUnknowns       = 3; // See exahype::solvers::ADERDGSolver::applyBoundaryConditions
-        lengthOfFaceUnknowns       =
-            static_cast<exahype::solvers::ADERDGSolver*>(solver)->getBndFaceSize(); // == getUnknownsPerFace() + eventual padding
-        break;
-      case exahype::solvers::Solver::Type::LimitingADERDG:
-        // Needs the same temporary variables as the normal ADER-DG scheme
-        // plus the ones for the Finite Volume scheme.
-        numberOfStateSizedVectors  = std::max(2*DIMENSIONS+1, 6); // See kernels:finitevolumes::godunov::2d/3d::solutionUpdate or riemannSolverNonlinear
-        numberOfStateSizedMatrices = 3;
-        numberOfFaceUnknowns       = 3;
-        lengthOfFaceUnknowns       = std::max(
-                    static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver()->getUnknownsPerFace(),
-                    static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiter()->getUnknownsPerFace() );
-        numberOfUnknowns     = 0; // TODO(Dominic): We do not consider high-order FV methods yet; numberOfUnknowns is thus set to zero.
-        lengthOfUnknowns     = 0;
-        break;
-      case exahype::solvers::Solver::Type::FiniteVolumes:
-        numberOfUnknowns     = 0; // TODO(Dominic): We do not consider high-order FV methods yet; numberOfUnknowns is thus set to zero.
-        lengthOfUnknowns     = 0;
-        numberOfFaceUnknowns = 2; // See exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData
-        lengthOfFaceUnknowns =
-            static_cast<exahype::solvers::FiniteVolumesSolver*>(solver)->getUnknownsPerFace();
-        numberOfStateSizedVectors = 2*DIMENSIONS+1; // see kernels:finitevolumes::godunov::2d/3d::solutionUpdate
-        break;
-    }
-
-    _tempStateSizedVectors[solverNumber] = nullptr;
-    if (numberOfStateSizedVectors>0) {
-      _tempStateSizedVectors[solverNumber] = new double*[numberOfStateSizedVectors];
-      _tempStateSizedVectors[solverNumber][0] = new double[numberOfStateSizedVectors*solver->getNumberOfVariables()];
-      for (int i=1; i<numberOfStateSizedVectors; ++i) { // see riemanSolverLinear
-        _tempStateSizedVectors[solverNumber][i] = _tempStateSizedVectors[solverNumber][i-1] + solver->getNumberOfVariables();
-      }
-    }
-    //
-    _tempStateSizedSquareMatrices[solverNumber] = nullptr;
-    if (numberOfStateSizedMatrices>0) {
-      _tempStateSizedSquareMatrices[solverNumber] = new double*[numberOfStateSizedMatrices];
-      _tempStateSizedSquareMatrices[solverNumber][0] =
-          new double[numberOfStateSizedMatrices* solver->getNumberOfVariables() * solver->getNumberOfVariables()];
-      for (int i=1; i<numberOfStateSizedMatrices; ++i) { // see riemanSolverLinear
-        _tempStateSizedSquareMatrices[solverNumber][i] =
-            _tempStateSizedSquareMatrices[solverNumber][i-1] +
-            solver->getNumberOfVariables() * solver->getNumberOfVariables();
-      }
-    }
-    //
-    _tempFaceUnknowns[solverNumber] = nullptr;
-    if (numberOfFaceUnknowns>0) {
-      _tempFaceUnknowns[solverNumber] = new double*[numberOfFaceUnknowns];
-      _tempFaceUnknowns[solverNumber][0] = new double[numberOfFaceUnknowns*lengthOfFaceUnknowns];
-      for (int i=1; i<numberOfFaceUnknowns; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
-        _tempFaceUnknowns[solverNumber][i] = _tempFaceUnknowns[solverNumber][i-1] + lengthOfFaceUnknowns;
-      }
-    }
-    //
-    _tempUnknowns[solverNumber] = nullptr;
-    if (numberOfUnknowns>0) {
-      _tempUnknowns[solverNumber] = new double*[numberOfUnknowns];
-      _tempUnknowns[solverNumber][0] = new double[numberOfUnknowns*lengthOfUnknowns];
-      for (int i=1; i<numberOfUnknowns; ++i) { // see ADERDGSolver::applyBoundaryConditions(...)
-        _tempUnknowns[solverNumber][i] = _tempUnknowns[solverNumber][i-1] + lengthOfUnknowns;
-      }
-    }
-
-    ++solverNumber;
-  }
+void exahype::mappings::SolutionRecomputation::initialiseTemporaryVariables() {
+  exahype::solvers::initialiseTemporaryVariables(_predictionTemporaryVariables);
+  exahype::solvers::initialiseTemporaryVariables(_mergingTemporaryVariables);
+  exahype::solvers::initialiseTemporaryVariables(_solutionUpdateTemporaryVariables);
 }
 
 void exahype::mappings::SolutionRecomputation::deleteTemporaryVariables() {
-  if (_tempStateSizedVectors!=nullptr) {
-    assertion(_tempStateSizedSquareMatrices!=nullptr);
-
-    for (unsigned int solverNumber=0; solverNumber<exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-      if (_tempStateSizedVectors[solverNumber]!=nullptr) {
-        delete[] _tempStateSizedVectors[solverNumber][0];
-        delete[] _tempStateSizedVectors[solverNumber];
-        _tempStateSizedVectors[solverNumber] = nullptr;
-      }
-      //
-      if (_tempStateSizedSquareMatrices[solverNumber]!=nullptr) {
-        delete[] _tempStateSizedSquareMatrices[solverNumber][0];
-        delete[] _tempStateSizedSquareMatrices[solverNumber];
-        _tempStateSizedSquareMatrices[solverNumber] = nullptr;
-      }
-      //
-      if (_tempFaceUnknowns[solverNumber]!=nullptr) {
-        delete[] _tempFaceUnknowns[solverNumber][0];
-        delete[] _tempFaceUnknowns[solverNumber];
-        _tempFaceUnknowns[solverNumber] = nullptr;
-      }
-      //
-      if (_tempUnknowns[solverNumber]!=nullptr) {
-        delete[] _tempUnknowns[solverNumber][0];
-        delete[] _tempUnknowns[solverNumber];
-        _tempUnknowns[solverNumber] = nullptr;
-      }
-      //
-      // _tempSpaceTimeFaceUnknownsArray[solverNumber] = nullptr; // todo
-
-      ++solverNumber;
-    }
-
-    delete[] _tempStateSizedVectors;
-    delete[] _tempStateSizedSquareMatrices;
-    delete[] _tempFaceUnknowns;
-    delete[] _tempUnknowns;
-//    delete[] _tempSpaceTimeFaceUnknownsArray; todo
-    _tempStateSizedVectors        = nullptr;
-    _tempStateSizedSquareMatrices = nullptr;
-    _tempFaceUnknowns             = nullptr;
-    _tempUnknowns                 = nullptr;
-//    _tempSpaceTimeFaceUnknownsArray  = nullptr; todo
-  }
+  exahype::solvers::deleteTemporaryVariables(_predictionTemporaryVariables);
+  exahype::solvers::deleteTemporaryVariables(_mergingTemporaryVariables);
+  exahype::solvers::deleteTemporaryVariables(_solutionUpdateTemporaryVariables);
 }
 
 exahype::mappings::SolutionRecomputation::SolutionRecomputation()
-   :
   #ifdef Debug
+  :
   _interiorFaceMerges(0),
-  _boundaryFaceMerges(0),
+  _boundaryFaceMerges(0)
   #endif
-  _tempStateSizedVectors(nullptr),
-  _tempStateSizedSquareMatrices(nullptr),
-  _tempUnknowns(nullptr),
-  _tempFaceUnknowns(nullptr)
 {
   // do nothing
 }
@@ -246,12 +112,8 @@ exahype::mappings::SolutionRecomputation::~SolutionRecomputation() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SolutionRecomputation::SolutionRecomputation(
     const SolutionRecomputation& masterThread)
-: _localState(masterThread._localState),
-  _tempStateSizedVectors(nullptr),
-  _tempStateSizedSquareMatrices(nullptr),
-  _tempUnknowns(nullptr),
-  _tempFaceUnknowns(nullptr) {
-  prepareTemporaryVariables();
+: _localState(masterThread._localState) {
+  initialiseTemporaryVariables();
 }
 
 void exahype::mappings::SolutionRecomputation::mergeWithWorkerThread(
@@ -266,7 +128,7 @@ void exahype::mappings::SolutionRecomputation::beginIteration(
 
   _localState = solverState;
 
-  prepareTemporaryVariables();
+  initialiseTemporaryVariables();
 
   #ifdef Debug // TODO(Dominic): And not parallel and not shared memory
   _interiorFaceMerges = 0;
@@ -319,10 +181,18 @@ void exahype::mappings::SolutionRecomputation::enterCell(
           limitingADERSolver->recomputeSolution(
               fineGridCell.getCellDescriptionsIndex(),
               element,
-              _tempStateSizedVectors[i],
-              _tempUnknowns[i],
+              _solutionUpdateTemporaryVariables,
               fineGridVertices,
               fineGridVerticesEnumerator);
+
+          if (exahype::State::fuseADERDGPhases()) {
+            limitingADERSolver->recomputePredictor(
+                fineGridCell.getCellDescriptionsIndex(),
+                element,
+                _predictionTemporaryVariables,
+                fineGridVertices,
+                fineGridVerticesEnumerator);
+          }
 
           // It is important that we update the cell-wise limiter status only after the recomputation since we use
           // the previous and current limiter status in the recomputation.
@@ -370,9 +240,9 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
                     cellDescriptionsIndex2,element2,
                     pos1,pos2,
                     true, /* isRecomputation */
-                    _tempFaceUnknowns[solverNumber],
-                    _tempStateSizedVectors[solverNumber],
-                    _tempStateSizedSquareMatrices[solverNumber]);
+                    _mergingTemporaryVariables._tempFaceUnknowns[solverNumber],
+                    _mergingTemporaryVariables._tempStateSizedVectors[solverNumber],
+                    _mergingTemporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
               }
             }
 
@@ -411,9 +281,9 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
                                               solverPatch1.getMergedLimiterStatus(0), // !!! We assume here that we have already unified the merged limiter status values.
                                               pos1,pos2,                              // The cell-based limiter status is still holding the old value though.
                                               true,
-                                              _tempFaceUnknowns[solverNumber],
-                                              _tempStateSizedVectors[solverNumber],
-                                              _tempStateSizedSquareMatrices[solverNumber]);
+                                              _mergingTemporaryVariables._tempFaceUnknowns[solverNumber],
+                                              _mergingTemporaryVariables._tempStateSizedVectors[solverNumber],
+                                              _mergingTemporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
 
                 #ifdef Debug
                 _boundaryFaceMerges++;
@@ -429,9 +299,9 @@ void exahype::mappings::SolutionRecomputation::touchVertexFirstTime(
                                               solverPatch2.getMergedLimiterStatus(0), // !!! We assume here that we have already unified the merged limiter status values
                                               pos2,pos1,                              // The cell-based limiter status is still holding the old value though.
                                               true,
-                                              _tempFaceUnknowns[solverNumber],
-                                              _tempStateSizedVectors[solverNumber],
-                                              _tempStateSizedSquareMatrices[solverNumber]);
+                                              _mergingTemporaryVariables._tempFaceUnknowns[solverNumber],
+                                              _mergingTemporaryVariables._tempStateSizedVectors[solverNumber],
+                                              _mergingTemporaryVariables._tempStateSizedSquareMatrices[solverNumber]);
                 #ifdef Debug
                 _boundaryFaceMerges++;
                 #endif
@@ -556,9 +426,9 @@ void exahype::mappings::SolutionRecomputation::mergeNeighourData(
             fromRank,receivedMetadata[solverNumber].getU(),
             destCellDescriptionIndex,element,src,dest,
             true, /* isRecomputation */
-            _tempFaceUnknowns[solverNumber],
-            _tempStateSizedVectors[solverNumber],
-            _tempStateSizedSquareMatrices[solverNumber],
+            _mergingTemporaryVariables._tempFaceUnknowns[solverNumber],
+            _mergingTemporaryVariables._tempStateSizedVectors[solverNumber],
+            _mergingTemporaryVariables._tempStateSizedSquareMatrices[solverNumber],
             x,level);
       } else {
 

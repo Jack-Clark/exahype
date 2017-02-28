@@ -25,6 +25,8 @@
 
 #include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
 #include "tarch/plotter/griddata/unstructured/vtk/VTKBinaryFileWriter.h"
+#include "tarch/plotter/griddata/unstructured/vtk/VTUTextFileWriter.h"
+#include "tarch/plotter/griddata/unstructured/vtk/VTUBinaryFileWriter.h"
 
 
 #include "kernels/DGBasisFunctions.h"
@@ -36,7 +38,7 @@ std::string exahype::plotters::ADERDG2CartesianVerticesVTKAscii::getIdentifier()
 
 
 exahype::plotters::ADERDG2CartesianVerticesVTKAscii::ADERDG2CartesianVerticesVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-  ADERDG2CartesianVTK(postProcessing,false,false) {
+  ADERDG2CartesianVTK(postProcessing,PlotterType::ASCIIVTK,false) {
 }
 
 
@@ -46,7 +48,7 @@ std::string exahype::plotters::ADERDG2CartesianVerticesVTKBinary::getIdentifier(
 
 
 exahype::plotters::ADERDG2CartesianVerticesVTKBinary::ADERDG2CartesianVerticesVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2CartesianVTK(postProcessing,true,false) {
+    ADERDG2CartesianVTK(postProcessing,PlotterType::BinaryVTK,false) {
 }
 
 
@@ -57,7 +59,7 @@ std::string exahype::plotters::ADERDG2CartesianCellsVTKAscii::getIdentifier() {
 
 
 exahype::plotters::ADERDG2CartesianCellsVTKAscii::ADERDG2CartesianCellsVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2CartesianVTK(postProcessing,false,true) {
+    ADERDG2CartesianVTK(postProcessing,PlotterType::ASCIIVTK,true) {
 }
 
 
@@ -67,14 +69,56 @@ std::string exahype::plotters::ADERDG2CartesianCellsVTKBinary::getIdentifier() {
 
 
 exahype::plotters::ADERDG2CartesianCellsVTKBinary::ADERDG2CartesianCellsVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2CartesianVTK(postProcessing,true,true) {
+    ADERDG2CartesianVTK(postProcessing,PlotterType::BinaryVTK,true) {
 }
 
 
-exahype::plotters::ADERDG2CartesianVTK::ADERDG2CartesianVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool isBinary, bool plotCells):
+std::string exahype::plotters::ADERDG2CartesianVerticesVTUAscii::getIdentifier() {
+  return "vtu::Cartesian::vertices::ascii";
+}
+
+
+exahype::plotters::ADERDG2CartesianVerticesVTUAscii::ADERDG2CartesianVerticesVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+  ADERDG2CartesianVTK(postProcessing,PlotterType::ASCIIVTU,false) {
+}
+
+
+std::string exahype::plotters::ADERDG2CartesianVerticesVTUBinary::getIdentifier() {
+  return "vtu::Cartesian::vertices::binary";
+}
+
+
+exahype::plotters::ADERDG2CartesianVerticesVTUBinary::ADERDG2CartesianVerticesVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2CartesianVTK(postProcessing,PlotterType::BinaryVTU,false) {
+}
+
+
+
+std::string exahype::plotters::ADERDG2CartesianCellsVTUAscii::getIdentifier() {
+  return "vtu::Cartesian::cells::ascii";
+}
+
+
+exahype::plotters::ADERDG2CartesianCellsVTUAscii::ADERDG2CartesianCellsVTUAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2CartesianVTK(postProcessing,PlotterType::ASCIIVTU,true) {
+}
+
+
+std::string exahype::plotters::ADERDG2CartesianCellsVTUBinary::getIdentifier() {
+ return "vtu::Cartesian::cells::binary";
+}
+
+
+exahype::plotters::ADERDG2CartesianCellsVTUBinary::ADERDG2CartesianCellsVTUBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2CartesianVTK(postProcessing,PlotterType::BinaryVTU,true) {
+}
+
+
+
+exahype::plotters::ADERDG2CartesianVTK::ADERDG2CartesianVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, PlotterType plotterType, bool plotCells):
   Device(postProcessing),
   _fileCounter(-1),
-  _isBinary(isBinary),
+  _plotterType(plotterType),
   _plotCells(plotCells),
   _order(-1),
   _solverUnknowns(-1),
@@ -107,7 +151,7 @@ void exahype::plotters::ADERDG2CartesianVTK::init(
   _regionOfInterestLeftBottomFront(0) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
   x = Parser::getValueFromPropertyString( select, "bottom" );
   _regionOfInterestLeftBottomFront(1) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
-#ifdef Din3
+#if DIMENSIONS==3
   x = Parser::getValueFromPropertyString( select, "front" );
   _regionOfInterestLeftBottomFront(2) = x!=x ? -std::numeric_limits<double>::max() : x; // "-", min
 #endif
@@ -117,7 +161,7 @@ void exahype::plotters::ADERDG2CartesianVTK::init(
   _regionOfInterestRightTopBack(0) = x!=x ? std::numeric_limits<double>::max() : x;
   x = Parser::getValueFromPropertyString( select, "top" );
   _regionOfInterestRightTopBack(1) = x!=x ? std::numeric_limits<double>::max() : x;
-#ifdef Dim3
+#if DIMENSIONS==3
   x = Parser::getValueFromPropertyString( select, "back" );
   _regionOfInterestRightTopBack(2) = x!=x ? std::numeric_limits<double>::max() : x;
 #endif
@@ -130,15 +174,27 @@ void exahype::plotters::ADERDG2CartesianVTK::startPlotting( double time ) {
   assertion( _patchWriter==nullptr );
 
   if (_writtenUnknowns>0) {
-    if (_isBinary) {
-      _patchWriter =
-        new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-          new tarch::plotter::griddata::unstructured::vtk::VTKBinaryFileWriter());
-    }
-    else {
-      _patchWriter =
-        new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-          new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
+    switch (_plotterType) {
+      case PlotterType::BinaryVTK:
+        _patchWriter =
+          new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
+            new tarch::plotter::griddata::unstructured::vtk::VTKBinaryFileWriter());
+        break;
+      case PlotterType::ASCIIVTK:
+        _patchWriter =
+          new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
+            new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
+        break;
+      case PlotterType::BinaryVTU:
+        _patchWriter =
+          new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
+            new tarch::plotter::griddata::unstructured::vtk::VTUBinaryFileWriter());
+        break;
+      case PlotterType::ASCIIVTU:
+        _patchWriter =
+          new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
+            new tarch::plotter::griddata::unstructured::vtk::VTUTextFileWriter());
+        break;
     }
 
     _gridWriter                = _patchWriter->createSinglePatchWriter();
@@ -158,6 +214,8 @@ void exahype::plotters::ADERDG2CartesianVTK::startPlotting( double time ) {
   }
 
   _postProcessing->startPlotting( time );
+
+  _time = time;
 }
 
 
@@ -179,12 +237,32 @@ void exahype::plotters::ADERDG2CartesianVTK::finishPlotting() {
     #ifdef Parallel
                      << "-rank-" << tarch::parallel::Node::getInstance().getRank()
     #endif
-                     << "-" << _fileCounter << ".vtk";
+                     << "-" << _fileCounter;
 
-    // See issue #47 for discussion whether to quit program on failure:
-    // _patchWriter should raise/throw the C++ Exception or return something in case
-    // of failure.
-    _patchWriter->writeToFile(snapshotFileName.str());
+    switch (_plotterType) {
+      case PlotterType::BinaryVTK:
+        snapshotFileName << ".vtk";
+        break;
+      case PlotterType::ASCIIVTK:
+        snapshotFileName << ".vtk";
+        break;
+      case PlotterType::BinaryVTU:
+        snapshotFileName << ".vtu";
+        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
+        _timeSeriesWriter.writeFile(_filename + ".pvd");
+        break;
+      case PlotterType::ASCIIVTU:
+        snapshotFileName << ".vtu";
+        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
+        _timeSeriesWriter.writeFile(_filename + ".pvd");
+        break;
+    }
+
+    const bool hasBeenSuccessful =
+      _patchWriter->writeToFile(snapshotFileName.str());
+    if (!hasBeenSuccessful) {
+      exit(-1);
+    }
   }
 
   if (_vertexDataWriter!=nullptr)     delete _vertexDataWriter;
@@ -244,7 +322,7 @@ void exahype::plotters::ADERDG2CartesianVTK::plotVertexData(
         int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
         interpoland[unknown] += kernels::equidistantGridProjector1d[_order][ii(1)][i(1)] *
                  kernels::equidistantGridProjector1d[_order][ii(0)][i(0)] *
-                 #ifdef Dim3
+                 #if DIMENSIONS==3
                  kernels::equidistantGridProjector1d[_order][ii(2)][i(2)] *
                  #endif
                  u[iGauss * _solverUnknowns + unknown];

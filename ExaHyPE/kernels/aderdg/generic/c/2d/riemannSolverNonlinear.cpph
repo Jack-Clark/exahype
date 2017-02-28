@@ -25,6 +25,12 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
+/**
+ * We need to consider material parameters
+ * in QL and QR,tempStateSizedVectors,tempFaceUnknownsArray
+ * We don't need to consider material parameters
+ * in FL,FR,tempStateSizedSquareMatrices,
+ */
 template <typename SolverType>
 void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
                             const double* const QL,
@@ -34,22 +40,22 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
                             double** tempStateSizedSquareMatrices,
                             const double dt,
                             const int normalNonZero) {
-  const int numberOfVariables = solver.getNumberOfVariables();
-  const int numberOfParameters = solver.getNumberOfParameters();
-  const int basisSize = solver.getNodesPerCoordinateAxis();
-  const int order = basisSize - 1;
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::Order+1;
+  constexpr int order              = basisSize - 1;
 
-  // Compute the average states (and parameters) from the left and the right
-  double* QavL = tempStateSizedVectors[0];
-  double* QavR = tempStateSizedVectors[1];
+  // Compute the average variables and parameters from the left and the right
+  double* QavL = tempStateSizedVectors[0]; // ~(numberOfVariables+numberOfParameters)
+  double* QavR = tempStateSizedVectors[1]; // ~(numberOfVariables+numberOfParameters)
   {
-    idx2 idx_QLR(basisSize, numberOfVariables);
-    std::memset(QavL, 0, numberOfVariables * sizeof(double));
-    std::memset(QavR, 0, numberOfVariables * sizeof(double));
+    idx2 idx_QLR(basisSize, numberOfVariables+numberOfParameters);
+    std::memset(QavL, 0, (numberOfVariables+numberOfParameters) * sizeof(double));
+    std::memset(QavR, 0, (numberOfVariables+numberOfParameters) * sizeof(double));
     for (int j = 0; j < basisSize; j++) {
       const double weight = kernels::gaussLegendreWeights[order][j];
 
-      for (int k = 0; k < numberOfVariables; k++) {
+      for (int k = 0; k < numberOfVariables+numberOfParameters; k++) {
         QavL[k] += weight * QL[idx_QLR(j, k)];
         QavR[k] += weight * QR[idx_QLR(j, k)];
       }
@@ -61,8 +67,8 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
   solver.eigenvalues(QavL, normalNonZero, LL);
   solver.eigenvalues(QavR, normalNonZero, LR);
   
-  double* Qavg = tempStateSizedVectors[4];
-  for(int k=0; k < numberOfVariables; k++) {
+  double* Qavg = tempStateSizedVectors[4]; // ~(numberOfVariables+numberOfParameters)
+  for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
      Qavg[k] = (QavL[k] + QavR[k]) / 2;
   }
 
@@ -70,20 +76,21 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
   // (smax*Id).
   // We can change this into a more sophisticated Osher or HLLEM Riemann solver
   // whenever needed!
-  std::transform(LL, LL + numberOfVariables - numberOfParameters, LL,
+  // skip parameters
+  std::transform(LL, LL + numberOfVariables, LL,
                  std::abs<double>);
-  std::transform(LR, LR + numberOfVariables - numberOfParameters, LR,
+  std::transform(LR, LR + numberOfVariables, LR,
                  std::abs<double>);
   const double* smax_L =
-      std::max_element(LL, LL + numberOfVariables - numberOfParameters);
+      std::max_element(LL, LL + numberOfVariables);
   const double* smax_R =
-      std::max_element(LR, LR + numberOfVariables - numberOfParameters);
+      std::max_element(LR, LR + numberOfVariables);
   const double smax = std::max(*smax_L, *smax_R);
 
-  double* Bn = new double[numberOfVariables * numberOfVariables]();
-  double* ncp = new double[numberOfVariables]();
+  double* Bn  = tempStateSizedSquareMatrices[0];
+  double* ncp = tempStateSizedVectors[4];
   idx2 idx_Bn(numberOfVariables, numberOfVariables);
-  solver.matrixb(Qavg, normalNonZero, Bn);
+  solver.matrixb(Qavg, normalNonZero, Bn); // Bn is nVar x nVar matrix
   
 
   // We now compute the numerical flux. Note that the scheme is at the moment
@@ -93,17 +100,18 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
   //printf("dt = %f\n", dt); // extract dt
 
   {
-    idx2 idx_FQLR(basisSize, numberOfVariables);
+    idx2 idx_FLR(basisSize, numberOfVariables);
+    idx2 idx_QLR(basisSize, numberOfVariables+numberOfParameters);
     for (int j = 0; j < basisSize; j++) {
       // matmul(Bn, lQbndR(:,j,k) - lQbndL(:,j,k))
       for(int l=0; l < numberOfVariables; l++) {
 	      ncp[l] = 0;
 	      for(int m=0; m < numberOfVariables; m++) {
 		     // BUG resolved: Fortran <-> C matrix access
-		     ncp[l] += Bn[idx_Bn(m, l)] * (QR[idx_FQLR(j, m)] - QL[idx_FQLR(j, m)]);
+		     ncp[l] += Bn[idx_Bn(m, l)] * (QR[idx_QLR(j, m)] - QL[idx_QLR(j, m)]);
 	      }
-	     // printf("QR[%d, %d] = %.20e\n", j, l, QR[idx_FQLR(j, l)]);
-	     // printf("QL[%d, %d] = %.20e\n", j, l, QL[idx_FQLR(j, l)]);
+	     // printf("QR[%d, %d] = %.20e\n", j, l, QR[idx_QLR(j, l)]);
+	     // printf("QL[%d, %d] = %.20e\n", j, l, QL[idx_QLR(j, l)]);
 	     // printf("ncp[%d]=%.20e\n", l, ncp[l]);
       }
 
@@ -126,14 +134,14 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
       }
       */
 
-      // Avoid diffusion of parameters
-      for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
-        FL[idx_FQLR(j, k)] =
-            0.5 * (FR[idx_FQLR(j, k)] + FL[idx_FQLR(j, k)]) -
-            0.5 * smax * (QR[idx_FQLR(j, k)] - QL[idx_FQLR(j, k)]);
-        FR[idx_FQLR(j, k)] = FL[idx_FQLR(j, k)] - 0.5 * ncp[k];
-        FL[idx_FQLR(j, k)] = FL[idx_FQLR(j, k)] + 0.5 * ncp[k];
-        //if(0) printf("QL[..]-QR = %f - %f\n", QL[idx_FQLR(j, k)], QR[idx_FQLR(j, k)]);
+      // skip parameters
+      for (int k = 0; k < numberOfVariables; k++) {
+        FL[idx_FLR(j, k)] =
+            0.5 * (FR[idx_FLR(j, k)] + FL[idx_FLR(j, k)]) -
+            0.5 * smax * (QR[idx_QLR(j, k)] - QL[idx_QLR(j, k)]);
+        FR[idx_FLR(j, k)] = FL[idx_FLR(j, k)] - 0.5 * ncp[k];
+        FL[idx_FLR(j, k)] = FL[idx_FLR(j, k)] + 0.5 * ncp[k];
+        //if(0) printf("QL[..]-QR = %f - %f\n", QL[idx_QLR(j, k)], QR[idx_QLR(j, k)]);
       }
       
  /*
@@ -149,10 +157,7 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
      */
     }
   }
-  
-//  delete[] Qavg;
-  delete[] Bn;
-  delete[] ncp;
+
 }
 
 }  // namespace c

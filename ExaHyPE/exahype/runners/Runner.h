@@ -134,10 +134,24 @@ class exahype::runners::Runner {
    * Run the three adapters necessary for updating the
    * limiter domain.
    *
-   * \param[in] reinitialiseTimeStepData This flag must be set when we initialise the limiter domain.
+   * TODO(Dominic): What can I fuse here?
    *
    */
   void updateLimiterDomain(exahype::repositories::Repository& repository);
+
+  /**
+   * Run the three (four for MPI) adapters necessary for updating the
+   * limiter domain.
+   *
+   * TODO(Dominic): What can I fuse here?
+   */
+  void updateLimiterDomainFusedTimeStepping(exahype::repositories::Repository& repository);
+
+  /**
+   * This is different from the default predictor rerun since we do not
+   * drop incoming MPI face data here.
+   */
+  void recomputePredictorAfterGridUpdate(exahype::repositories::Repository& repository);
 
   /**
    * Do one time step but actually use a couple of iterations to do so.
@@ -174,6 +188,9 @@ class exahype::runners::Runner {
    *
    * For the parallel case, I've changed from stationary into balanced which is
    * a slight generalisation. See Peano guidebook.
+   *
+   * TODO(Dominic): We might not need a few of the other checks anymore after I
+   * have introduced the grid refinement requested flag.
    */
   void createGrid(exahype::repositories::Repository& repository);
 

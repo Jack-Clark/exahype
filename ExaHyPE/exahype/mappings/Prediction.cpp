@@ -17,7 +17,6 @@
 #include "peano/utils/Globals.h"
 
 #include "tarch/multicore/Loop.h"
-#include "tarch/multicore/Lock.h"
 
 #include "peano/utils/Loop.h"
 
@@ -29,10 +28,6 @@
 #include "exahype/amr/AdaptiveMeshRefinement.h"
 
 #include "peano/utils/UserInterface.h"
-
-#include <algorithm>
-#include <mm_malloc.h> //g++
-#include <cstring> //memset
 
 peano::CommunicationSpecification
 exahype::mappings::Prediction::communicationSpecification() {
@@ -84,227 +79,15 @@ exahype::mappings::Prediction::descendSpecification() {
 tarch::logging::Log exahype::mappings::Prediction::_log(
     "exahype::mappings::Prediction");
 
-
-void exahype::mappings::Prediction::prepareTemporaryVariables() {
-  assertion(_tempSpaceTimeUnknowns    ==nullptr);
-  assertion(_tempSpaceTimeFluxUnknowns==nullptr);
-  assertion(_tempUnknowns             ==nullptr);
-  assertion(_tempFluxUnknowns         ==nullptr);
-  assertion(_tempStateSizedVectors    ==nullptr);
-  assertion(_tempPointForceSources    ==nullptr);
-
-  int numberOfSolvers        = exahype::solvers::RegisteredSolvers.size();
-  _tempSpaceTimeUnknowns     = new double**[numberOfSolvers]; // == lQi, lQi_old, rhs, rhs_0 (unchanged by optimisation)
-  _tempSpaceTimeFluxUnknowns = new double**[numberOfSolvers]; // == lFi, gradQ
-  _tempUnknowns              = new double* [numberOfSolvers]; // == lQhi
-  _tempFluxUnknowns          = new double* [numberOfSolvers]; // == lFhi
-  _tempStateSizedVectors     = new double* [numberOfSolvers]; // == BGradQ
-  _tempPointForceSources     = new double* [numberOfSolvers];
-
-  exahype::solvers::ADERDGSolver* aderdgSolver = nullptr;
-
-  int solverNumber=0;
-  for (auto solver : exahype::solvers::RegisteredSolvers) {
-    switch( solver->getType() ) {
-    case exahype::solvers::Solver::Type::ADERDG:
-      aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
-      break;
-    case exahype::solvers::Solver::Type::LimitingADERDG:
-      aderdgSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver().get();
-      break;
-    default:
-      aderdgSolver = nullptr;
-      break;
-    }
-
-    if (aderdgSolver!=nullptr) {
-      if(aderdgSolver->alignTempArray()) {
-        _tempSpaceTimeUnknowns[solverNumber] = new double*[4];
-        for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear
-          _tempSpaceTimeUnknowns[solverNumber][i] =
-              (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempSpaceTimeUnknownsSize(), ALIGNMENT);
-          std::memset(_tempSpaceTimeUnknowns[solverNumber][i], 0, sizeof(double)*aderdgSolver->getTempSpaceTimeUnknownsSize());
-        }
-        //
-        _tempSpaceTimeFluxUnknowns[solverNumber] = new double*[2];
-        for (int i=0; i<2; ++i) { // max; see spaceTimePredictorNonlinear
-          _tempSpaceTimeFluxUnknowns[solverNumber][i] =
-              (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempSpaceTimeFluxUnknownsSize(), ALIGNMENT);
-          std::memset(_tempSpaceTimeFluxUnknowns[solverNumber][i], 0, sizeof(double)*aderdgSolver->getTempSpaceTimeFluxUnknownsSize());
-        }
-        //
-        _tempUnknowns    [solverNumber]      = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempUnknownsSize(), ALIGNMENT);
-        //
-        _tempFluxUnknowns[solverNumber]      = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempFluxUnknownsSize(), ALIGNMENT);
-         //
-        _tempStateSizedVectors[solverNumber] = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getNumberOfVariables(), ALIGNMENT);
-        
-        if(aderdgSolver->isDummyKRequired()) { //TODO KD
-           _tempPointForceSources    [solverNumber] = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempSpaceTimeUnknownsSize(), ALIGNMENT);
-        } else {
-           _tempPointForceSources    [solverNumber] = nullptr;
-        }
-      } else {
-        _tempSpaceTimeUnknowns[solverNumber] = new double*[4];
-        for (int i=0; i<4; ++i) { // max; see spaceTimePredictorNonlinear
-          _tempSpaceTimeUnknowns[solverNumber][i] =
-              new double[aderdgSolver->getTempSpaceTimeUnknownsSize()]();
-        }
-        //
-        _tempSpaceTimeFluxUnknowns[solverNumber] = new double*[2];
-        for (int i=0; i<2; ++i) { // max; see spaceTimePredictorNonlinear
-          _tempSpaceTimeFluxUnknowns[solverNumber][i] =
-              new double[aderdgSolver->getTempSpaceTimeFluxUnknownsSize()]();
-        }
-        //
-        _tempUnknowns    [solverNumber]      = new double[aderdgSolver->getTempUnknownsSize()]; 
-        //
-        _tempFluxUnknowns[solverNumber]      = new double[aderdgSolver->getTempFluxUnknownsSize()]; 
-         //
-        _tempStateSizedVectors[solverNumber] = new double[aderdgSolver->getNumberOfVariables()]; 
-        
-        if(aderdgSolver->isDummyKRequired()) { //TODO KD
-           _tempPointForceSources    [solverNumber] = new double[aderdgSolver->getTempSpaceTimeUnknownsSize()];
-        } else {
-           _tempPointForceSources    [solverNumber] = nullptr;
-        } 
-      }      
-    } else {
-      _tempSpaceTimeUnknowns    [solverNumber] = nullptr;
-      _tempSpaceTimeFluxUnknowns[solverNumber] = nullptr;
-      _tempUnknowns             [solverNumber] = nullptr;
-      _tempFluxUnknowns         [solverNumber] = nullptr;
-      _tempStateSizedVectors    [solverNumber] = nullptr;
-      _tempPointForceSources    [solverNumber] = nullptr;
-    }
-
-    ++solverNumber;
-  }
-}
-
-void exahype::mappings::Prediction::deleteTemporaryVariables() {
-  if (_tempSpaceTimeUnknowns!=nullptr) {
-    assertion(_tempSpaceTimeFluxUnknowns!=nullptr);
-    assertion(_tempUnknowns             !=nullptr);
-    assertion(_tempFluxUnknowns         !=nullptr);
-    assertion(_tempStateSizedVectors    !=nullptr);
-    assertion(_tempPointForceSources    !=nullptr);
-
-    int solverNumber=0;
-    exahype::solvers::ADERDGSolver* aderdgSolver = nullptr;
-    
-    for (auto solver : exahype::solvers::RegisteredSolvers) {
-      switch( solver->getType() ) {
-      case exahype::solvers::Solver::Type::ADERDG:
-        aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
-        break;
-      case exahype::solvers::Solver::Type::LimitingADERDG:
-        aderdgSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getSolver().get();
-        break;
-      default:
-        aderdgSolver = nullptr;
-        break;
-      }
-      
-      if (aderdgSolver!=nullptr) {
-        if(aderdgSolver->alignTempArray()) {
-          //
-          for (int i=0; i<4; ++i) {
-            _mm_free(_tempSpaceTimeUnknowns[solverNumber][i]);
-          }
-          delete[] _tempSpaceTimeUnknowns[solverNumber];
-          _tempSpaceTimeUnknowns[solverNumber] = nullptr;
-          //
-          for (int i=0; i<2; ++i) {
-            _mm_free(_tempSpaceTimeFluxUnknowns[solverNumber][i]);
-          }
-          delete[] _tempSpaceTimeFluxUnknowns[solverNumber];
-          _tempSpaceTimeFluxUnknowns[solverNumber] = nullptr;
-          //
-          _mm_free(_tempUnknowns[solverNumber]);
-          _tempUnknowns[solverNumber] = nullptr;
-          //
-          _mm_free(_tempFluxUnknowns[solverNumber]);
-          _tempFluxUnknowns[solverNumber] = nullptr;
-          //
-          _mm_free(_tempStateSizedVectors[solverNumber]);
-          _tempStateSizedVectors[solverNumber] = nullptr;
-          
-          if(aderdgSolver->isDummyKRequired()) { //TODO KD
-            _mm_free(_tempPointForceSources[solverNumber]);
-            _tempPointForceSources[solverNumber] = nullptr;
-          }
-        } else {
-          //
-          for (int i=0; i<4; ++i) {
-            delete[] _tempSpaceTimeUnknowns[solverNumber][i];
-          }
-          delete[] _tempSpaceTimeUnknowns[solverNumber];
-          _tempSpaceTimeUnknowns[solverNumber] = nullptr;
-          //
-          for (int i=0; i<2; ++i) {
-            delete[] _tempSpaceTimeFluxUnknowns[solverNumber][i];
-          }
-          delete[] _tempSpaceTimeFluxUnknowns[solverNumber];
-          _tempSpaceTimeFluxUnknowns[solverNumber] = nullptr;
-          //
-          delete[] _tempUnknowns[solverNumber];
-          _tempUnknowns[solverNumber] = nullptr;
-          //
-          delete[] _tempFluxUnknowns[solverNumber];
-          _tempFluxUnknowns[solverNumber] = nullptr;
-          //
-          delete[] _tempStateSizedVectors[solverNumber];
-          _tempStateSizedVectors[solverNumber] = nullptr;
-          
-          if(aderdgSolver->isDummyKRequired()) { //TODO KD
-            delete[] _tempPointForceSources[solverNumber];
-            _tempPointForceSources[solverNumber] = nullptr;
-          }
-        }
-        
-      }
-
-      ++solverNumber;
-    }
-
-    delete[] _tempSpaceTimeUnknowns;
-    delete[] _tempSpaceTimeFluxUnknowns;
-    delete[] _tempUnknowns;
-    delete[] _tempFluxUnknowns;
-    delete[] _tempStateSizedVectors;
-    delete[] _tempPointForceSources;
-    _tempSpaceTimeUnknowns     = nullptr;
-    _tempSpaceTimeFluxUnknowns = nullptr;
-    _tempUnknowns              = nullptr;
-    _tempFluxUnknowns          = nullptr;
-    _tempStateSizedVectors     = nullptr;
-    _tempPointForceSources     = nullptr;
-  }
-}
-
-exahype::mappings::Prediction::Prediction() :
-        _tempSpaceTimeUnknowns(nullptr),
-        _tempSpaceTimeFluxUnknowns(nullptr),
-        _tempUnknowns(nullptr),
-        _tempFluxUnknowns(nullptr),
-        _tempStateSizedVectors(nullptr),
-        _tempPointForceSources(nullptr){}
+exahype::mappings::Prediction::Prediction() {}
 
 exahype::mappings::Prediction::~Prediction() {
-  deleteTemporaryVariables();
+  exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::Prediction::Prediction(
-    const Prediction& masterThread) :
-  _tempSpaceTimeUnknowns(nullptr),
-  _tempSpaceTimeFluxUnknowns(nullptr),
-  _tempUnknowns(nullptr),
-  _tempFluxUnknowns(nullptr),
-  _tempStateSizedVectors(nullptr),
-  _tempPointForceSources(nullptr)  {
-  prepareTemporaryVariables();
+exahype::mappings::Prediction::Prediction(const Prediction& masterThread) {
+  initialiseTemporaryVariables(_temporaryVariables);
 }
 
 void exahype::mappings::Prediction::mergeWithWorkerThread(
@@ -314,12 +97,12 @@ void exahype::mappings::Prediction::mergeWithWorkerThread(
 
 void exahype::mappings::Prediction::beginIteration(
     exahype::State& solverState) {
-  prepareTemporaryVariables();
+  initialiseTemporaryVariables(_temporaryVariables);
 }
 
 void exahype::mappings::Prediction::endIteration(
     exahype::State& solverState) {
-  deleteTemporaryVariables();
+  deleteTemporaryVariables(_temporaryVariables);
 }
 
 void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
@@ -330,16 +113,16 @@ void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell) {
     assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
 
-//    solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
+    solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
 
     solver->performPredictionAndVolumeIntegral(
         cellDescription,
-        _tempSpaceTimeUnknowns    [cellDescription.getSolverNumber()],
-        _tempSpaceTimeFluxUnknowns[cellDescription.getSolverNumber()],
-        _tempUnknowns             [cellDescription.getSolverNumber()],
-        _tempFluxUnknowns         [cellDescription.getSolverNumber()],
-        _tempStateSizedVectors    [cellDescription.getSolverNumber()],
-        _tempPointForceSources    [cellDescription.getSolverNumber()]);
+        _temporaryVariables._tempSpaceTimeUnknowns    [cellDescription.getSolverNumber()],
+        _temporaryVariables._tempSpaceTimeFluxUnknowns[cellDescription.getSolverNumber()],
+        _temporaryVariables._tempUnknowns             [cellDescription.getSolverNumber()],
+        _temporaryVariables._tempFluxUnknowns         [cellDescription.getSolverNumber()],
+        _temporaryVariables._tempStateSizedVectors    [cellDescription.getSolverNumber()],
+        _temporaryVariables._tempPointForceSources    [cellDescription.getSolverNumber()]);
 
     solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
   }

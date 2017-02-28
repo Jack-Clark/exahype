@@ -238,7 +238,7 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
        *   thus inherit prototype's problem size and invoke restart(). This
        *   induces a grain size extrapolation.
        */
-      DatabaseEntry( DatabaseEntry& prototype, int newProblemSize );
+      DatabaseEntry( const DatabaseEntry& prototype, int newProblemSize );
 
       /**
        * Restart the search for a problem setup

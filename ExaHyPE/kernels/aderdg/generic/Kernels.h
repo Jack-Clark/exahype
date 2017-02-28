@@ -78,9 +78,7 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
+
 template <typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
@@ -95,9 +93,8 @@ void spaceTimePredictorNonlinear(
     const double dt,
     double* tempPointForceSources);
 
-void solutionUpdate(double* luh, const double* const lduh, const double dt,
-                    const int numberOfVariables, const int numberOfParameters,
-                    const int basisSize);
+template <typename SolverType>
+void solutionUpdate(SolverType& solver, double* luh, const double* const lduh, const double dt);
 
 void volumeIntegralLinear(double* lduh, const double* const lFhi,
                           const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -127,9 +124,7 @@ void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
     const int basisSize
 );*/
 
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
+
 template <typename SolverType>
 void solutionAdjustment(SolverType& solver, double* luh,
                         const tarch::la::Vector<DIMENSIONS, double>& center,
@@ -160,43 +155,65 @@ void boundaryConditions(
     const double t, const double dt, const int faceIndex,
     const int normalNonZero);
 
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
+
 template <typename SolverType>
 double stableTimeStepSize(SolverType& solver, const double* const luh,
                           double* tempEigenvalues,
                           const tarch::la::Vector<DIMENSIONS, double>& dx);
 
+/**
+ * \note We need to consider material parameters in
+ * lQhbndFine and lQhbndCoarse.
+ */
 void faceUnknownsProlongation(
     double* lQhbndFine, double* lFhbndFine, const double* lQhbndCoarse,
     const double* lFhbndCoarse, const int coarseGridLevel,
     const int fineGridLevel,
     const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex,
-    const int numberOfVariables, const int basisSize);
+    const int numberOfVariables,
+    const int numberOfParameters,
+    const int basisSize);
 
+/**
+ * \note We need to consider material parameters in
+ * lQhbndFine and lQhbndCoarse.
+ */
 void faceUnknownsRestriction(
     double* lQhbndCoarse, double* lFhbndCoarse, const double* lQhbndFine,
     const double* lFhbndFine, const int coarseGridLevel,
     const int fineGridLevel,
     const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex,
-    const int numberOfVariables, const int basisSize);
+    const int numberOfVariables,
+    const int numberOfParameters,
+    const int basisSize);
 
+/**
+ * \note We need to consider material parameters in
+ * luhCoarse and luhFine.
+ */
 void volumeUnknownsProlongation(
     double* luhFine, const double* luhCoarse, const int coarseGridLevel,
     const int fineGridLevel,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
-    const int numberOfVariables, const int basisSize);
+    const int numberOfVariables,
+    const int numberOfParameters,
+    const int basisSize);
 
+/**
+ * \note We need to consider material parameters in
+ * luhCoarse and luhFine.
+ */
 void volumeUnknownsRestriction(
     double* luhCoarse, const double* luhFine, const int coarseGridLevel,
     const int fineGridLevel,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
-    const int numberOfVariables, const int basisSize);
+    const int numberOfVariables,
+    const int numberOfParameters,
+    const int basisSize);
     
 //TODO KD    
 template <typename SolverType>
-void dummyK_Kernel(
+void pointSource(
     SolverType& solver,
     const double t,
     const double dt,
@@ -217,19 +234,21 @@ void dummyK_Kernel(
 #include "kernels/aderdg/generic/c/2d/riemannSolverLinear.cpph"
 #include "kernels/aderdg/generic/c/2d/riemannSolverNonlinear.cpph"
 #include "kernels/aderdg/generic/c/2d/solutionAdjustment.cpph"
+#include "kernels/aderdg/generic/c/2d/solutionUpdate.cpph"
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/2d/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/c/2d/dummyK_Kernel.cpph"
+#include "kernels/aderdg/generic/c/2d/pointSource.cpph"
 #elif DIMENSIONS == 3
 #include "kernels/aderdg/generic/c/3d/boundaryConditions.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/solutionAdjustment.cpph"
+#include "kernels/aderdg/generic/c/3d/solutionUpdate.cpph"
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/c/3d/dummyK_Kernel.cpph"
+#include "kernels/aderdg/generic/c/3d/pointSource.cpph"
 #endif
 
 // Todo: Recasting the code from function templates to class templates
@@ -241,9 +260,7 @@ namespace aderdg {
 namespace generic {
 namespace fortran {
 
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
+
 template <typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
@@ -258,9 +275,7 @@ void spaceTimePredictorNonlinear(
     const double dt,
     double* tempPointForceSources);
 
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
+
 template <typename SolverType>
 void spaceTimePredictorLinear(
     SolverType& solver,
@@ -284,12 +299,6 @@ void predictor(double* lQhi, double* lFhi, const double* const lQi,
                const double* const lFi, const double predictorTimeStepSize,
                const int numberOfVariables, const int basisSize);
 
-/**
- * @todo Dominic Etienne Charrier
- * This is just a "parent" function that
- * invokes the function going by the same
- * name 2*dim times.
- */
 void extrapolatedPredictor(double* lQhbnd, double* lFhbnd,
                            const double* const lQhi, const double* const lFhi,
                            const double predictorTimeStepSize,
@@ -299,10 +308,6 @@ void extrapolatedPredictor(double* lQhbnd, double* lFhbnd,
 // The DIMENSIONS depending mesh size vector enables overloading at the moment.
 // If we replace it by scalar mesh size, we have to add a template argument "int
 // dim".
-
-void solutionUpdate(double* luh, const double* const lduh, const double dt,
-                    const int numberOfVariables, const int numberOfParameters, 
-                    const int basisSize);
 
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -332,18 +337,17 @@ void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
     const int basisSize
 );*/
 
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
+
+template <typename SolverType>
+void solutionUpdate(SolverType& solver, double* luh, const double* const lduh, const double dt);
+
 template <typename SolverType>
 void solutionAdjustment(SolverType& solver, double* luh,
                         const tarch::la::Vector<DIMENSIONS, double>& center,
                         const tarch::la::Vector<DIMENSIONS, double>& dx,
                         const double t, const double dt);
 
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments
-// template argument functions and non-template argument function.
+
 template <typename SolverType>
 void riemannSolverNonlinear(
     SolverType& solver,
@@ -366,9 +370,7 @@ void riemannSolverLinear(
     const double dt,
     const int normalNonZero);
 
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
+
 template <typename SolverType>
 double stableTimeStepSize(SolverType& solver, const double* const luh,
                           double* tempEigenvalues,
@@ -407,6 +409,7 @@ void volumeUnknownsRestriction(
 #if DIMENSIONS == 3
 #include "kernels/aderdg/generic/fortran/3d/riemannSolverLinear.cpph"
 #include "kernels/aderdg/generic/fortran/3d/riemannSolverNonlinear.cpph"
+#include "kernels/aderdg/generic/fortran/3d/solutionUpdate.cpph"
 #include "kernels/aderdg/generic/fortran/3d/solutionAdjustment.cpph"
 #include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorNonlinear.cpph"

@@ -31,9 +31,7 @@
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
-// todo 08/02/16:Dominic Etienne Charrier
-// move somewhere else
-// is evaluated at compile time
+// Some helpers
 constexpr int power(int basis, int exp) {
   return (exp == 0) ? 1 : basis * power(basis, exp - 1);
 }
@@ -67,25 +65,242 @@ namespace exahype {
      * All the registered solvers. Has to be declared extern in C++ standard as
      * it is instantiated in the corresponding cpp file.
      */
-    // TODO: std::vector<std::unique_ptr<Solver>> ?!
     extern std::vector<Solver*> RegisteredSolvers;
-}  // namespace solvers
-}  // namespace exahype
+
+    class PredictionTemporaryVariables;
+    class MergingTemporaryVariables;
+    class SolutionUpdateTemporaryVariables;
+    class TimeStepSizeComputationTemporaryVariables;
+
+    /**
+     * Initialises temporary variables
+     * used for the Prediction and SolutionRecomputation
+     * mapping.
+     *
+     * \note We parallelise over the domain
+     * (mapping is copied for each thread) and
+     * over the solvers registered on a cell.
+     *
+     * \note We need to initialise the temporary variables
+     * per mapping and not in the solvers since the
+     * solvers in exahype::solvers::RegisteredSolvers
+     * are not copied for every thread.
+     */
+    void initialiseTemporaryVariables(PredictionTemporaryVariables& temporaryVariables);
+
+    /**
+     * Deletes temporary variables
+     * used for the Prediction and SolutionRecomputation
+     * mapping.
+     */
+    void deleteTemporaryVariables(PredictionTemporaryVariables& temporaryVariables);
+
+    /**
+     * Initialises temporary variables
+     * used in the Merging and SolutionRecomputation
+     * mapping.
+     *
+     * \note We parallelise over the domain
+     * (mapping is copied for each thread) and
+     * over the solvers registered on a cell.
+     *
+     * \note We need to initialise the temporary variables
+     * per mapping and not in the solvers since the
+     * solvers in exahype::solvers::RegisteredSolvers
+     * are not copied for every thread.
+     */
+    void initialiseTemporaryVariables(MergingTemporaryVariables& temporaryVariables);
+
+    /**
+     * Deletes temporary variables
+     * used in the Merging and SolutionRecomputation
+     * mapping.
+     */
+    void deleteTemporaryVariables(MergingTemporaryVariables& temporaryVariables);
+
+    /**
+     * Initialises temporary variables
+     * used in the SolutionUpdate and SolutionRecomputation mapping.
+     *
+     * \note We parallelise over the domain
+     * (mapping is copied for each thread) and
+     * over the solvers registered on a cell.
+     *
+     * \note We need to initialise the temporary variables
+     * per mapping and not in the solvers since the
+     * solvers in exahype::solvers::RegisteredSolvers
+     * are not copied for every thread.
+     */
+    void initialiseTemporaryVariables(SolutionUpdateTemporaryVariables& temporaryVariables);
+
+    /**
+     * Deletes temporary variables
+     * used in the SolutionUpdate and SolutionRecomputation mapping.
+     */
+    void deleteTemporaryVariables(SolutionUpdateTemporaryVariables& temporaryVariables);
+
+    /**
+     * Initialises the temporary variables
+     * used in the TimeStepSizeComputation mapping.
+     *
+     * \note We parallelise over the domain
+     * (mapping is copied for each thread) and
+     * over the solvers registered on a cell.
+     *
+     * \note We need to initialise the temporary variables
+     * per mapping and not in the solvers since the
+     * solvers in exahype::solvers::RegisteredSolvers
+     * are not copied for every thread.
+     */
+    void initialiseTemporaryVariables(TimeStepSizeComputationTemporaryVariables& temporaryVariables);
+
+    /**
+     * Deletes the temporary variables
+     * used in the TimeStepSizeComputation mapping.
+     */
+    void deleteTemporaryVariables(TimeStepSizeComputationTemporaryVariables& temporaryVariables);
+
+
+    class SolverFlags;
+
+    /**
+     * Sets the limiter domain has changed flags per
+     * solver to false.
+     */
+    void initialiseSolverFlags(SolverFlags& solverFlags);
+
+    /**
+     * Sets the limiter domain has changed flags per
+     * solver to false.
+     */
+    void prepareSolverFlags(SolverFlags& solverFlags);
+
+    /**
+     * Sets the limiter domain has changed flags per
+     * solver to false.
+     */
+    void deleteSolverFlags(SolverFlags& solverFlags);
+  }
+}
+
+class exahype::solvers::PredictionTemporaryVariables { // TODO(Dominic): Realise per solver.
+public:
+  /**
+   * Per solver, temporary variables for storing degrees of freedom of space-time predictor
+   * sized variables.
+   */
+  double*** _tempSpaceTimeUnknowns = nullptr;
+  /**
+   * Per solver, temporary variables for storing degrees of freedom of space-time
+   * volume flux sized variables.
+   */
+  double*** _tempSpaceTimeFluxUnknowns = nullptr;
+
+  /**
+   * Per solver, temporary variables for storing degrees of freedom of solution
+   * sized variables.
+   *  // TODO(Dominic): This variable can be eliminated from the nonlinear kernels.
+   */
+  double** _tempUnknowns = nullptr;
+
+  /**
+   * Per solver, temporary variables for storing degrees of freedom of volume flux
+   * sized variables.
+   *  // TODO(Dominic): This variable can be eliminated from the nonlinear kernels.
+   */
+  double** _tempFluxUnknowns = nullptr;
+
+  /**
+   * Per solver, temporary variables for storing state sized values,
+   * i.e. the state, eigenvalues etc.
+   */
+  double** _tempStateSizedVectors = nullptr;
+
+  //TODO KD describe what it is
+  double** _tempPointForceSources = nullptr;
+};
+
+class exahype::solvers::MergingTemporaryVariables {
+public:
+  /**
+   * Temporary variable per solver for storing
+   * space-time face unknowns.
+   */
+  //  double**  _tempSpaceTimeFaceUnknownsArray  = nullptr; todo
+
+  /**
+   * Temporary variable per solver for storing
+   * face unknowns.
+   */
+  double***  _tempFaceUnknowns = nullptr;
+
+  /**
+   * Temporary variables per solver for storing state sized (=number of variables)
+   * quantities like eigenvalues or averaged states.
+   */
+  double*** _tempStateSizedVectors = nullptr;
+
+  /**
+   * Temporary variable per solver for storing square matrices
+   * of the size number of variables times number of variables.
+   */
+  double*** _tempStateSizedSquareMatrices = nullptr;
+};
+
+
+class exahype::solvers::SolutionUpdateTemporaryVariables {
+public:
+  /**
+   * An array of 5 pointers to arrays of a length that equals the
+   * number of variables per solver.
+   *
+   * These temporary variables are only used by the finite  volumes
+   * solver.
+   */
+  double*** _tempStateSizedVectors = nullptr;
+
+  /**
+   * An array of pointers to arrays of a length that equals the
+   * number of solution unknowns per solver.
+   *
+   * These temporary variables are only used by the finite  volumes
+   * solver.
+   */
+  double*** _tempUnknowns = nullptr;
+};
+
+class exahype::solvers::TimeStepSizeComputationTemporaryVariables {
+public:
+  double** _tempEigenValues = nullptr;
+};
+
+class exahype::solvers::SolverFlags {
+public:
+  /**
+   * Per solver, we hold a status flag indicating
+   * if the limiter domain of the solver has
+   * changed.
+   *
+   * The flag has only a meaning for the LimitingADERDGSolver.
+   */
+  bool* _limiterDomainHasChanged = nullptr;
+
+  /**
+   * Per solver, we hold a status flag indicating
+   * if the solver has requested a grid update.
+   */
+  bool* _gridUpdateRequested = nullptr;
+
+};
+
+
+
 
 /**
  * Describes one solver.
  */
 class exahype::solvers::Solver {
  public:
-  /**
-   * Some solvers can deploy data conversion into the background. How this is
-   * done is solver-specific. However, we have to wait until all tasks have
-   * terminated if we want to modify the heap, i.e. insert new data or remove
-   * data. Therefore, the wait (as well as the underlying semaphore) belong
-   * into this abstract superclass.
-   */
-  static void waitUntilAllBackgroundTasksHaveTerminated();
-
   /**
    * The type of a solver.
    */
@@ -177,6 +392,63 @@ class exahype::solvers::Solver {
    */
   static const int NotFound;
 
+  /**
+   * Run over all solvers and identify the minimal time stamp.
+   */
+  static double getMinSolverTimeStampOfAllSolvers();
+
+  /**
+   * Run over all solvers and identify the minimal sum of minimal time stamp
+   * plus the minimal time step size.
+   *
+   * The result is a lower bound of the minimum time stamp
+   * that will be obtained in the following time step.
+   */
+  static double estimateMinNextSolverTimeStampOfAllSolvers();
+
+  /**
+   * Run over all solvers and identify the minimal time step size.
+   */
+  static double getMinSolverTimeStepSizeOfAllSolvers();
+
+  /**
+   * Run over all solvers and identify the maximal time stamp.
+   *
+   * On the individual patches, we do use the min time stamp so
+   * far, so the routine returns the maximum over all min solver
+   * time stamps.
+   */
+  static double getMaxSolverTimeStampOfAllSolvers();
+
+  static bool allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping scheme);
+
+  static double getCoarsestMeshSizeOfAllSolvers();
+  static double getFinestMaximumMeshSizeOfAllSolvers();
+
+  /**
+   * Run over all solvers and identify the maximum depth of adaptive
+   * refinement employed.
+   *
+   * This number directly correlates with the number
+   * of grid iterations to run for performing an erasing operation.
+   */
+  static int getMaxAdaptiveRefinementDepthOfAllSolvers();
+
+  /**
+   * Loop over the solver registry and check if one
+   * of the solvers has requested a grid update.
+   */
+  static bool oneSolverRequestedGridUpdate();
+
+ /**
+  * Some solvers can deploy data conversion into the background. How this is
+  * done is solver-specific. However, we have to wait until all tasks have
+  * terminated if we want to modify the heap, i.e. insert new data or remove
+  * data. Therefore, the wait (as well as the underlying semaphore) belong
+  * into this abstract superclass.
+  */
+ static void waitUntilAllBackgroundTasksHaveTerminated();
+
  protected:
   /**
    * @see waitUntilAllBackgroundTasksHaveTerminated()
@@ -244,6 +516,33 @@ class exahype::solvers::Solver {
    * A profiler for this solver.
    */
   std::unique_ptr<profilers::Profiler> _profiler;
+  /**
+   * Flag indicating if a grid update was
+   * requested by this solver.
+   *
+   * This is the state after the
+   * time step size computation.
+   *
+   * <h2>MPI</h2>
+   * This is the state after this rank's
+   * solver has merged its state
+   * with its workers' worker.
+   */
+  bool _gridUpdateRequested;
+
+  /**
+   * Flag indicating if a grid update was
+   * requested by this solver.
+   *
+   * This is the state before the
+   * time step size computation.
+   *
+   * <h2>MPI</h2>
+   * This is the state before this rank's
+   * solver has merged its state
+   * with its workers' solver.
+   */
+  bool _nextGridUpdateRequested;
 
  public:
   Solver(const std::string& identifier, exahype::solvers::Solver::Type type,
@@ -342,12 +641,46 @@ class exahype::solvers::Solver {
   virtual void toString(std::ostream& out) const;
 
   /**
+   * Reset the grid update flags.
+   */
+  void resetGridUpdateRequestedFlags();
+
+  /**
+   * Indicates if a grid update was requested
+   * by this solver.
+   *
+   * <h2>MPI</h2>
+   * This is the state before we have send data to the master rank
+   * and have merged the state with this rank's workers.
+   */
+  bool getNextGridUpdateRequested() const;
+
+  /**
+   * Indicates if a grid update was requested
+   * by this solver.
+   *
+   * <h2>MPI</h2>
+   *This is the state before we have send data to the master rank
+   * and have merged the state with this rank's workers.
+   */
+  bool getGridUpdateRequested() const;
+
+  /**
+   * Overwrite the _gridUpdateRequested flag
+   * by the _nextGridUpdateRequested flag.
+   * Reset the _nextGridUpdateRequested flag
+   * to false;
+   */
+  void setNextGridUpdateRequested();
+
+  /**
    * Run over all solvers and identify the minimal time stamp.
    */
   virtual double getMinTimeStamp() const = 0;
 
   /**
-   * Run over all solvers and identify the minimal time step size.
+   * The minimum time step size
+   * of all cell descriptions.
    */
   virtual double getMinTimeStepSize() const = 0;
 
@@ -382,52 +715,23 @@ class exahype::solvers::Solver {
    * At the time of the call of this
    * function, a new next time step size
    * has already been computed.
+   *
+   * TODO(Dominic): Need something like this for each cell description if
+   * we do fused time stepping?
    */
   virtual void reinitialiseTimeStepData() = 0;
 
   virtual double getMinNextTimeStepSize() const=0;
 
+ public:
   /**
-   * Run over all solvers and identify the minimal time stamp.
-   */
-  static double getMinSolverTimeStampOfAllSolvers();
-
-  /**
-   * Run over all solvers and identify the minimal sum of minimal time stamp
-   * plus the minimal time step size.
+   * Update if a grid update was requested by this solver.
    *
-   * The result is a lower bound of the minimum time stamp
-   * that will be obtained in the following time step.
+   * <h2>MPI</h2>
+   * This is the state before we have send data to the master rank
+   * and have merged the state with this rank's workers.
    */
-  static double estimateMinNextSolverTimeStampOfAllSolvers();
-
-  /**
-   * Run over all solvers and identify the minimal time step size.
-   */
-  static double getMinSolverTimeStepSizeOfAllSolvers();
-
-  /**
-   * Run over all solvers and identify the maximal time stamp.
-   *
-   * On the individual patches, we do use the min time stamp so
-   * far, so the routine returns the maximum over all min solver
-   * time stamps.
-   */
-  static double getMaxSolverTimeStampOfAllSolvers();
-
-  static bool allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping scheme);
-
-  static double getCoarsestMeshSizeOfAllSolvers();
-  static double getFinestMaximumMeshSizeOfAllSolvers();
-
-  /**
-   * Run over all solvers and identify the maximum depth of adaptive
-   * refinement employed.
-   *
-   * This number directly correlates with the number
-   * of grid iterations to run for performing an erasing operation.
-   */
-  static int getMaxAdaptiveRefinementDepthOfAllSolvers();
+  void updateNextGridUpdateRequested(bool gridUpdateRequested);
 
   /**
    * Returns true if the index \p cellDescriptionsIndex
@@ -469,7 +773,7 @@ class exahype::solvers::Solver {
    * (solution update, predictor comp.) into
    * this hook.
    */
-  virtual bool enterCell(
+  virtual bool updateStateInEnterCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -495,7 +799,7 @@ class exahype::solvers::Solver {
    * (solution update, predictor comp.) into
    * this hook.
    */
-  virtual bool leaveCell(
+  virtual bool updateStateInLeaveCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -508,6 +812,30 @@ class exahype::solvers::Solver {
   /////////////////////////////////////
   // CELL-LOCAL
   /////////////////////////////////////
+  /**
+   * Evaluate the refinement criterion after
+   * a solution update has performed.
+   *
+   * We currently only return true
+   * if a cell requested refinement.
+   * ExaHyPE might then stop the
+   * time stepping and update the mesh
+   * before continuing.
+   *
+   * \return true if a grid update is necessary.
+   */
+  virtual bool evaluateRefinementCriterionAfterSolutionUpdate(
+      const int cellDescriptionsIndex,
+      const int element) = 0;
+
+  /**
+   * Zeroes all the time step sizes.
+   * This method is used by the adaptive mesh refinement mapping.
+   * After the mesh refinement, we need to recompute
+   * the time step sizes.
+   */
+  virtual void zeroTimeStepSizes() = 0;
+
   /**
    * Compute and return a new admissible time step
    * size for the cell description
@@ -542,6 +870,18 @@ class exahype::solvers::Solver {
       const int cellDescriptionsIndex,
       const int element,
       double*   tempEigenvalues) = 0;
+
+  /**
+   * Zeroes all the time step sizes.
+   * This method is used by the adaptive mesh refinement mapping.
+   * After the mesh refinement, we need to recompute
+   * the time step sizes.
+   *
+   * \note We do not overwrite _minNextTimeStepSize or an
+   * equivalent value since this would erase the time
+   * step size of the fixed time stepping schemes ("globalfixed" etc.)
+   */
+  virtual void zeroTimeStepSizes(const int cellDescriptionsIndex, const int element) = 0;
 
   /**
    * Impose initial conditions.
@@ -906,6 +1246,33 @@ class exahype::solvers::Solver {
       const int                                    workerRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level) = 0;
+
+
+  /*
+   * At the time of sending data to the master,
+   * we have already performed set the next
+   * grid update requested flag locally.
+   * We thus need to communicate the
+   * current grid update requested flag to the master.
+   *
+   * However on the master's side, we need to
+   * merge the received time step size with
+   * the next min predictor time step size since
+   * the master has not yet set his new flag yet.
+   */
+  void sendGridUpdateFlagsToMaster(
+      const int                                    masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+
+  /**
+   * Merge the _nextGridUpdateRequested with the flag
+   * received from the worker.
+   */
+  void mergeWithWorkerGridUpdateFlags(
+      const int                                    workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
 
   /**
    * Send solver data to master rank. Read the data from

@@ -25,33 +25,39 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
+/**
+ * We need to consider material parameters
+ * in QL and QR,tempStateSizedVectors,tempFaceUnknownsArray
+ * We don't need to consider material parameters
+ * in FL,FR,tempStateSizedSquareMatrices,
+ */
 template <typename SolverType>
 void riemannSolverNonlinear(SolverType& solver,
-                            double* FL, double* FR, const double* const QL,
-                            const double* const QR,
-                            double* tempFaceUnknownsArray,
-                            double** tempStateSizedVectors,
-                            double** tempStateSizedSquareMatrices,
-                            const double dt,
-                            const int normalNonZero) {
-  const int numberOfVariables = solver.getNumberOfVariables();
-  const int numberOfParameters = solver.getNumberOfParameters();
-  const int basisSize = solver.getNodesPerCoordinateAxis();
-  const int order = basisSize - 1;
+    double* FL, double* FR, const double* const QL,
+    const double* const QR,
+    double* tempFaceUnknownsArray,
+    double** tempStateSizedVectors,
+    double** tempStateSizedSquareMatrices,
+    const double dt,
+    const int normalNonZero) {
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int basisSize          = SolverType::Order+1;
+  constexpr int order              = basisSize - 1;
 
-  // Compute the average states (and parameters) from the left and the right
-  double* QavL = tempStateSizedVectors[0];
-  double* QavR = tempStateSizedVectors[1];
+  // Compute the average variables and parameters from the left and the right
+  double* QavL = tempStateSizedVectors[0]; // ~(numberOfVariables+numberOfParameters)
+  double* QavR = tempStateSizedVectors[1]; // ~(numberOfVariables+numberOfParameters)
   {
-    idx3 idx_QLR(basisSize, basisSize, numberOfVariables);
-    std::memset(QavL, 0, numberOfVariables * sizeof(double));
-    std::memset(QavR, 0, numberOfVariables * sizeof(double));
+    idx3 idx_QLR(basisSize, basisSize, numberOfVariables+numberOfParameters);
+    std::memset(QavL, 0, (numberOfVariables+numberOfParameters) * sizeof(double));
+    std::memset(QavR, 0, (numberOfVariables+numberOfParameters) * sizeof(double));
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
         const double weight = kernels::gaussLegendreWeights[order][i] *
-                              kernels::gaussLegendreWeights[order][j];
+            kernels::gaussLegendreWeights[order][j];
 
-        for (int k = 0; k < numberOfVariables; k++) {
+        for (int k = 0; k < numberOfVariables+numberOfParameters; k++) {
           QavL[k] += weight * QL[idx_QLR(i, j, k)];
           QavR[k] += weight * QR[idx_QLR(i, j, k)];
         }
@@ -59,40 +65,64 @@ void riemannSolverNonlinear(SolverType& solver,
     }
   }
 
-  // TODO: New size: numberOfVariables - numberOfParameters
   double* LL = tempStateSizedVectors[2];
   double* LR = tempStateSizedVectors[3];
   solver.eigenvalues(QavL, normalNonZero, LL);
   solver.eigenvalues(QavR, normalNonZero, LR);
 
+  double Qavg[numberOfVariables+numberOfParameters]; // ~(numberOfVariables+numberOfParameters)
+  for(int k=0; k < numberOfVariables; k++) {
+    Qavg[k] = (QavL[k] + QavR[k]) / 2;
+  }
+
   // Here, we implement a very simple Rusanov scheme with scalar dissipation
   // (smax*Id).
   // We can change this into a more sophisticated Osher or HLLEM Riemann solver
   // whenever needed!
-  std::transform(LL, LL + numberOfVariables - numberOfParameters, LL,
-                 std::abs<double>);
-  std::transform(LR, LR + numberOfVariables - numberOfParameters, LR,
-                 std::abs<double>);
+  // skip parameters
+  std::transform(LL, LL + numberOfVariables, LL,
+      std::abs<double>);
+  std::transform(LR, LR + numberOfVariables, LR,
+      std::abs<double>);
   const double* smax_L =
-      std::max_element(LL, LL + numberOfVariables - numberOfParameters);
+      std::max_element(LL, LL + numberOfVariables);
   const double* smax_R =
-      std::max_element(LR, LR + numberOfVariables - numberOfParameters);
+      std::max_element(LR, LR + numberOfVariables);
   const double smax = std::max(*smax_L, *smax_R);
+
+  double* Bn  = tempStateSizedSquareMatrices[0];
+  double* ncp = tempStateSizedVectors[4];
+  idx2 idx_Bn(numberOfVariables, numberOfVariables);
+  solver.matrixb(Qavg, normalNonZero, Bn);
 
   // We now compute the numerical flux. Note that the scheme is at the moment
   // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
   // this will be converted into the left and right fluctuations.
 
   {
-    idx3 idx_FQLR(basisSize, basisSize, numberOfVariables);
+    idx3 idx_FLR(basisSize, basisSize, numberOfVariables);
+    idx3 idx_QLR(basisSize, basisSize, numberOfVariables+numberOfParameters);
+
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
-        // Avoid diffusion of parameters
-        for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
-          FL[idx_FQLR(i, j, k)] =
-              0.5 * (FR[idx_FQLR(i, j, k)] + FL[idx_FQLR(i, j, k)]) -
-              0.5 * smax * (QR[idx_FQLR(i, j, k)] - QL[idx_FQLR(i, j, k)]);
-          FR[idx_FQLR(i, j, k)] = FL[idx_FQLR(i, j, k)];
+        // matmul(Bn, lQbndR(:,j,k) - lQbndL(:,j,k))
+        for(int l=0; l < numberOfVariables; l++) {
+          ncp[l] = 0;
+          for(int m=0; m < numberOfVariables; m++) {
+            ncp[l] += Bn[idx_Bn(m, l)] * (QR[idx_QLR(i, j, m)] - QL[idx_QLR(i, j, m)]);
+          }
+          // printf("QR[%d, %d] = %.20e\n", j, l, QR[idx_QLR(j, l)]);
+          // printf("QL[%d, %d] = %.20e\n", j, l, QL[idx_QLR(j, l)]);
+          // printf("ncp[%d]=%.20e\n", l, ncp[l]);
+        }
+
+        // skip parameters
+        for (int k = 0; k < numberOfVariables; k++) {
+          FL[idx_FLR(i, j, k)] =
+              0.5 * (FR[idx_FLR(i, j, k)] + FL[idx_FLR(i, j, k)]) -
+              0.5 * smax * (QR[idx_QLR(i, j, k)] - QL[idx_QLR(i, j, k)]);
+          FR[idx_FLR(i, j, k)] = FL[idx_FLR(i, j, k)] - 0.5 * ncp[k];
+          FL[idx_FLR(i, j, k)] = FL[idx_FLR(i, j, k)] + 0.5 * ncp[k];
         }
       }
     }

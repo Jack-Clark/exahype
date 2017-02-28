@@ -63,3 +63,20 @@ void {{Project}}::{{Solver}}::boundaryValues(
   // @todo Please implement/augment if required
 {{BoundaryValues}}
 }
+
+void {{Project}}::{{Solver}}::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
+  // Dimensions             = {{Dimensions}}
+  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+
+  // @todo Please implement/augment if required
+{{NonConservativeProduct}}
+}
+
+
+void {{Project}}::{{Solver}}::matrixb(const double* const Q,const int d,double* Bn) {
+  // Dimensions             = {{Dimensions}}
+  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  
+  // @todo Please implement/augment if required
+{{MatrixB}}
+}

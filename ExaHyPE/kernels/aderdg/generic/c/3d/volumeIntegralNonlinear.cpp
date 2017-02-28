@@ -31,7 +31,7 @@ namespace c {
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
                              const int numberOfVariables,
-                             const int numberOfParameters,
+                             const int numberOfParameters, /*not used*/ // TODO(Dominic): Remove from arg list.
                              const int basisSize) {
   const int order = basisSize - 1;
   const int basisSize2 = basisSize * basisSize;
@@ -53,7 +53,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
         // Fortran: lduh(l, k, j, i) += us * lFhi_x(l, m, j, i) * Kxi(m, k)
         // Matrix product: (l, m) * (m, k) = (l, k)
         for (int k = 0; k < basisSize; k++) {
-          for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
+          for (int l = 0; l < numberOfVariables; l++) {
             for (int m = 0; m < basisSize; m++) {
               lduh[idx(i, j, k, l)] += kernels::Kxi[order][k][m] *
                                        lFhi[x_offset + idx(i, j, m, l)] *
@@ -78,7 +78,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
         // Fortran: lduh(l, j, k, i) += us * lFhi_y(l,m,j,i) * Kxi(m, k)
         // Matrix product: (l, m) * (m, k) = (l, k)
         for (int k = 0; k < basisSize; k++) {
-          for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
+          for (int l = 0; l < numberOfVariables; l++) {
             for (int m = 0; m < basisSize; m++) {
               lduh[idx(i, k, j, l)] += kernels::Kxi[order][k][m] *
                                        lFhi[y_offset + idx(i, j, m, l)] *
@@ -103,7 +103,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
         // Fortran: lduh(l, j, i, k) += us * lFhi_z(l, m, j, i) * Kxi(m, k)
         // Matrix product (l, m) * (m, k) = (l, k)
         for (int k = 0; k < basisSize; k++) {
-          for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
+          for (int l = 0; l < numberOfVariables; l++) {
             for (int m = 0; m < basisSize; m++) {
               lduh[idx(k, i, j, l)] += kernels::Kxi[order][k][m] *
                                        lFhi[z_offset + idx(i, j, m, l)] *

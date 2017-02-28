@@ -78,21 +78,21 @@ private:
    * element.
    * This number includes the unknowns of all state variables.
    */
-  const int _unknownsPerFace;
+  const int _dofPerFace;
 
   /**
    * The total number of unknowns/basis functions associated with the 2^d faces
    * of an element.
    * This number includes the unknowns of all state variables.
    */
-  const int _unknownsPerCellBoundary;
+  const int _dofPerCellBoundary;
 
   /**
    * The total number of unknowns/basis functions associated with the volume of
    * a cell.
    * This number includes the unknowns of all state variables.
    */
-  const int _unknownsPerCell;
+  const int _dofPerCell;
 
   /**
    * The total number of volume flux unknowns/basis functions PLUS the number of
@@ -102,14 +102,14 @@ private:
    *
    *
    */
-  const int _fluxUnknownsPerCell;
+  const int _fluxDofPerCell;
 
   /**
    * The total number of space-time unknowns/basis functions associated with the
    * space-time volume of a cell and its time stepping interval.
    * This number includes the unknowns of all state variables.
    */
-  const int _spaceTimeUnknownsPerCell;
+  const int _spaceTimeDofPerCell;
 
   /**
    * The total number of space-time volume flux unknowns/basis functions
@@ -117,17 +117,41 @@ private:
    * space-time volume of a cell and its time stepping interval.
    * This number includes the unknowns of all state variables.
    */
-  const int _spaceTimeFluxUnknownsPerCell;
+  const int _spaceTimeFluxDofPerCell;
 
   /**
    * The size of data required to store cell volume based unknowns and
    * associated parameters.
    */
-  const int _dataPerCell;
+  const int _dataPointsPerCell;
+
+  /**
+   * Minimum corrector time stamp of all cell descriptions
+   * 2 iterations ago
+   */
+  double _previousPreviousMinCorrectorTimeStamp;
+
+  /**
+   * Minimum corrector time step size of all
+   * cell descriptions in the iteration before the
+   * previous iteration.
+   *
+   * This time step size is necessary for the fused time stepping + limiting
+   * to reconstruct the previousMinCorrectorTimeStepSize during a rollback.
+   */
+  double _previousPreviousMinCorrectorTimeStepSize;
+
+  /**
+   * Minimum corrector time stamp of all cell descriptions.
+   */
+  double _previousMinCorrectorTimeStamp;
 
   /**
    * Minimum corrector time step size of all
    * cell descriptions in the previous iteration.
+   *
+   * This time step size is necessary for the fused time stepping + limiting
+   * to reconstruct the minCorrectorTimeStepSize during a rollback.
    */
   double _previousMinCorrectorTimeStepSize;
 
@@ -262,6 +286,14 @@ private:
   void startOrFinishCollectiveRefinementOperations(
       CellDescription& fineGridCellDescription);
 
+  /**
+   * In case, we change the children to a descendant
+   * or erase them from the grid, we first restrict
+   * volume data up to the parent and further
+   * copy the corrector and predictor time stamps.
+   *
+   * TODO(Dominic): More docu.
+   */
   bool eraseCellDescriptionIfNecessary(
       const int cellDescriptionsIndex,
       const int fineGridCellElement,
@@ -319,6 +351,9 @@ private:
    * \p cellDescription is adjacent to a boundary of the
    * coarse grid cell associated with the parent cell description.
    *
+   * Further copy the corrector and predictor time stamp and
+   * time step sizes.
+   *
    * \note This method makes only sense for virtual shells
    * in the current AMR concept.
    */
@@ -328,10 +363,13 @@ private:
       const tarch::la::Vector<DIMENSIONS, int>&      subcellIndex);
 
   /**
-   * Restricts Volume data from \p cellDescriptio to
+   * Restricts Volume data from \p cellDescription to
    * a parent cell description if the fine grid cell associated with
    * \p cellDescription is adjacent to a boundary of the
    * coarse grid cell associated with the parent cell description.
+   *
+   * \note !!! Currently, we minimise over the time step
+   * sizes of the children. Not sure if this makes sense. TODO(Dominic)
    *
    * \note This method makes only sense for real cells.
    * in the current AMR concept.
@@ -625,6 +663,17 @@ public:
         cellDescriptionType==CellDescription::Descendant;
   }
 
+  /**
+   * Construct an ADERDGSolver.
+   *
+   * \param identifier             An identifier for this solver.
+   * \param numberOfVariables      the number of variables.
+   * \param numberOfParameters     the number of material parameters.
+   * \param nodesPerCoordinateAxis The 1D basis size, i.e., the order + 1.
+   * \param maximumMeshSize        The maximum mesh size. From hereon, adaptive mesh refinement is used.
+   * \param timeStepping           the timestepping mode.
+   * \param profiler               a profiler.
+   */
   ADERDGSolver(
       const std::string& identifier,
       int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis,
@@ -711,21 +760,49 @@ public:
 
   /**
    * This operation returns the size of data required
+   * to store face area based unknowns and associated parameters.
+   *
+   * \return (_numberOfVariables+_numberOfParameters) * power(_nodesPerCoordinateAxis, DIMENSIONS - 1) * DIMENSIONS_TIMES_TWO;
+   */
+  int getDataPerCellBoundary() const;
+
+  /**
+   * This operation returns the size of data required
+   * to store face area based unknowns and associated parameters.
+   *
+   * \return (_numberOfVariables+_numberOfParameters) * power(_nodesPerCoordinateAxis, DIMENSIONS - 1);
+   */
+  int getDataPerFace() const;
+  /**
+   * This operation returns the size of data required
    * to store cell volume based unknowns and associated parameters.
+   *
+   * \return (_numberOfVariables+_numberOfParameters) * power(_nodesPerCoordinateAxis, DIMENSIONS + 0);
    */
   int getDataPerCell() const;
   
+  /**
+   * This operation returns the size of data required
+   * to store space-time cell unknowns and associated parameters.
+   *
+   * \return (_numberOfVariables+_numberOfParameters) * power(_nodesPerCoordinateAxis, DIMENSIONS + 1);
+   */
+  int getSpaceTimeDataPerCell() const;
+
   /**
    * Getter for the size of the array allocated that can be overriden
    * to change the allocated size independently of the solver parameters.
    * For example to add padding forthe optimised kernel
    */
-  virtual int getTempSpaceTimeUnknownsSize()     const {return getSpaceTimeUnknownsPerCell()+getUnknownsPerCell();}
+  virtual int getTempSpaceTimeUnknownsSize()     const {return getSpaceTimeDataPerCell()+getDataPerCell();} // TODO function should be renamed
   virtual int getTempSpaceTimeFluxUnknownsSize() const {return getSpaceTimeFluxUnknownsPerCell();}
-  virtual int getTempUnknownsSize()              const {return getUnknownsPerCell();}
+  virtual int getTempUnknownsSize()              const {return getDataPerCell();} // TODO function should be renamed
   virtual int getTempFluxUnknownsSize()          const {return getFluxUnknownsPerCell();}
-  virtual int getBndFaceSize()                   const {return getUnknownsPerFace();}
-  virtual int getBndTotalSize()                  const {return getUnknownsPerCellBoundary();}
+  virtual int getBndFaceSize()                   const {return getDataPerFace();} // TODO function should be renamed
+  virtual int getBndTotalSize()                  const {return getDataPerCellBoundary();} // TODO function should be renamed
+  virtual int getBndFluxSize()                   const {return getUnknownsPerFace();} // TODO function should be renamed
+  virtual int getBndFluxTotalSize()              const {return getUnknownsPerCellBoundary();} // TODO function should be renamed
+  virtual int getTempStateSizedVectorsSize()     const {return getNumberOfVariables()+getNumberOfParameters();} //dataPoints
   
   virtual bool alignTempArray()                  const {return false;}
 
@@ -737,7 +814,7 @@ public:
   virtual bool usePaddedData_nDoF() const {return false;}
   
   //TODO KD
-  virtual bool isDummyKRequired() const {return false;}
+  virtual bool hasToApplyPointSource() const {return false;}
   
   /**
    * @brief Adds the solution update to the solution.
@@ -752,9 +829,9 @@ public:
   /**
    * @brief Computes the volume flux contribution to the cell update.
    *
-   * @param[inout] lduh Cell-local update DoF.
-   * @param[in]    cellSize   Extent of the cell in each coordinate direction.
-   * @param[dt]    dt   Time step size.
+   * @param[inout] lduh      Cell-local update DoF.
+   * @param[in]    cellSize  Extent of the cell in each coordinate direction.
+   * @param[dt]    dt        Time step size.
    */
   virtual void volumeIntegral(
       double* lduh, const double* const lFhi,
@@ -981,7 +1058,7 @@ public:
   ///@}
   
   //TODO KD
-  virtual void dummyK_GeneratedCall(
+  virtual void pointSource(
     const double t,
     const double dt, 
     const tarch::la::Vector<DIMENSIONS,double>& center,
@@ -1039,8 +1116,47 @@ public:
   void startNewTimeStep() override;
 
   /**
-   * Roll back the time step data to the
-   * ones of the previous time step.
+   * Zero predictor and corrector time step size.
+   */
+  void zeroTimeStepSizes() override;
+
+  /**
+   * !!! Only for fused time stepping !!!
+   *
+   * Rolls the solver time step data back to the
+   * previous time step for a cell description.
+   * Note that the newest time step
+   * data is lost in this process.
+   * In order to go back one time step, we
+   * need to perform two steps:
+   *
+   * 1) We want to to undo the startNewTimeStep effect, where
+   *
+   * correctorTimeStamp_{n}             <- predictorTimeStamp_{n-1}
+   * correctorTimeStepSize_{n}          <- predictorTimeStepSize_{n-1}
+   *
+   * previousCorrectorTimeStepSize_{n}  <- correctorTimeStepSize_{n-1}
+   * previousCorrectorTimeStamp_{n}     <- correctorTimeStamp_{n-1}
+   *
+   * previousPreviousCorrectorTimeStepSize_{n} <- previousCorrectorTimeStepSize_{n-1}
+   *
+   * We thus do
+   *
+   * predictorTimeStamp_{n-1}    <- correctorTimeStamp_{n}
+   * predictorTimeStepSize_{n-1} <-correctorTimeStepSize_{n}
+   *
+   * correctorTimeStepSize_{n-1} <- previousCorrectorTimeStepSize_{n} (1.1)
+   * correctorTimeStamp_{n-1}    <- previousCorrectorTimeStamp_{n}    (1.2)
+   *
+   * previousCorrectorTimeStepSize_{n-1} <- previousPreviousCorrectorTimeStepSize_{n}
+   *
+   *
+   * !!! Limiting Procedure (not done in this method) !!!
+   *
+   * If we cure a troubled cell, we need to go back further in time by one step with the corrector
+   *
+   * correctorTimeStepSize_{n-2} <- previousCorrectorTimeStepSize_{n-1} == previousCorrectorTimeStepSize_{n-2}
+   * correctorTimeStamp_{n-2}    <- previousCorrectorTimeStamp_{n-1}    == previousCorrectorTimeStamp_{n-2}
    */
   void rollbackToPreviousTimeStep();
 
@@ -1098,25 +1214,29 @@ public:
 
   // todo 25/02/16:Dominic Etienne Charrier
   // Remove the time stamps that are not used in ExaHype.
-  void setMinCorrectorTimeStamp(double minCorectorTimeStamp);
-
-  double getMinCorrectorTimeStamp() const;
-
-  void setMinPredictorTimeStamp(double minPredictorTimeStamp);
-
-  double getMinPredictorTimeStamp() const;
-
-  void setMinCorrectorTimeStepSize(double minCorrectorTimeStepSize);
-
-  double getMinCorrectorTimeStepSize() const;
-
   void setMinPredictorTimeStepSize(double minPredictorTimeStepSize);
-
   double getMinPredictorTimeStepSize() const;
 
-  double getPreviousMinCorrectorTimeStepSize() const;
+  void setMinPredictorTimeStamp(double value);
+  double getMinPredictorTimeStamp() const;
+
+  void setMinCorrectorTimeStamp(double value);
+  double getMinCorrectorTimeStamp() const;
+
+  void setMinCorrectorTimeStepSize(double value);
+  double getMinCorrectorTimeStepSize() const;
+
+  void setPreviousMinCorrectorTimeStamp(double value);
+  double getPreviousMinCorrectorTimeStamp() const;
 
   void setPreviousMinCorrectorTimeStepSize(double value);
+  double getPreviousMinCorrectorTimeStepSize() const;
+
+  void setPreviousPreviousMinCorrectorTimeStepSize(double value);
+  double getPreviousPreviousMinCorrectorTimeStepSize() const;
+
+  void setPreviousPreviousMinCorrectorTimeStamp(double value);
+  double getPreviousPreviousMinCorrectorTimeStamp() const;
 
   double getMinTimeStamp() const override {
     return getMinCorrectorTimeStamp();
@@ -1135,11 +1255,22 @@ public:
   }
 
   void initSolverTimeStepData(double value) override {
+    setPreviousPreviousMinCorrectorTimeStepSize(0.0);
     setPreviousMinCorrectorTimeStepSize(0.0);
     setMinCorrectorTimeStepSize(0.0);
     setMinPredictorTimeStepSize(0.0);
+
+    setPreviousPreviousMinCorrectorTimeStamp(value);
+    setPreviousMinCorrectorTimeStamp(value);
     setMinCorrectorTimeStamp(value);
     setMinPredictorTimeStamp(value);
+  }
+
+  void initFusedSolverTimeStepSizes() {
+    setPreviousPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
+    setPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
+    setMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
+    setMinPredictorTimeStepSize(getMinPredictorTimeStepSize());
   }
 
   bool isValidCellDescriptionIndex(
@@ -1147,9 +1278,6 @@ public:
     return Heap::getInstance().isValidIndex(cellDescriptionsIndex);
   }
 
-  /**
-   * @todo Dominic, kannst Du mir reinschreiben, was die Routine tut und warum die so heisst? Der Name suggeriert, dass was schiefgehen kann
-   */
   int tryGetElement(
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
@@ -1161,7 +1289,7 @@ public:
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
-  bool enterCell(
+  bool updateStateInEnterCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -1171,7 +1299,7 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
-  bool leaveCell(
+  bool updateStateInLeaveCell(
       exahype::Cell& fineGridCell,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -1184,6 +1312,10 @@ public:
   ///////////////////////////////////
   // CELL-LOCAL
   ///////////////////////////////////
+  bool evaluateRefinementCriterionAfterSolutionUpdate(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
   /**
    * Computes the space-time predictor quantities, extrapolates fluxes
    * and (space-time) predictor values to the boundary and
@@ -1214,6 +1346,7 @@ public:
       const int element,
       double*   tempEigenvalues) override;
 
+  void zeroTimeStepSizes(const int cellDescriptionsIndex, const int solverElement) override;
 
   /**
    * If we use the original time stepping
@@ -1228,17 +1361,49 @@ public:
   void reconstructStandardTimeSteppingData(const int cellDescriptionsIndex,int element) const;
 
   /**
+   * !!! Only for fused time stepping !!!
+   *
    * Rolls the solver time step data back to the
    * previous time step for a cell description.
    * Note that the newest time step
    * data is lost in this process.
+   * In order to go back one time step, we
+   * need to perform two steps:
+   *
+   * 1) We want to to undo the startNewTimeStep effect, where
+   *
+   * correctorTimeStamp_{n}             <- predictorTimeStamp_{n-1}
+   * correctorTimeStepSize_{n}          <- predictorTimeStepSize_{n-1}
+   *
+   * previousCorrectorTimeStepSize_{n}  <- correctorTimeStepSize_{n-1}
+   * previousCorrectorTimeStamp_{n}     <- correctorTimeStamp_{n-1}
+   *
+   * previousPreviousCorrectorTimeStepSize_{n} <- previousCorrectorTimeStepSize_{n-1}
+   *
+   * We thus do
+   *
+   * predictorTimeStamp_{n-1}    <- correctorTimeStamp_{n}
+   * predictorTimeStepSize_{n-1} <-correctorTimeStepSize_{n}
+   *
+   * correctorTimeStepSize_{n-1} <- previousCorrectorTimeStepSize_{n} (1.1)
+   * correctorTimeStamp_{n-1}    <- previousCorrectorTimeStamp_{n}    (1.2)
+   *
+   * previousCorrectorTimeStepSize_{n-1} <- previousPreviousCorrectorTimeStepSize_{n}
+   *
+   *
+   * !!! Limiting Procedure (not done in this method) !!!
+   *
+   * If we cure a troubled cell, we need to go back further in time by one step with the corrector
+   *
+   * correctorTimeStepSize_{n-2} <- previousCorrectorTimeStepSize_{n-1} == previousCorrectorTimeStepSize_{n-2}
+   * correctorTimeStamp_{n-2}    <- previousCorrectorTimeStamp_{n-1}    == previousCorrectorTimeStamp_{n-2}
    */
   void rollbackToPreviousTimeStep(
       const int cellDescriptionsIndex,
       const int element);
 
   /**
-   * Similar to reconstructStandardTimeSteppingData for roll backs
+   * TODO(Dominic): Remove; not necessary
    */
   void reconstructStandardTimeSteppingDataAfterRollback(
       const int cellDescriptionsIndex,
@@ -1257,19 +1422,6 @@ public:
       const int element,
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
-
-  /*
-   * Simply adds the update degrees of freedom
-   * to the solution degrees of freedom.
-   * Does not compute the surface integral.
-   *
-   * \deprecated We will not store the update field anymore
-   * but a previous solution.
-   */
-  void addUpdateToSolution(
-      CellDescription& cellDescription,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator);
 
   /**
    * Computes the surface integral contributions to the
