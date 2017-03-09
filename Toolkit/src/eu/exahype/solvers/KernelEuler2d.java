@@ -75,7 +75,7 @@ public class KernelEuler2d implements Solver {
     writer.write("void " + projectName + "::" + solverName
         + "::solutionAdjustment( double*  luh, const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx, double  t, double  dt ) {\n");
     writer.write(
-        "   kernels::aderdg::generic::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        "   kernels::aderdg::generic::solutionAdjustment<adjustSolution>( luh, center, dx, t, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
   }

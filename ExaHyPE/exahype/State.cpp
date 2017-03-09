@@ -19,15 +19,13 @@
 
 #include "exahype/solvers/Solver.h"
 
+#include "tarch/parallel/NodePool.h"
+
 #include <limits>
 
 bool exahype::State::FuseADERDGPhases = false;
 
 exahype::State::State() : Base() {
-  #ifdef Parallel
-  _stateData.setGridConstructionState( exahype::records::State::Default );
-  _idleRanksAtLastLookup = 0;
-  #endif
 }
 
 exahype::State::State(const Base::PersistentState& argument) : Base(argument) {
@@ -48,59 +46,89 @@ void exahype::State::readFromCheckpoint(
   // do nothing
 }
 
-void exahype::State::updateRegularInitialGridRefinementStrategy() {
-  assertion( tarch::parallel::Node::getInstance().isGlobalMaster() );
 
+void exahype::State::endedGridConstructionIteration(int finestGridLevelPossible) {
+  const bool idleNodesLeft =
+    tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0;
+  const bool nodePoolHasGivenOutRankSizeLastQuery =
+    tarch::parallel::NodePool::getInstance().hasGivenOutRankSizeLastQuery();
+
+  // No more nodes left. Start to enforce refinement
+  if (!idleNodesLeft && _stateData.getMaxRefinementLevelAllowed()>=0) {
+    _stateData.setMaxRefinementLevelAllowed(-1);
+  }
+  // Refinement is enforced. So we decrease counter. Once we underrun -2, grid
+  // construction can terminate as all enforced refined went through.
+  else if (!idleNodesLeft && _stateData.getMaxRefinementLevelAllowed()<=-1) {
+    _stateData.setMaxRefinementLevelAllowed(
+      _stateData.getMaxRefinementLevelAllowed()-1 );
+  }
+  // Seems that max permitted level has exceeded max grid level. We may assume
+  // that there are more MPI ranks than available trees.
+  else if (isGridStationary() &&
+    _stateData.getMaxRefinementLevelAllowed()>finestGridLevelPossible) {
+    _stateData.setMaxRefinementLevelAllowed( -3 );
+  }
+  else if (nodePoolHasGivenOutRankSizeLastQuery &&
+    _stateData.getMaxRefinementLevelAllowed()>=2) {
+    _stateData.setMaxRefinementLevelAllowed(
+      _stateData.getMaxRefinementLevelAllowed()-2);
+  }
+  // Nothing has changed in this grid iteration in the grid and we haven't
+  // given out new workers. So increase the permitted maximum grid level by
+  // one and give another try whether the grid adds more vertices.
+  else if (
+      !(nodePoolHasGivenOutRankSizeLastQuery)
+    && isGridStationary()
+  ) {
+    _stateData.setMaxRefinementLevelAllowed(
+      _stateData.getMaxRefinementLevelAllowed()+1);
+  }
+}
+
+
+exahype::State::RefinementAnswer exahype::State::mayRefine(
+  bool isCreationalEvent, int level) const
+{
   #ifdef Parallel
   if (
-    tarch::parallel::Node::getInstance().getNumberOfNodes()==1
-    ||
-    _stateData.getGridConstructionState()==exahype::records::State::Aggressive
-  ) {
-    _stateData.setGridConstructionState( exahype::records::State::Aggressive );
-  }
-  else if (
-    tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0
+    _stateData.getMaxRefinementLevelAllowed()<=-2
     &&
-    isGridStationary()
+    isCreationalEvent
   ) {
-    _stateData.setGridConstructionState( exahype::records::State::Aggressive );
+    return RefinementAnswer::EnforceRefinement;
+  }
+  else if ( _stateData.getMaxRefinementLevelAllowed()<0 ) {
+    return RefinementAnswer::Refine;
   }
   else if (
-    isInvolvedInJoinOrFork()
-    ||
-    !isTraversalInverted()
-    ||
-    !isGridStationary()
+    _stateData.getMaxRefinementLevelAllowed()>level
+    &&
+    !isCreationalEvent
+    &&
+    mayForkDueToLoadBalancing()
   ) {
-    _stateData.setGridConstructionState( exahype::records::State::Veto );
-  }
-  else if (
-    _idleRanksAtLastLookup != tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
-  ) {
-    _stateData.setGridConstructionState( exahype::records::State::Veto );
-    _idleRanksAtLastLookup = tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes();
+    return RefinementAnswer::Refine;
   }
   else {
-    _stateData.setGridConstructionState( exahype::records::State::Default );
+    return RefinementAnswer::DontRefineYet;
   }
-
-  #endif
-}
-
-bool exahype::State::refineInitialGridInCreationalEvents() const {
-  #ifdef Parallel
-  assertion1( !isInvolvedInJoinOrFork() || _stateData.getGridConstructionState() != exahype::records::State::Aggressive, toString() );
-  return _stateData.getGridConstructionState() == exahype::records::State::Aggressive;
   #else
-  return true;
+  if (isCreationalEvent) {
+    return RefinementAnswer::Refine;
+  }
+  else {
+    return RefinementAnswer::DontRefineYet;
+  }
   #endif
 }
 
-bool exahype::State::refineInitialGridInTouchVertexLastTime() const {
+
+bool exahype::State::continueToConstructGrid() const {
   #ifdef Parallel
-  return _stateData.getGridConstructionState() != exahype::records::State::Veto;
+  return _stateData.getMaxRefinementLevelAllowed()>=-3;
   #else
-  return false;
+  return !isGridBalanced();
   #endif
 }
+

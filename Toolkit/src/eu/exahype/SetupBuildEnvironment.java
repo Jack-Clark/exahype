@@ -208,8 +208,11 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
         _writer.write("endif\n");
       }
       if (_useOptimisedKernels) {
+        _writer.write("PROJECT_CFLAGS += -DOPT_KERNELS\n");
         _writer.write("ifneq ($(call tolower,$(MODE)),release)\n");
+        _writer.write("ifneq ($(call tolower,$(MODE)),)\n");
         _writer.write(" PROJECT_CFLAGS += -DTEST_OPT_KERNEL\n");
+        _writer.write("endif\n");
         _writer.write("endif\n");
         _writer.write("\n\n");
         _writer.write("ifeq ($(COMPILE_OPT_KERNEL),)\n");
@@ -227,7 +230,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
         _writer.write("PROJECT_CFLAGS+=-DIPCM_AVAILABLE\n");
       }
       if (_likwidLib != null) {
-        _writer.write("PROJECT_LFLAGS+=-L" + _likwidLib + " -llikwid\n");
+        _writer.write("PROJECT_LFLAGS+=$(LIKWID_LIB)");
       }
       if (_ipcmLib != null) {
         _writer.write("PROJECT_LFLAGS+=-L" + _ipcmLib + " -lintelpcm\n");

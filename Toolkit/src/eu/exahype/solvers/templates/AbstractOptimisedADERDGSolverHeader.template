@@ -23,12 +23,6 @@ namespace {{Project}}{
 
 class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
   public:
-  
-    //change to enable source terms/matrixb
-    static constexpr bool useSource  = false;
-    static constexpr bool useNCP     = false;
-    static constexpr bool useMatrixb = false;
-  
     static constexpr int NumberOfVariables  = kernels::aderdg::optimised::getNumberOfVariable();
     static constexpr int NumberOfParameters = kernels::aderdg::optimised::getNumberOfParameter();
     static constexpr int Order              = kernels::aderdg::optimised::getBasisSize() -1;
@@ -41,6 +35,11 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
   
     {{AbstractSolver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
 
+    //default useX implementation, can be overriden in the user solver
+    virtual bool useAlgebraicSource()        const {return true;}
+    virtual bool useNonConservativeProduct() const {return true;}
+    
+    
     void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) override; 
     void solutionUpdate(double* luh,const double* const lduh,const double dt) override;
     void volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
@@ -48,7 +47,7 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     void riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex) override;
     void boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) override;
     double stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
-    void solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) override;
+    void adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) override;
     void faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) override;
     void faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1,int>& subfaceIndex) override;
     void volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;

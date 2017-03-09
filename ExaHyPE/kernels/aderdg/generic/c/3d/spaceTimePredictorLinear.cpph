@@ -183,7 +183,7 @@ void spaceTimePredictorLinear(SolverType& solver,
      for (int j = 0; j < basisSize; j++) {
        for (int k = 0; k < basisSize; k++) {
          for (int l = 0; l < basisSize; l++) {
-           solver.ncp(&lQi[idx_lQi(i, j, k, l, 0)],
+           solver.nonConservativeProduct(&lQi[idx_lQi(i, j, k, l, 0)],
                &gradQ[idx_gradQ(i, j, k, l, 0, 0)],
                &lFi[idx_lFi(i, j, k, l, 0, 0)]);
          }

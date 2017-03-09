@@ -133,7 +133,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write("  std::string profiler_identifier = parser.getProfilerIdentifier();\n");
       _methodBodyWriter.write("  std::string metrics_identifier_list = parser.getMetricsIdentifierList();\n");
       _methodBodyWriter.write("  std::string profiling_output = parser.getProfilingOutputFilename();\n\n");
-
+/*
       _methodBodyWriter.write(
           "  assertion1(metrics_identifier_list.find_first_of(\"{\") == 0,\n"+
           "           metrics_identifier_list);\n");
@@ -142,14 +142,14 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "  assertion1(metrics_identifier_list.find_last_of(\"}\") ==\n"+
             "                 metrics_identifier_list.size() - 1,\n"+
           "             metrics_identifier_list);\n\n");
-
-      _methodBodyWriter.write("  // Split \"{metric1,metric2...}\" into {\"metric1\", \"metric2\", ...}\n");
+*/
+      _methodBodyWriter.write("  // Split \"metric1,metric2...\" into \"metric1\", \"metric2\", ...\n");
       _methodBodyWriter.write("  std::vector<std::string> metrics_vector;\n");
       _methodBodyWriter.write("  std::stringstream sstream;\n");
-      _methodBodyWriter.write("  sstream << metrics_identifier_list.substr(1, metrics_identifier_list.size() - 2);\n");
+      _methodBodyWriter.write("  sstream << metrics_identifier_list.substr(0, metrics_identifier_list.size() );\n");
       _methodBodyWriter.write("  std::string metric;\n");
       _methodBodyWriter.write(
-          "  while (std::getline(ss, metric, ',')) {\n"+
+          "  while (std::getline(sstream, metric, ',')) {\n"+
           "    metrics_vector.emplace_back(std::move(metric));\n"+
           "  }\n\n");
 
@@ -175,9 +175,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+")"+
-                           (_enableProfiler ? ", std::move(profiler)": "")+
-                           ", cmdlineargs");
+                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), cmdlineargs"+
+                           (_enableProfiler ? ", std::move(profiler)": ""));
       if (node.getConstants()!=null) {
           _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
       }

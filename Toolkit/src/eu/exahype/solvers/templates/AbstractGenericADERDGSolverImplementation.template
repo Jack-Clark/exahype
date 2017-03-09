@@ -37,7 +37,7 @@ void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
 
 void {{Project}}::Abstract{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {{BeforeSpaceTimePredictor}}
-  kernels::aderdg::generic::{{Language}}::spaceTimePredictor{{NonlinearOrLinear}}<{{Solver}}>(*static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
+  {{spaceTimePredictor}}
 {{AfterSpaceTimePredictor}}
 }
 
@@ -53,7 +53,7 @@ void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luh,const double* c
 
 void {{Project}}::Abstract{{Solver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {{BeforeVolumeIntegral}}
-  kernels::aderdg::generic::{{Language}}::volumeIntegral{{NonlinearOrLinear}}(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+  {{volumeIntegral}}
 {{AfterVolumeIntegral}}
 }
 
@@ -71,7 +71,7 @@ void {{Project}}::Abstract{{Solver}}::riemannSolver(double* FL,double* FR,const 
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
 {{BeforeRiemannSolver}}
-  kernels::aderdg::generic::{{Language}}::riemannSolver{{NonlinearOrLinear}}<{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+  {{riemannSolver}}
 {{AfterRiemannSolver}}
 }
 
@@ -94,9 +94,20 @@ double {{Project}}::Abstract{{Solver}}::stableTimeStepSize(const double* const l
 
 
 
-void {{Project}}::Abstract{{Solver}}::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
+void {{Project}}::Abstract{{Solver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
 {{BeforeSolutionAdjustment}}
-  kernels::aderdg::generic::{{Language}}::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
+  switch (useAdjustSolution(center, dx, t, dt)) {
+    case AdjustSolutionValue::No:
+      assertionMsg(false, "Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
+      break;
+    case AdjustSolutionValue::PointWisely:
+      kernels::aderdg::generic::{{Language}}::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
+      break;
+    case AdjustSolutionValue::PatchWisely:
+      adjustPatchSolution(
+        center, dx, t, dt, luh);
+      break;
+  }
 {{AfterSolutionAdjustment}}
 }
 

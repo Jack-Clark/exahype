@@ -6,7 +6,8 @@
    }
    
    
-   exahype::records::State::PersistentRecords::PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
+   exahype::records::State::PersistentRecords::PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
+   _maxRefinementLevelAllowed(maxRefinementLevelAllowed),
    _mergeMode(mergeMode),
    _sendMode(sendMode),
    _reinitTimeStepData(reinitTimeStepData),
@@ -28,13 +29,13 @@
    
    
    exahype::records::State::State(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords._hasRefined, persistentRecords._hasTriggeredRefinementForNextIteration, persistentRecords._hasErased, persistentRecords._hasTriggeredEraseForNextIteration, persistentRecords._hasChangedVertexOrCellState, persistentRecords._hasModifiedGridInPreviousIteration, persistentRecords._isTraversalInverted) {
+   _persistentRecords(persistentRecords._maxRefinementLevelAllowed, persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords._hasRefined, persistentRecords._hasTriggeredRefinementForNextIteration, persistentRecords._hasErased, persistentRecords._hasTriggeredEraseForNextIteration, persistentRecords._hasChangedVertexOrCellState, persistentRecords._hasModifiedGridInPreviousIteration, persistentRecords._isTraversalInverted) {
       
    }
    
    
-   exahype::records::State::State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
-   _persistentRecords(mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted) {
+   exahype::records::State::State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
+   _persistentRecords(maxRefinementLevelAllowed, mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted) {
       
    }
    
@@ -77,6 +78,8 @@
    
    void exahype::records::State::toString (std::ostream& out) const {
       out << "("; 
+      out << "maxRefinementLevelAllowed:" << getMaxRefinementLevelAllowed();
+      out << ",";
       out << "mergeMode:" << toString(getMergeMode());
       out << ",";
       out << "sendMode:" << toString(getSendMode());
@@ -110,6 +113,7 @@
    
    exahype::records::StatePacked exahype::records::State::convert() const{
       return StatePacked(
+         getMaxRefinementLevelAllowed(),
          getMergeMode(),
          getSendMode(),
          getReinitTimeStepData(),
@@ -136,8 +140,9 @@
          {
             State dummyState[2];
             
-            const int Attributes = 10;
+            const int Attributes = 11;
             MPI_Datatype subtypes[Attributes] = {
+               MPI_INT,		 //maxRefinementLevelAllowed
                MPI_INT,		 //mergeMode
                MPI_INT,		 //sendMode
                MPI_CHAR,		 //hasRefined
@@ -151,6 +156,7 @@
             };
             
             int blocklen[Attributes] = {
+               1,		 //maxRefinementLevelAllowed
                1,		 //mergeMode
                1,		 //sendMode
                1,		 //hasRefined
@@ -167,16 +173,17 @@
             
             MPI_Aint base;
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._mergeMode))), 		&disp[0] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._sendMode))), 		&disp[1] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasRefined))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredRefinementForNextIteration))), 		&disp[3] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasErased))), 		&disp[4] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredEraseForNextIteration))), 		&disp[5] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasChangedVertexOrCellState))), 		&disp[6] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasModifiedGridInPreviousIteration))), 		&disp[7] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._isTraversalInverted))), 		&disp[8] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._mergeMode))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._mergeMode))), 		&disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._sendMode))), 		&disp[2] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasRefined))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredRefinementForNextIteration))), 		&disp[4] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasErased))), 		&disp[5] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredEraseForNextIteration))), 		&disp[6] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasChangedVertexOrCellState))), 		&disp[7] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasModifiedGridInPreviousIteration))), 		&disp[8] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._isTraversalInverted))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[10] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -191,8 +198,9 @@
          {
             State dummyState[2];
             
-            const int Attributes = 13;
+            const int Attributes = 14;
             MPI_Datatype subtypes[Attributes] = {
+               MPI_INT,		 //maxRefinementLevelAllowed
                MPI_INT,		 //mergeMode
                MPI_INT,		 //sendMode
                MPI_CHAR,		 //reinitTimeStepData
@@ -209,6 +217,7 @@
             };
             
             int blocklen[Attributes] = {
+               1,		 //maxRefinementLevelAllowed
                1,		 //mergeMode
                1,		 //sendMode
                1,		 //reinitTimeStepData
@@ -228,19 +237,20 @@
             
             MPI_Aint base;
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._mergeMode))), 		&disp[0] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._sendMode))), 		&disp[1] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._reinitTimeStepData))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._stabilityConditionOfOneSolverWasViolated))), 		&disp[3] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._timeStepSizeWeightForPredictionRerun))), 		&disp[4] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasRefined))), 		&disp[5] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredRefinementForNextIteration))), 		&disp[6] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasErased))), 		&disp[7] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredEraseForNextIteration))), 		&disp[8] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasChangedVertexOrCellState))), 		&disp[9] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasModifiedGridInPreviousIteration))), 		&disp[10] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._isTraversalInverted))), 		&disp[11] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._mergeMode))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._mergeMode))), 		&disp[1] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._sendMode))), 		&disp[2] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._reinitTimeStepData))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._stabilityConditionOfOneSolverWasViolated))), 		&disp[4] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._timeStepSizeWeightForPredictionRerun))), 		&disp[5] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasRefined))), 		&disp[6] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredRefinementForNextIteration))), 		&disp[7] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasErased))), 		&disp[8] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredEraseForNextIteration))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasChangedVertexOrCellState))), 		&disp[10] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasModifiedGridInPreviousIteration))), 		&disp[11] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._isTraversalInverted))), 		&disp[12] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[13] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -501,7 +511,8 @@ exahype::records::StatePacked::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::StatePacked::PersistentRecords::PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
+exahype::records::StatePacked::PersistentRecords::PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
+_maxRefinementLevelAllowed(maxRefinementLevelAllowed),
 _mergeMode(mergeMode),
 _sendMode(sendMode),
 _reinitTimeStepData(reinitTimeStepData),
@@ -535,7 +546,7 @@ exahype::records::StatePacked::StatePacked() {
 
 
 exahype::records::StatePacked::StatePacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords.getHasRefined(), persistentRecords.getHasTriggeredRefinementForNextIteration(), persistentRecords.getHasErased(), persistentRecords.getHasTriggeredEraseForNextIteration(), persistentRecords.getHasChangedVertexOrCellState(), persistentRecords.getHasModifiedGridInPreviousIteration(), persistentRecords._isTraversalInverted) {
+_persistentRecords(persistentRecords._maxRefinementLevelAllowed, persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords.getHasRefined(), persistentRecords.getHasTriggeredRefinementForNextIteration(), persistentRecords.getHasErased(), persistentRecords.getHasTriggeredEraseForNextIteration(), persistentRecords.getHasChangedVertexOrCellState(), persistentRecords.getHasModifiedGridInPreviousIteration(), persistentRecords._isTraversalInverted) {
    if ((6 >= (8 * sizeof(short int)))) {
       std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
       std::cerr << "  Packed-Type: short int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -546,8 +557,8 @@ _persistentRecords(persistentRecords._mergeMode, persistentRecords._sendMode, pe
 }
 
 
-exahype::records::StatePacked::StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
-_persistentRecords(mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted) {
+exahype::records::StatePacked::StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
+_persistentRecords(maxRefinementLevelAllowed, mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted) {
    if ((6 >= (8 * sizeof(short int)))) {
       std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
       std::cerr << "  Packed-Type: short int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -586,6 +597,8 @@ std::string exahype::records::StatePacked::toString() const {
 
 void exahype::records::StatePacked::toString (std::ostream& out) const {
    out << "("; 
+   out << "maxRefinementLevelAllowed:" << getMaxRefinementLevelAllowed();
+   out << ",";
    out << "mergeMode:" << toString(getMergeMode());
    out << ",";
    out << "sendMode:" << toString(getSendMode());
@@ -619,6 +632,7 @@ exahype::records::StatePacked::PersistentRecords exahype::records::StatePacked::
 
 exahype::records::State exahype::records::StatePacked::convert() const{
    return State(
+      getMaxRefinementLevelAllowed(),
       getMergeMode(),
       getSendMode(),
       getReinitTimeStepData(),
@@ -645,8 +659,9 @@ exahype::records::State exahype::records::StatePacked::convert() const{
       {
          StatePacked dummyStatePacked[2];
          
-         const int Attributes = 5;
+         const int Attributes = 6;
          MPI_Datatype subtypes[Attributes] = {
+            MPI_INT,		 //maxRefinementLevelAllowed
             MPI_INT,		 //mergeMode
             MPI_INT,		 //sendMode
             MPI_CHAR,		 //isTraversalInverted
@@ -655,6 +670,7 @@ exahype::records::State exahype::records::StatePacked::convert() const{
          };
          
          int blocklen[Attributes] = {
+            1,		 //maxRefinementLevelAllowed
             1,		 //mergeMode
             1,		 //sendMode
             1,		 //isTraversalInverted
@@ -666,11 +682,12 @@ exahype::records::State exahype::records::StatePacked::convert() const{
          
          MPI_Aint base;
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]))), &base);
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._mergeMode))), 		&disp[0] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._sendMode))), 		&disp[1] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._isTraversalInverted))), 		&disp[2] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._mergeMode))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._mergeMode))), 		&disp[1] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._sendMode))), 		&disp[2] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._isTraversalInverted))), 		&disp[3] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._packedRecords0))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[5] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -685,8 +702,9 @@ exahype::records::State exahype::records::StatePacked::convert() const{
       {
          StatePacked dummyStatePacked[2];
          
-         const int Attributes = 8;
+         const int Attributes = 9;
          MPI_Datatype subtypes[Attributes] = {
+            MPI_INT,		 //maxRefinementLevelAllowed
             MPI_INT,		 //mergeMode
             MPI_INT,		 //sendMode
             MPI_CHAR,		 //reinitTimeStepData
@@ -698,6 +716,7 @@ exahype::records::State exahype::records::StatePacked::convert() const{
          };
          
          int blocklen[Attributes] = {
+            1,		 //maxRefinementLevelAllowed
             1,		 //mergeMode
             1,		 //sendMode
             1,		 //reinitTimeStepData
@@ -712,14 +731,15 @@ exahype::records::State exahype::records::StatePacked::convert() const{
          
          MPI_Aint base;
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]))), &base);
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._mergeMode))), 		&disp[0] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._sendMode))), 		&disp[1] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._reinitTimeStepData))), 		&disp[2] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._stabilityConditionOfOneSolverWasViolated))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._timeStepSizeWeightForPredictionRerun))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._isTraversalInverted))), 		&disp[5] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._packedRecords0))), 		&disp[6] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._mergeMode))), 		&disp[7] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._mergeMode))), 		&disp[1] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._sendMode))), 		&disp[2] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._reinitTimeStepData))), 		&disp[3] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._stabilityConditionOfOneSolverWasViolated))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._timeStepSizeWeightForPredictionRerun))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._isTraversalInverted))), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._packedRecords0))), 		&disp[7] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[8] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -976,8 +996,8 @@ exahype::records::State::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::State::PersistentRecords::PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
-_gridConstructionState(gridConstructionState),
+exahype::records::State::PersistentRecords::PersistentRecords(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
+_maxRefinementLevelAllowed(maxRefinementLevelAllowed),
 _firstGridSetupIteration(firstGridSetupIteration),
 _mergeMode(mergeMode),
 _sendMode(sendMode),
@@ -1016,31 +1036,19 @@ exahype::records::State::State() {
 
 
 exahype::records::State::State(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._gridConstructionState, persistentRecords._firstGridSetupIteration, persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords._minMeshWidth, persistentRecords._maxMeshWidth, persistentRecords._numberOfInnerVertices, persistentRecords._numberOfBoundaryVertices, persistentRecords._numberOfOuterVertices, persistentRecords._numberOfInnerCells, persistentRecords._numberOfOuterCells, persistentRecords._numberOfInnerLeafVertices, persistentRecords._numberOfBoundaryLeafVertices, persistentRecords._numberOfOuterLeafVertices, persistentRecords._numberOfInnerLeafCells, persistentRecords._numberOfOuterLeafCells, persistentRecords._maxLevel, persistentRecords._hasRefined, persistentRecords._hasTriggeredRefinementForNextIteration, persistentRecords._hasErased, persistentRecords._hasTriggeredEraseForNextIteration, persistentRecords._hasChangedVertexOrCellState, persistentRecords._hasModifiedGridInPreviousIteration, persistentRecords._isTraversalInverted, persistentRecords._reduceStateAndCell, persistentRecords._couldNotEraseDueToDecompositionFlag, persistentRecords._subWorkerIsInvolvedInJoinOrFork) {
+_persistentRecords(persistentRecords._maxRefinementLevelAllowed, persistentRecords._firstGridSetupIteration, persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords._minMeshWidth, persistentRecords._maxMeshWidth, persistentRecords._numberOfInnerVertices, persistentRecords._numberOfBoundaryVertices, persistentRecords._numberOfOuterVertices, persistentRecords._numberOfInnerCells, persistentRecords._numberOfOuterCells, persistentRecords._numberOfInnerLeafVertices, persistentRecords._numberOfBoundaryLeafVertices, persistentRecords._numberOfOuterLeafVertices, persistentRecords._numberOfInnerLeafCells, persistentRecords._numberOfOuterLeafCells, persistentRecords._maxLevel, persistentRecords._hasRefined, persistentRecords._hasTriggeredRefinementForNextIteration, persistentRecords._hasErased, persistentRecords._hasTriggeredEraseForNextIteration, persistentRecords._hasChangedVertexOrCellState, persistentRecords._hasModifiedGridInPreviousIteration, persistentRecords._isTraversalInverted, persistentRecords._reduceStateAndCell, persistentRecords._couldNotEraseDueToDecompositionFlag, persistentRecords._subWorkerIsInvolvedInJoinOrFork) {
 
 }
 
 
-exahype::records::State::State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
-_persistentRecords(gridConstructionState, firstGridSetupIteration, mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, minMeshWidth, maxMeshWidth, numberOfInnerVertices, numberOfBoundaryVertices, numberOfOuterVertices, numberOfInnerCells, numberOfOuterCells, numberOfInnerLeafVertices, numberOfBoundaryLeafVertices, numberOfOuterLeafVertices, numberOfInnerLeafCells, numberOfOuterLeafCells, maxLevel, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted, reduceStateAndCell, couldNotEraseDueToDecompositionFlag, subWorkerIsInvolvedInJoinOrFork) {
+exahype::records::State::State(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
+_persistentRecords(maxRefinementLevelAllowed, firstGridSetupIteration, mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, minMeshWidth, maxMeshWidth, numberOfInnerVertices, numberOfBoundaryVertices, numberOfOuterVertices, numberOfInnerCells, numberOfOuterCells, numberOfInnerLeafVertices, numberOfBoundaryLeafVertices, numberOfOuterLeafVertices, numberOfInnerLeafCells, numberOfOuterLeafCells, maxLevel, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted, reduceStateAndCell, couldNotEraseDueToDecompositionFlag, subWorkerIsInvolvedInJoinOrFork) {
 
 }
 
 
 exahype::records::State::~State() { }
 
-std::string exahype::records::State::toString(const GridConstructionState& param) {
-switch (param) {
-   case Default: return "Default";
-   case Veto: return "Veto";
-   case Aggressive: return "Aggressive";
-}
-return "undefined";
-}
-
-std::string exahype::records::State::getGridConstructionStateMapping() {
-return "GridConstructionState(Default=0,Veto=1,Aggressive=2)";
-}
 std::string exahype::records::State::toString(const MergeMode& param) {
 switch (param) {
    case MergeNothing: return "MergeNothing";
@@ -1077,7 +1085,7 @@ return stringstr.str();
 
 void exahype::records::State::toString (std::ostream& out) const {
 out << "("; 
-out << "gridConstructionState:" << toString(getGridConstructionState());
+out << "maxRefinementLevelAllowed:" << getMaxRefinementLevelAllowed();
 out << ",";
 out << "firstGridSetupIteration:" << getFirstGridSetupIteration();
 out << ",";
@@ -1154,7 +1162,7 @@ return _persistentRecords;
 
 exahype::records::StatePacked exahype::records::State::convert() const{
 return StatePacked(
-   getGridConstructionState(),
+   getMaxRefinementLevelAllowed(),
    getFirstGridSetupIteration(),
    getMergeMode(),
    getSendMode(),
@@ -1200,7 +1208,7 @@ void exahype::records::State::initDatatype() {
       
       const int Attributes = 28;
       MPI_Datatype subtypes[Attributes] = {
-         MPI_INT,		 //gridConstructionState
+         MPI_INT,		 //maxRefinementLevelAllowed
          MPI_CHAR,		 //firstGridSetupIteration
          MPI_INT,		 //mergeMode
          MPI_INT,		 //sendMode
@@ -1231,7 +1239,7 @@ void exahype::records::State::initDatatype() {
       };
       
       int blocklen[Attributes] = {
-         1,		 //gridConstructionState
+         1,		 //maxRefinementLevelAllowed
          1,		 //firstGridSetupIteration
          1,		 //mergeMode
          1,		 //sendMode
@@ -1265,7 +1273,7 @@ void exahype::records::State::initDatatype() {
       
       MPI_Aint base;
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]))), &base);
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._gridConstructionState))), 		&disp[0] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._firstGridSetupIteration))), 		&disp[1] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._mergeMode))), 		&disp[2] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._sendMode))), 		&disp[3] );
@@ -1292,7 +1300,7 @@ void exahype::records::State::initDatatype() {
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._reduceStateAndCell))), 		&disp[24] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._couldNotEraseDueToDecompositionFlag))), 		&disp[25] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._subWorkerIsInvolvedInJoinOrFork))), 		&disp[26] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._gridConstructionState))), 		&disp[27] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[27] );
       
       for (int i=1; i<Attributes; i++) {
          assertion1( disp[i] > disp[i-1], i );
@@ -1309,7 +1317,7 @@ void exahype::records::State::initDatatype() {
       
       const int Attributes = 31;
       MPI_Datatype subtypes[Attributes] = {
-         MPI_INT,		 //gridConstructionState
+         MPI_INT,		 //maxRefinementLevelAllowed
          MPI_CHAR,		 //firstGridSetupIteration
          MPI_INT,		 //mergeMode
          MPI_INT,		 //sendMode
@@ -1343,7 +1351,7 @@ void exahype::records::State::initDatatype() {
       };
       
       int blocklen[Attributes] = {
-         1,		 //gridConstructionState
+         1,		 //maxRefinementLevelAllowed
          1,		 //firstGridSetupIteration
          1,		 //mergeMode
          1,		 //sendMode
@@ -1380,7 +1388,7 @@ void exahype::records::State::initDatatype() {
       
       MPI_Aint base;
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]))), &base);
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._gridConstructionState))), 		&disp[0] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._firstGridSetupIteration))), 		&disp[1] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._mergeMode))), 		&disp[2] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._sendMode))), 		&disp[3] );
@@ -1410,7 +1418,7 @@ void exahype::records::State::initDatatype() {
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._reduceStateAndCell))), 		&disp[27] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._couldNotEraseDueToDecompositionFlag))), 		&disp[28] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._subWorkerIsInvolvedInJoinOrFork))), 		&disp[29] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._gridConstructionState))), 		&disp[30] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[30] );
       
       for (int i=1; i<Attributes; i++) {
          assertion1( disp[i] > disp[i-1], i );
@@ -1671,8 +1679,8 @@ assertion((9 < (8 * sizeof(short int))));
 }
 
 
-exahype::records::StatePacked::PersistentRecords::PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
-_gridConstructionState(gridConstructionState),
+exahype::records::StatePacked::PersistentRecords::PersistentRecords(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
+_maxRefinementLevelAllowed(maxRefinementLevelAllowed),
 _firstGridSetupIteration(firstGridSetupIteration),
 _mergeMode(mergeMode),
 _sendMode(sendMode),
@@ -1723,7 +1731,7 @@ assertion((9 < (8 * sizeof(short int))));
 
 
 exahype::records::StatePacked::StatePacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._gridConstructionState, persistentRecords._firstGridSetupIteration, persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords._minMeshWidth, persistentRecords._maxMeshWidth, persistentRecords._numberOfInnerVertices, persistentRecords._numberOfBoundaryVertices, persistentRecords._numberOfOuterVertices, persistentRecords._numberOfInnerCells, persistentRecords._numberOfOuterCells, persistentRecords._numberOfInnerLeafVertices, persistentRecords._numberOfBoundaryLeafVertices, persistentRecords._numberOfOuterLeafVertices, persistentRecords._numberOfInnerLeafCells, persistentRecords._numberOfOuterLeafCells, persistentRecords._maxLevel, persistentRecords.getHasRefined(), persistentRecords.getHasTriggeredRefinementForNextIteration(), persistentRecords.getHasErased(), persistentRecords.getHasTriggeredEraseForNextIteration(), persistentRecords.getHasChangedVertexOrCellState(), persistentRecords.getHasModifiedGridInPreviousIteration(), persistentRecords._isTraversalInverted, persistentRecords.getReduceStateAndCell(), persistentRecords.getCouldNotEraseDueToDecompositionFlag(), persistentRecords.getSubWorkerIsInvolvedInJoinOrFork()) {
+_persistentRecords(persistentRecords._maxRefinementLevelAllowed, persistentRecords._firstGridSetupIteration, persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords._minMeshWidth, persistentRecords._maxMeshWidth, persistentRecords._numberOfInnerVertices, persistentRecords._numberOfBoundaryVertices, persistentRecords._numberOfOuterVertices, persistentRecords._numberOfInnerCells, persistentRecords._numberOfOuterCells, persistentRecords._numberOfInnerLeafVertices, persistentRecords._numberOfBoundaryLeafVertices, persistentRecords._numberOfOuterLeafVertices, persistentRecords._numberOfInnerLeafCells, persistentRecords._numberOfOuterLeafCells, persistentRecords._maxLevel, persistentRecords.getHasRefined(), persistentRecords.getHasTriggeredRefinementForNextIteration(), persistentRecords.getHasErased(), persistentRecords.getHasTriggeredEraseForNextIteration(), persistentRecords.getHasChangedVertexOrCellState(), persistentRecords.getHasModifiedGridInPreviousIteration(), persistentRecords._isTraversalInverted, persistentRecords.getReduceStateAndCell(), persistentRecords.getCouldNotEraseDueToDecompositionFlag(), persistentRecords.getSubWorkerIsInvolvedInJoinOrFork()) {
 if ((9 >= (8 * sizeof(short int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: short int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -1734,8 +1742,8 @@ assertion((9 < (8 * sizeof(short int))));
 }
 
 
-exahype::records::StatePacked::StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
-_persistentRecords(gridConstructionState, firstGridSetupIteration, mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, minMeshWidth, maxMeshWidth, numberOfInnerVertices, numberOfBoundaryVertices, numberOfOuterVertices, numberOfInnerCells, numberOfOuterCells, numberOfInnerLeafVertices, numberOfBoundaryLeafVertices, numberOfOuterLeafVertices, numberOfInnerLeafCells, numberOfOuterLeafCells, maxLevel, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted, reduceStateAndCell, couldNotEraseDueToDecompositionFlag, subWorkerIsInvolvedInJoinOrFork) {
+exahype::records::StatePacked::StatePacked(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
+_persistentRecords(maxRefinementLevelAllowed, firstGridSetupIteration, mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, minMeshWidth, maxMeshWidth, numberOfInnerVertices, numberOfBoundaryVertices, numberOfOuterVertices, numberOfInnerCells, numberOfOuterCells, numberOfInnerLeafVertices, numberOfBoundaryLeafVertices, numberOfOuterLeafVertices, numberOfInnerLeafCells, numberOfOuterLeafCells, maxLevel, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted, reduceStateAndCell, couldNotEraseDueToDecompositionFlag, subWorkerIsInvolvedInJoinOrFork) {
 if ((9 >= (8 * sizeof(short int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: short int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -1747,14 +1755,6 @@ assertion((9 < (8 * sizeof(short int))));
 
 
 exahype::records::StatePacked::~StatePacked() { }
-
-std::string exahype::records::StatePacked::toString(const GridConstructionState& param) {
-return exahype::records::State::toString(param);
-}
-
-std::string exahype::records::StatePacked::getGridConstructionStateMapping() {
-return exahype::records::State::getGridConstructionStateMapping();
-}
 
 std::string exahype::records::StatePacked::toString(const MergeMode& param) {
 return exahype::records::State::toString(param);
@@ -1782,7 +1782,7 @@ return stringstr.str();
 
 void exahype::records::StatePacked::toString (std::ostream& out) const {
 out << "("; 
-out << "gridConstructionState:" << toString(getGridConstructionState());
+out << "maxRefinementLevelAllowed:" << getMaxRefinementLevelAllowed();
 out << ",";
 out << "firstGridSetupIteration:" << getFirstGridSetupIteration();
 out << ",";
@@ -1859,7 +1859,7 @@ return _persistentRecords;
 
 exahype::records::State exahype::records::StatePacked::convert() const{
 return State(
-getGridConstructionState(),
+getMaxRefinementLevelAllowed(),
 getFirstGridSetupIteration(),
 getMergeMode(),
 getSendMode(),
@@ -1905,7 +1905,7 @@ void exahype::records::StatePacked::initDatatype() {
    
    const int Attributes = 20;
    MPI_Datatype subtypes[Attributes] = {
-      MPI_INT,		 //gridConstructionState
+      MPI_INT,		 //maxRefinementLevelAllowed
       MPI_CHAR,		 //firstGridSetupIteration
       MPI_INT,		 //mergeMode
       MPI_INT,		 //sendMode
@@ -1928,7 +1928,7 @@ void exahype::records::StatePacked::initDatatype() {
    };
    
    int blocklen[Attributes] = {
-      1,		 //gridConstructionState
+      1,		 //maxRefinementLevelAllowed
       1,		 //firstGridSetupIteration
       1,		 //mergeMode
       1,		 //sendMode
@@ -1954,7 +1954,7 @@ void exahype::records::StatePacked::initDatatype() {
    
    MPI_Aint base;
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]))), &base);
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._gridConstructionState))), 		&disp[0] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._firstGridSetupIteration))), 		&disp[1] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._mergeMode))), 		&disp[2] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._sendMode))), 		&disp[3] );
@@ -1973,7 +1973,7 @@ void exahype::records::StatePacked::initDatatype() {
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxLevel))), 		&disp[16] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._isTraversalInverted))), 		&disp[17] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._packedRecords0))), 		&disp[18] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._gridConstructionState))), 		&disp[19] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[19] );
    
    for (int i=1; i<Attributes; i++) {
       assertion1( disp[i] > disp[i-1], i );
@@ -1990,7 +1990,7 @@ void exahype::records::StatePacked::initDatatype() {
    
    const int Attributes = 23;
    MPI_Datatype subtypes[Attributes] = {
-      MPI_INT,		 //gridConstructionState
+      MPI_INT,		 //maxRefinementLevelAllowed
       MPI_CHAR,		 //firstGridSetupIteration
       MPI_INT,		 //mergeMode
       MPI_INT,		 //sendMode
@@ -2016,7 +2016,7 @@ void exahype::records::StatePacked::initDatatype() {
    };
    
    int blocklen[Attributes] = {
-      1,		 //gridConstructionState
+      1,		 //maxRefinementLevelAllowed
       1,		 //firstGridSetupIteration
       1,		 //mergeMode
       1,		 //sendMode
@@ -2045,7 +2045,7 @@ void exahype::records::StatePacked::initDatatype() {
    
    MPI_Aint base;
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]))), &base);
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._gridConstructionState))), 		&disp[0] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._firstGridSetupIteration))), 		&disp[1] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._mergeMode))), 		&disp[2] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._sendMode))), 		&disp[3] );
@@ -2067,7 +2067,7 @@ void exahype::records::StatePacked::initDatatype() {
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxLevel))), 		&disp[19] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._isTraversalInverted))), 		&disp[20] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._packedRecords0))), 		&disp[21] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._gridConstructionState))), 		&disp[22] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[22] );
    
    for (int i=1; i<Attributes; i++) {
       assertion1( disp[i] > disp[i-1], i );
@@ -2325,7 +2325,8 @@ exahype::records::State::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::State::PersistentRecords::PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
+exahype::records::State::PersistentRecords::PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
+_maxRefinementLevelAllowed(maxRefinementLevelAllowed),
 _mergeMode(mergeMode),
 _sendMode(sendMode),
 _reinitTimeStepData(reinitTimeStepData),
@@ -2360,13 +2361,13 @@ exahype::records::State::State() {
 
 
 exahype::records::State::State(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords._minMeshWidth, persistentRecords._maxMeshWidth, persistentRecords._numberOfInnerVertices, persistentRecords._numberOfBoundaryVertices, persistentRecords._numberOfOuterVertices, persistentRecords._numberOfInnerCells, persistentRecords._numberOfOuterCells, persistentRecords._numberOfInnerLeafVertices, persistentRecords._numberOfBoundaryLeafVertices, persistentRecords._numberOfOuterLeafVertices, persistentRecords._numberOfInnerLeafCells, persistentRecords._numberOfOuterLeafCells, persistentRecords._maxLevel, persistentRecords._hasRefined, persistentRecords._hasTriggeredRefinementForNextIteration, persistentRecords._hasErased, persistentRecords._hasTriggeredEraseForNextIteration, persistentRecords._hasChangedVertexOrCellState, persistentRecords._hasModifiedGridInPreviousIteration, persistentRecords._isTraversalInverted) {
+_persistentRecords(persistentRecords._maxRefinementLevelAllowed, persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords._minMeshWidth, persistentRecords._maxMeshWidth, persistentRecords._numberOfInnerVertices, persistentRecords._numberOfBoundaryVertices, persistentRecords._numberOfOuterVertices, persistentRecords._numberOfInnerCells, persistentRecords._numberOfOuterCells, persistentRecords._numberOfInnerLeafVertices, persistentRecords._numberOfBoundaryLeafVertices, persistentRecords._numberOfOuterLeafVertices, persistentRecords._numberOfInnerLeafCells, persistentRecords._numberOfOuterLeafCells, persistentRecords._maxLevel, persistentRecords._hasRefined, persistentRecords._hasTriggeredRefinementForNextIteration, persistentRecords._hasErased, persistentRecords._hasTriggeredEraseForNextIteration, persistentRecords._hasChangedVertexOrCellState, persistentRecords._hasModifiedGridInPreviousIteration, persistentRecords._isTraversalInverted) {
 
 }
 
 
-exahype::records::State::State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
-_persistentRecords(mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, minMeshWidth, maxMeshWidth, numberOfInnerVertices, numberOfBoundaryVertices, numberOfOuterVertices, numberOfInnerCells, numberOfOuterCells, numberOfInnerLeafVertices, numberOfBoundaryLeafVertices, numberOfOuterLeafVertices, numberOfInnerLeafCells, numberOfOuterLeafCells, maxLevel, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted) {
+exahype::records::State::State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
+_persistentRecords(maxRefinementLevelAllowed, mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, minMeshWidth, maxMeshWidth, numberOfInnerVertices, numberOfBoundaryVertices, numberOfOuterVertices, numberOfInnerCells, numberOfOuterCells, numberOfInnerLeafVertices, numberOfBoundaryLeafVertices, numberOfOuterLeafVertices, numberOfInnerLeafCells, numberOfOuterLeafCells, maxLevel, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted) {
 
 }
 
@@ -2409,6 +2410,8 @@ return stringstr.str();
 
 void exahype::records::State::toString (std::ostream& out) const {
 out << "("; 
+out << "maxRefinementLevelAllowed:" << getMaxRefinementLevelAllowed();
+out << ",";
 out << "mergeMode:" << toString(getMergeMode());
 out << ",";
 out << "sendMode:" << toString(getSendMode());
@@ -2476,6 +2479,7 @@ return _persistentRecords;
 
 exahype::records::StatePacked exahype::records::State::convert() const{
 return StatePacked(
+getMaxRefinementLevelAllowed(),
 getMergeMode(),
 getSendMode(),
 getReinitTimeStepData(),
@@ -2515,8 +2519,9 @@ void exahype::records::State::initDatatype() {
 {
 State dummyState[2];
 
-const int Attributes = 23;
+const int Attributes = 24;
 MPI_Datatype subtypes[Attributes] = {
+MPI_INT,		 //maxRefinementLevelAllowed
 MPI_INT,		 //mergeMode
 MPI_INT,		 //sendMode
 MPI_DOUBLE,		 //minMeshWidth
@@ -2543,6 +2548,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
+1,		 //maxRefinementLevelAllowed
 1,		 //mergeMode
 1,		 //sendMode
 DIMENSIONS,		 //minMeshWidth
@@ -2572,29 +2578,30 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._mergeMode))), 		&disp[0] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._sendMode))), 		&disp[1] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._minMeshWidth[0]))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxMeshWidth[0]))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerVertices))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfBoundaryVertices))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterVertices))), 		&disp[6] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerCells))), 		&disp[7] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterCells))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerLeafVertices))), 		&disp[9] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfBoundaryLeafVertices))), 		&disp[10] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterLeafVertices))), 		&disp[11] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerLeafCells))), 		&disp[12] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterLeafCells))), 		&disp[13] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxLevel))), 		&disp[14] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasRefined))), 		&disp[15] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredRefinementForNextIteration))), 		&disp[16] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasErased))), 		&disp[17] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredEraseForNextIteration))), 		&disp[18] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasChangedVertexOrCellState))), 		&disp[19] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasModifiedGridInPreviousIteration))), 		&disp[20] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._isTraversalInverted))), 		&disp[21] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._mergeMode))), 		&disp[22] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._mergeMode))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._sendMode))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._minMeshWidth[0]))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxMeshWidth[0]))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerVertices))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfBoundaryVertices))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterVertices))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerCells))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterCells))), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerLeafVertices))), 		&disp[10] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfBoundaryLeafVertices))), 		&disp[11] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterLeafVertices))), 		&disp[12] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerLeafCells))), 		&disp[13] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterLeafCells))), 		&disp[14] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxLevel))), 		&disp[15] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasRefined))), 		&disp[16] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredRefinementForNextIteration))), 		&disp[17] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasErased))), 		&disp[18] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredEraseForNextIteration))), 		&disp[19] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasChangedVertexOrCellState))), 		&disp[20] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasModifiedGridInPreviousIteration))), 		&disp[21] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._isTraversalInverted))), 		&disp[22] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[23] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2609,8 +2616,9 @@ MPI_Type_commit( &State::Datatype );
 {
 State dummyState[2];
 
-const int Attributes = 26;
+const int Attributes = 27;
 MPI_Datatype subtypes[Attributes] = {
+MPI_INT,		 //maxRefinementLevelAllowed
 MPI_INT,		 //mergeMode
 MPI_INT,		 //sendMode
 MPI_CHAR,		 //reinitTimeStepData
@@ -2640,6 +2648,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
+1,		 //maxRefinementLevelAllowed
 1,		 //mergeMode
 1,		 //sendMode
 1,		 //reinitTimeStepData
@@ -2672,32 +2681,33 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._mergeMode))), 		&disp[0] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._sendMode))), 		&disp[1] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._reinitTimeStepData))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._stabilityConditionOfOneSolverWasViolated))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._timeStepSizeWeightForPredictionRerun))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._minMeshWidth[0]))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxMeshWidth[0]))), 		&disp[6] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerVertices))), 		&disp[7] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfBoundaryVertices))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterVertices))), 		&disp[9] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerCells))), 		&disp[10] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterCells))), 		&disp[11] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerLeafVertices))), 		&disp[12] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfBoundaryLeafVertices))), 		&disp[13] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterLeafVertices))), 		&disp[14] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerLeafCells))), 		&disp[15] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterLeafCells))), 		&disp[16] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxLevel))), 		&disp[17] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasRefined))), 		&disp[18] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredRefinementForNextIteration))), 		&disp[19] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasErased))), 		&disp[20] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredEraseForNextIteration))), 		&disp[21] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasChangedVertexOrCellState))), 		&disp[22] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasModifiedGridInPreviousIteration))), 		&disp[23] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._isTraversalInverted))), 		&disp[24] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._mergeMode))), 		&disp[25] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._mergeMode))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._sendMode))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._reinitTimeStepData))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._stabilityConditionOfOneSolverWasViolated))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._timeStepSizeWeightForPredictionRerun))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._minMeshWidth[0]))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxMeshWidth[0]))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerVertices))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfBoundaryVertices))), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterVertices))), 		&disp[10] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerCells))), 		&disp[11] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterCells))), 		&disp[12] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerLeafVertices))), 		&disp[13] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfBoundaryLeafVertices))), 		&disp[14] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterLeafVertices))), 		&disp[15] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfInnerLeafCells))), 		&disp[16] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._numberOfOuterLeafCells))), 		&disp[17] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxLevel))), 		&disp[18] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasRefined))), 		&disp[19] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredRefinementForNextIteration))), 		&disp[20] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasErased))), 		&disp[21] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasTriggeredEraseForNextIteration))), 		&disp[22] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasChangedVertexOrCellState))), 		&disp[23] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._hasModifiedGridInPreviousIteration))), 		&disp[24] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._isTraversalInverted))), 		&disp[25] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[26] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2958,7 +2968,8 @@ assertion((6 < (8 * sizeof(short int))));
 }
 
 
-exahype::records::StatePacked::PersistentRecords::PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
+exahype::records::StatePacked::PersistentRecords::PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
+_maxRefinementLevelAllowed(maxRefinementLevelAllowed),
 _mergeMode(mergeMode),
 _sendMode(sendMode),
 _reinitTimeStepData(reinitTimeStepData),
@@ -3005,7 +3016,7 @@ assertion((6 < (8 * sizeof(short int))));
 
 
 exahype::records::StatePacked::StatePacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords._minMeshWidth, persistentRecords._maxMeshWidth, persistentRecords._numberOfInnerVertices, persistentRecords._numberOfBoundaryVertices, persistentRecords._numberOfOuterVertices, persistentRecords._numberOfInnerCells, persistentRecords._numberOfOuterCells, persistentRecords._numberOfInnerLeafVertices, persistentRecords._numberOfBoundaryLeafVertices, persistentRecords._numberOfOuterLeafVertices, persistentRecords._numberOfInnerLeafCells, persistentRecords._numberOfOuterLeafCells, persistentRecords._maxLevel, persistentRecords.getHasRefined(), persistentRecords.getHasTriggeredRefinementForNextIteration(), persistentRecords.getHasErased(), persistentRecords.getHasTriggeredEraseForNextIteration(), persistentRecords.getHasChangedVertexOrCellState(), persistentRecords.getHasModifiedGridInPreviousIteration(), persistentRecords._isTraversalInverted) {
+_persistentRecords(persistentRecords._maxRefinementLevelAllowed, persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords._minMeshWidth, persistentRecords._maxMeshWidth, persistentRecords._numberOfInnerVertices, persistentRecords._numberOfBoundaryVertices, persistentRecords._numberOfOuterVertices, persistentRecords._numberOfInnerCells, persistentRecords._numberOfOuterCells, persistentRecords._numberOfInnerLeafVertices, persistentRecords._numberOfBoundaryLeafVertices, persistentRecords._numberOfOuterLeafVertices, persistentRecords._numberOfInnerLeafCells, persistentRecords._numberOfOuterLeafCells, persistentRecords._maxLevel, persistentRecords.getHasRefined(), persistentRecords.getHasTriggeredRefinementForNextIteration(), persistentRecords.getHasErased(), persistentRecords.getHasTriggeredEraseForNextIteration(), persistentRecords.getHasChangedVertexOrCellState(), persistentRecords.getHasModifiedGridInPreviousIteration(), persistentRecords._isTraversalInverted) {
 if ((6 >= (8 * sizeof(short int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: short int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -3016,8 +3027,8 @@ assertion((6 < (8 * sizeof(short int))));
 }
 
 
-exahype::records::StatePacked::StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
-_persistentRecords(mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, minMeshWidth, maxMeshWidth, numberOfInnerVertices, numberOfBoundaryVertices, numberOfOuterVertices, numberOfInnerCells, numberOfOuterCells, numberOfInnerLeafVertices, numberOfBoundaryLeafVertices, numberOfOuterLeafVertices, numberOfInnerLeafCells, numberOfOuterLeafCells, maxLevel, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted) {
+exahype::records::StatePacked::StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted):
+_persistentRecords(maxRefinementLevelAllowed, mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, minMeshWidth, maxMeshWidth, numberOfInnerVertices, numberOfBoundaryVertices, numberOfOuterVertices, numberOfInnerCells, numberOfOuterCells, numberOfInnerLeafVertices, numberOfBoundaryLeafVertices, numberOfOuterLeafVertices, numberOfInnerLeafCells, numberOfOuterLeafCells, maxLevel, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted) {
 if ((6 >= (8 * sizeof(short int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: short int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -3056,6 +3067,8 @@ return stringstr.str();
 
 void exahype::records::StatePacked::toString (std::ostream& out) const {
 out << "("; 
+out << "maxRefinementLevelAllowed:" << getMaxRefinementLevelAllowed();
+out << ",";
 out << "mergeMode:" << toString(getMergeMode());
 out << ",";
 out << "sendMode:" << toString(getSendMode());
@@ -3123,6 +3136,7 @@ return _persistentRecords;
 
 exahype::records::State exahype::records::StatePacked::convert() const{
 return State(
+getMaxRefinementLevelAllowed(),
 getMergeMode(),
 getSendMode(),
 getReinitTimeStepData(),
@@ -3162,8 +3176,9 @@ void exahype::records::StatePacked::initDatatype() {
 {
 StatePacked dummyStatePacked[2];
 
-const int Attributes = 18;
+const int Attributes = 19;
 MPI_Datatype subtypes[Attributes] = {
+MPI_INT,		 //maxRefinementLevelAllowed
 MPI_INT,		 //mergeMode
 MPI_INT,		 //sendMode
 MPI_DOUBLE,		 //minMeshWidth
@@ -3185,6 +3200,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
+1,		 //maxRefinementLevelAllowed
 1,		 //mergeMode
 1,		 //sendMode
 DIMENSIONS,		 //minMeshWidth
@@ -3209,24 +3225,25 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._mergeMode))), 		&disp[0] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._sendMode))), 		&disp[1] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._minMeshWidth[0]))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxMeshWidth[0]))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerVertices))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfBoundaryVertices))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterVertices))), 		&disp[6] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerCells))), 		&disp[7] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterCells))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerLeafVertices))), 		&disp[9] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfBoundaryLeafVertices))), 		&disp[10] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterLeafVertices))), 		&disp[11] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerLeafCells))), 		&disp[12] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterLeafCells))), 		&disp[13] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxLevel))), 		&disp[14] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._isTraversalInverted))), 		&disp[15] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._packedRecords0))), 		&disp[16] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._mergeMode))), 		&disp[17] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._mergeMode))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._sendMode))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._minMeshWidth[0]))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxMeshWidth[0]))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerVertices))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfBoundaryVertices))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterVertices))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerCells))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterCells))), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerLeafVertices))), 		&disp[10] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfBoundaryLeafVertices))), 		&disp[11] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterLeafVertices))), 		&disp[12] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerLeafCells))), 		&disp[13] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterLeafCells))), 		&disp[14] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxLevel))), 		&disp[15] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._isTraversalInverted))), 		&disp[16] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._packedRecords0))), 		&disp[17] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[18] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -3241,8 +3258,9 @@ MPI_Type_commit( &StatePacked::Datatype );
 {
 StatePacked dummyStatePacked[2];
 
-const int Attributes = 21;
+const int Attributes = 22;
 MPI_Datatype subtypes[Attributes] = {
+MPI_INT,		 //maxRefinementLevelAllowed
 MPI_INT,		 //mergeMode
 MPI_INT,		 //sendMode
 MPI_CHAR,		 //reinitTimeStepData
@@ -3267,6 +3285,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
+1,		 //maxRefinementLevelAllowed
 1,		 //mergeMode
 1,		 //sendMode
 1,		 //reinitTimeStepData
@@ -3294,27 +3313,28 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._mergeMode))), 		&disp[0] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._sendMode))), 		&disp[1] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._reinitTimeStepData))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._stabilityConditionOfOneSolverWasViolated))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._timeStepSizeWeightForPredictionRerun))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._minMeshWidth[0]))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxMeshWidth[0]))), 		&disp[6] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerVertices))), 		&disp[7] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfBoundaryVertices))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterVertices))), 		&disp[9] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerCells))), 		&disp[10] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterCells))), 		&disp[11] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerLeafVertices))), 		&disp[12] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfBoundaryLeafVertices))), 		&disp[13] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterLeafVertices))), 		&disp[14] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerLeafCells))), 		&disp[15] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterLeafCells))), 		&disp[16] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxLevel))), 		&disp[17] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._isTraversalInverted))), 		&disp[18] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._packedRecords0))), 		&disp[19] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._mergeMode))), 		&disp[20] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._mergeMode))), 		&disp[1] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._sendMode))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._reinitTimeStepData))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._stabilityConditionOfOneSolverWasViolated))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._timeStepSizeWeightForPredictionRerun))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._minMeshWidth[0]))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxMeshWidth[0]))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerVertices))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfBoundaryVertices))), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterVertices))), 		&disp[10] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerCells))), 		&disp[11] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterCells))), 		&disp[12] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerLeafVertices))), 		&disp[13] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfBoundaryLeafVertices))), 		&disp[14] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterLeafVertices))), 		&disp[15] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfInnerLeafCells))), 		&disp[16] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._numberOfOuterLeafCells))), 		&disp[17] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxLevel))), 		&disp[18] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._isTraversalInverted))), 		&disp[19] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._packedRecords0))), 		&disp[20] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[21] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -3572,8 +3592,8 @@ exahype::records::State::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::State::PersistentRecords::PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
-_gridConstructionState(gridConstructionState),
+exahype::records::State::PersistentRecords::PersistentRecords(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
+_maxRefinementLevelAllowed(maxRefinementLevelAllowed),
 _firstGridSetupIteration(firstGridSetupIteration),
 _mergeMode(mergeMode),
 _sendMode(sendMode),
@@ -3599,31 +3619,19 @@ exahype::records::State::State() {
 
 
 exahype::records::State::State(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._gridConstructionState, persistentRecords._firstGridSetupIteration, persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords._hasRefined, persistentRecords._hasTriggeredRefinementForNextIteration, persistentRecords._hasErased, persistentRecords._hasTriggeredEraseForNextIteration, persistentRecords._hasChangedVertexOrCellState, persistentRecords._hasModifiedGridInPreviousIteration, persistentRecords._isTraversalInverted, persistentRecords._reduceStateAndCell, persistentRecords._couldNotEraseDueToDecompositionFlag, persistentRecords._subWorkerIsInvolvedInJoinOrFork) {
+_persistentRecords(persistentRecords._maxRefinementLevelAllowed, persistentRecords._firstGridSetupIteration, persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords._hasRefined, persistentRecords._hasTriggeredRefinementForNextIteration, persistentRecords._hasErased, persistentRecords._hasTriggeredEraseForNextIteration, persistentRecords._hasChangedVertexOrCellState, persistentRecords._hasModifiedGridInPreviousIteration, persistentRecords._isTraversalInverted, persistentRecords._reduceStateAndCell, persistentRecords._couldNotEraseDueToDecompositionFlag, persistentRecords._subWorkerIsInvolvedInJoinOrFork) {
 
 }
 
 
-exahype::records::State::State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
-_persistentRecords(gridConstructionState, firstGridSetupIteration, mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted, reduceStateAndCell, couldNotEraseDueToDecompositionFlag, subWorkerIsInvolvedInJoinOrFork) {
+exahype::records::State::State(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
+_persistentRecords(maxRefinementLevelAllowed, firstGridSetupIteration, mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted, reduceStateAndCell, couldNotEraseDueToDecompositionFlag, subWorkerIsInvolvedInJoinOrFork) {
 
 }
 
 
 exahype::records::State::~State() { }
 
-std::string exahype::records::State::toString(const GridConstructionState& param) {
-switch (param) {
-case Default: return "Default";
-case Veto: return "Veto";
-case Aggressive: return "Aggressive";
-}
-return "undefined";
-}
-
-std::string exahype::records::State::getGridConstructionStateMapping() {
-return "GridConstructionState(Default=0,Veto=1,Aggressive=2)";
-}
 std::string exahype::records::State::toString(const MergeMode& param) {
 switch (param) {
 case MergeNothing: return "MergeNothing";
@@ -3660,7 +3668,7 @@ return stringstr.str();
 
 void exahype::records::State::toString (std::ostream& out) const {
 out << "("; 
-out << "gridConstructionState:" << toString(getGridConstructionState());
+out << "maxRefinementLevelAllowed:" << getMaxRefinementLevelAllowed();
 out << ",";
 out << "firstGridSetupIteration:" << getFirstGridSetupIteration();
 out << ",";
@@ -3703,7 +3711,7 @@ return _persistentRecords;
 
 exahype::records::StatePacked exahype::records::State::convert() const{
 return StatePacked(
-getGridConstructionState(),
+getMaxRefinementLevelAllowed(),
 getFirstGridSetupIteration(),
 getMergeMode(),
 getSendMode(),
@@ -3736,7 +3744,7 @@ State dummyState[2];
 
 const int Attributes = 15;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //gridConstructionState
+MPI_INT,		 //maxRefinementLevelAllowed
 MPI_CHAR,		 //firstGridSetupIteration
 MPI_INT,		 //mergeMode
 MPI_INT,		 //sendMode
@@ -3754,7 +3762,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //gridConstructionState
+1,		 //maxRefinementLevelAllowed
 1,		 //firstGridSetupIteration
 1,		 //mergeMode
 1,		 //sendMode
@@ -3775,7 +3783,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._gridConstructionState))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._firstGridSetupIteration))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._mergeMode))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._sendMode))), 		&disp[3] );
@@ -3789,7 +3797,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persist
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._reduceStateAndCell))), 		&disp[11] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._couldNotEraseDueToDecompositionFlag))), 		&disp[12] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._subWorkerIsInvolvedInJoinOrFork))), 		&disp[13] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._gridConstructionState))), 		&disp[14] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[14] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -3806,7 +3814,7 @@ State dummyState[2];
 
 const int Attributes = 18;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //gridConstructionState
+MPI_INT,		 //maxRefinementLevelAllowed
 MPI_CHAR,		 //firstGridSetupIteration
 MPI_INT,		 //mergeMode
 MPI_INT,		 //sendMode
@@ -3827,7 +3835,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //gridConstructionState
+1,		 //maxRefinementLevelAllowed
 1,		 //firstGridSetupIteration
 1,		 //mergeMode
 1,		 //sendMode
@@ -3851,7 +3859,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._gridConstructionState))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._firstGridSetupIteration))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._mergeMode))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._sendMode))), 		&disp[3] );
@@ -3868,7 +3876,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persist
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._reduceStateAndCell))), 		&disp[14] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._couldNotEraseDueToDecompositionFlag))), 		&disp[15] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[0]._persistentRecords._subWorkerIsInvolvedInJoinOrFork))), 		&disp[16] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._gridConstructionState))), 		&disp[17] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyState[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[17] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -4129,8 +4137,8 @@ assertion((9 < (8 * sizeof(short int))));
 }
 
 
-exahype::records::StatePacked::PersistentRecords::PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
-_gridConstructionState(gridConstructionState),
+exahype::records::StatePacked::PersistentRecords::PersistentRecords(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
+_maxRefinementLevelAllowed(maxRefinementLevelAllowed),
 _firstGridSetupIteration(firstGridSetupIteration),
 _mergeMode(mergeMode),
 _sendMode(sendMode),
@@ -4168,7 +4176,7 @@ assertion((9 < (8 * sizeof(short int))));
 
 
 exahype::records::StatePacked::StatePacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._gridConstructionState, persistentRecords._firstGridSetupIteration, persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords.getHasRefined(), persistentRecords.getHasTriggeredRefinementForNextIteration(), persistentRecords.getHasErased(), persistentRecords.getHasTriggeredEraseForNextIteration(), persistentRecords.getHasChangedVertexOrCellState(), persistentRecords.getHasModifiedGridInPreviousIteration(), persistentRecords._isTraversalInverted, persistentRecords.getReduceStateAndCell(), persistentRecords.getCouldNotEraseDueToDecompositionFlag(), persistentRecords.getSubWorkerIsInvolvedInJoinOrFork()) {
+_persistentRecords(persistentRecords._maxRefinementLevelAllowed, persistentRecords._firstGridSetupIteration, persistentRecords._mergeMode, persistentRecords._sendMode, persistentRecords._reinitTimeStepData, persistentRecords._stabilityConditionOfOneSolverWasViolated, persistentRecords._timeStepSizeWeightForPredictionRerun, persistentRecords.getHasRefined(), persistentRecords.getHasTriggeredRefinementForNextIteration(), persistentRecords.getHasErased(), persistentRecords.getHasTriggeredEraseForNextIteration(), persistentRecords.getHasChangedVertexOrCellState(), persistentRecords.getHasModifiedGridInPreviousIteration(), persistentRecords._isTraversalInverted, persistentRecords.getReduceStateAndCell(), persistentRecords.getCouldNotEraseDueToDecompositionFlag(), persistentRecords.getSubWorkerIsInvolvedInJoinOrFork()) {
 if ((9 >= (8 * sizeof(short int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: short int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -4179,8 +4187,8 @@ assertion((9 < (8 * sizeof(short int))));
 }
 
 
-exahype::records::StatePacked::StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
-_persistentRecords(gridConstructionState, firstGridSetupIteration, mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted, reduceStateAndCell, couldNotEraseDueToDecompositionFlag, subWorkerIsInvolvedInJoinOrFork) {
+exahype::records::StatePacked::StatePacked(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork):
+_persistentRecords(maxRefinementLevelAllowed, firstGridSetupIteration, mergeMode, sendMode, reinitTimeStepData, stabilityConditionOfOneSolverWasViolated, timeStepSizeWeightForPredictionRerun, hasRefined, hasTriggeredRefinementForNextIteration, hasErased, hasTriggeredEraseForNextIteration, hasChangedVertexOrCellState, hasModifiedGridInPreviousIteration, isTraversalInverted, reduceStateAndCell, couldNotEraseDueToDecompositionFlag, subWorkerIsInvolvedInJoinOrFork) {
 if ((9 >= (8 * sizeof(short int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: short int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -4192,14 +4200,6 @@ assertion((9 < (8 * sizeof(short int))));
 
 
 exahype::records::StatePacked::~StatePacked() { }
-
-std::string exahype::records::StatePacked::toString(const GridConstructionState& param) {
-return exahype::records::State::toString(param);
-}
-
-std::string exahype::records::StatePacked::getGridConstructionStateMapping() {
-return exahype::records::State::getGridConstructionStateMapping();
-}
 
 std::string exahype::records::StatePacked::toString(const MergeMode& param) {
 return exahype::records::State::toString(param);
@@ -4227,7 +4227,7 @@ return stringstr.str();
 
 void exahype::records::StatePacked::toString (std::ostream& out) const {
 out << "("; 
-out << "gridConstructionState:" << toString(getGridConstructionState());
+out << "maxRefinementLevelAllowed:" << getMaxRefinementLevelAllowed();
 out << ",";
 out << "firstGridSetupIteration:" << getFirstGridSetupIteration();
 out << ",";
@@ -4270,7 +4270,7 @@ return _persistentRecords;
 
 exahype::records::State exahype::records::StatePacked::convert() const{
 return State(
-getGridConstructionState(),
+getMaxRefinementLevelAllowed(),
 getFirstGridSetupIteration(),
 getMergeMode(),
 getSendMode(),
@@ -4303,7 +4303,7 @@ StatePacked dummyStatePacked[2];
 
 const int Attributes = 7;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //gridConstructionState
+MPI_INT,		 //maxRefinementLevelAllowed
 MPI_CHAR,		 //firstGridSetupIteration
 MPI_INT,		 //mergeMode
 MPI_INT,		 //sendMode
@@ -4313,7 +4313,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //gridConstructionState
+1,		 //maxRefinementLevelAllowed
 1,		 //firstGridSetupIteration
 1,		 //mergeMode
 1,		 //sendMode
@@ -4326,13 +4326,13 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._gridConstructionState))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._firstGridSetupIteration))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._mergeMode))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._sendMode))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._isTraversalInverted))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._gridConstructionState))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[6] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -4349,7 +4349,7 @@ StatePacked dummyStatePacked[2];
 
 const int Attributes = 10;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //gridConstructionState
+MPI_INT,		 //maxRefinementLevelAllowed
 MPI_CHAR,		 //firstGridSetupIteration
 MPI_INT,		 //mergeMode
 MPI_INT,		 //sendMode
@@ -4362,7 +4362,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //gridConstructionState
+1,		 //maxRefinementLevelAllowed
 1,		 //firstGridSetupIteration
 1,		 //mergeMode
 1,		 //sendMode
@@ -4378,7 +4378,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._gridConstructionState))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._firstGridSetupIteration))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._mergeMode))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._sendMode))), 		&disp[3] );
@@ -4387,7 +4387,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._p
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._timeStepSizeWeightForPredictionRerun))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._isTraversalInverted))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[0]._persistentRecords._packedRecords0))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._gridConstructionState))), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyStatePacked[1]._persistentRecords._maxRefinementLevelAllowed))), 		&disp[9] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );

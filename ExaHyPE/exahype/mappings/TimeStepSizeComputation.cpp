@@ -92,7 +92,6 @@ void exahype::mappings::TimeStepSizeComputation::prepareLocalTimeStepVariables()
 }
 
 exahype::mappings::TimeStepSizeComputation::~TimeStepSizeComputation() {
-  exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
 }
 
 #if defined(SharedMemoryParallelisation)

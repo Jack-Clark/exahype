@@ -141,7 +141,7 @@ void spaceTimePredictorLinear(SolverType& solver,
     // Compute the fluxes
     for (int k = 0; k < basisSize; k++) {
       for (int l = 0; l < basisSize; l++) {
-        solver.ncp(&lQi[idx_lQi(i, k, l, 0)], &gradQ[idx_gradQ(i, k, l, 0, 0)],
+        solver.nonConservativeProduct(&lQi[idx_lQi(i, k, l, 0)], &gradQ[idx_gradQ(i, k, l, 0, 0)],
             &lFi[idx_lFi(i, k, l, 0, 0)]); // gradQ(..,..,0,0) and Fi(..,..,0,0) 3xnVar tensors
       }
     }

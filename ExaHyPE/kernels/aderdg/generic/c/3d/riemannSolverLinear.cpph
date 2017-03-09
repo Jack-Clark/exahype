@@ -100,7 +100,7 @@ void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
                  [](double a, double b) { return 0.5 * (a + b); });
   double* Bn = tempStateSizedSquareMatrices[0]; // size: numberOfVariables * numberOfVariables
   
-  solver.matrixb(Qav, normalNonZero, Bn);
+  solver.coefficientMatrix(Qav, normalNonZero, Bn);
 
   double* BnMinusIdSmax = tempStateSizedSquareMatrices[1]; // size: numberOfVariables * numberOfVariables
   double* BnPlusIdSmax  = tempStateSizedSquareMatrices[2]; // size: numberOfVariables * numberOfVariables

@@ -35,7 +35,7 @@ namespace {
  *  
  *  !!! WARNING: ncp argument BGradQ is a vector for the nonlinear scheme
  */
-template <typename SolverType>
+template <bool useSource, bool useNCP, typename SolverType>
 void aderPicardLoopNonlinear(SolverType& solver,
                              const double* luh, const double dt,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -47,6 +47,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
   constexpr int basisSize2         = basisSize * basisSize;
   constexpr int basisSize3         = basisSize2 * basisSize;
   constexpr int order              = basisSize - 1;
+  
+  assertion(numberOfVariables>=0);
+  assertion(numberOfParameters>=0);
   
   idx3 idx_luh(basisSize, basisSize, numberOfVariables+numberOfParameters); // idx_luh(y,x,nVar)
   
@@ -105,7 +108,12 @@ void aderPicardLoopNonlinear(SolverType& solver,
           double* S = lFi + idx_lFi(i, k, l, 2, 0);
           
           solver.flux(Q, F);
-          solver.source(Q, S);
+          if(useSource) {
+            solver.algebraicSource(Q, S);
+          }
+          else if (useNCP) {
+            std::memset(S, 0, (numberOfVariables+numberOfParameters) * sizeof(double)); //initialize S
+          }
         }
       }
 
@@ -119,7 +127,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
       }
 
       // Sven: Compute gradients
-      std::memset(gradQ, 0, basisSize3 * DIMENSIONS * numberOfVariables * sizeof(double));
+      if(useNCP) {
+        std::memset(gradQ, 0, basisSize3 * DIMENSIONS * numberOfVariables * sizeof(double));
+      }
       // Compute the "derivatives" (contributions of the stiffness matrix)
       // x direction (independent from the y derivatives)
       for (int k = 0; k < basisSize; k++) { // k == y
@@ -133,10 +143,11 @@ void aderPicardLoopNonlinear(SolverType& solver,
             for (int n = 0; n < basisSize; n++) { // n == matmul x
               rhs[idx_rhs(i, k, l, m)] -= updateSize * lFi[idx_lFi(i, k, n, 0, m)] *
                                           kernels::Kxi[order][n][l];
-              
-              gradQ[idx_gradQ(k, l, i, /*x*/0, m)] += 1.0 / dx[0] *
-                                                      lQi[idx_lQi(k,n,i,m)] *
-                                                      kernels::dudx[order][l][n];
+              if(useNCP) {
+                gradQ[idx_gradQ(k, l, i, /*x*/0, m)] += 1.0 / dx[0] *
+                                          lQi[idx_lQi(k,n,i,m)] *
+                                          kernels::dudx[order][l][n];
+              }
             }
           }
         }
@@ -152,33 +163,41 @@ void aderPicardLoopNonlinear(SolverType& solver,
         for (int l = 0; l < basisSize; l++) { // l == y
           for (int m = 0; m < numberOfVariables; m++) {
             for (int n = 0; n < basisSize; n++) { // n = matmul y
-              rhs[idx_rhs(i, l, k, m)] -= updateSize *
-                  lFi[idx_lFi(i, n, k, 1, m)] *
-                  kernels::Kxi[order][n][l];
-              gradQ[idx_gradQ(l, k, i, /*y*/1, m)] += 1.0 / dx[1] *
-                  lQi[idx_lQi(n, k, i, m)] *
-                  kernels::dudx[order][l][n]; /* l,n: transpose */
+              rhs[idx_rhs(i, l, k, m)] -= updateSize * lFi[idx_lFi(i, n, k, 1, m)] *
+                                          kernels::Kxi[order][n][l];
+              if(useNCP) {
+                gradQ[idx_gradQ(l, k, i, /*y*/1, m)] += 1.0 / dx[1] *
+                                          lQi[idx_lQi(n, k, i, m)] *
+                                          kernels::dudx[order][l][n]; /* l,n: transpose */
+              }
             }
           }
         }
       }
 
-      // source
-      for (int k = 0; k < basisSize; k++) { // k == y
-        for (int l = 0; l < basisSize; l++) { // l == x
-          const double weight = kernels::gaussLegendreWeights[order][i] *
-              kernels::gaussLegendreWeights[order][k] *
-              kernels::gaussLegendreWeights[order][l];
-          const double updateSize = weight * dt;
-          double* S = &lFi[idx_lFi(i, k, l, 2, 0)];
+      if(useSource || useNCP) {
+        // source
+        for (int k = 0; k < basisSize; k++) { // k == y
+          for (int l = 0; l < basisSize; l++) { // l == x
+            const double weight = kernels::gaussLegendreWeights[order][i] *
+                kernels::gaussLegendreWeights[order][k] *
+                kernels::gaussLegendreWeights[order][l];
+            const double updateSize = weight * dt;
+            double* S = &lFi[idx_lFi(i, k, l, 2, 0)];
 
-          // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
-          solver.ncp(&lQi[idx_lQi(k, l, i, 0)], &gradQ[idx_gradQ(k, l, i, 0, 0)], BGradQ);
+            if(useNCP) {
+              // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
+              solver.nonConservativeProduct(&lQi[idx_lQi(k, l, i, 0)], &gradQ[idx_gradQ(k, l, i, 0, 0)], BGradQ);
+            }
+            
 
-          for (int m = 0; m < numberOfVariables; m++) {
-            //if(m==0) printf("iter %d: BGradQ[%d,%d][%d] = %f\n", iter, k, l,m, BGradQ[m]);
-            S[m] -= BGradQ[m]; // <-- adding the BGradQ to the Source was missing!
-            rhs[idx_rhs(i, k, l, m)] += updateSize * S[m];
+            // TODO: numberOfVariables - numberOfParameters would do
+            for (int m = 0; m < numberOfVariables; m++) {
+              if(useNCP) {
+                S[m] -= BGradQ[m]; // <-- adding the BGradQ to the Source was missing!
+              }
+              rhs[idx_rhs(i, k, l, m)] += updateSize * S[m];
+            }
           }
         }
       }
@@ -245,9 +264,6 @@ void aderPicardLoopNonlinear(SolverType& solver,
      */
 
     // 5. Exit condition
-    // TODO(guera): Stability of sum? -> Kahan, reduction?
-    // TODO(guera): Is there something like kernels::tol?
-    // TODO(guera): Dangerous!
     constexpr double tol = 1e-7;
     double sq_res = 0.0;
     for (int i = 0; i < basisSize3 * (numberOfVariables+numberOfParameters); i++) {
@@ -276,6 +292,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
  *  We have to consider that we store parameters in lQi
  *  and lQhi, and have to adjust the index accordingly.
  */
+template <bool useSourceOrNCP>
 void aderPredictorNonlinear(const double* lQi, const double* lFi,
     int numberOfVariables, int numberOfParameters, int basisSize, double* lQhi,
     double* lFhi_x, double* lFhi_y, double* lShi) {
@@ -311,9 +328,12 @@ void aderPredictorNonlinear(const double* lQi, const double* lFi,
           lFhi_y[idx_lFhi(k, j, l)] += lFi[idx_lFi(m, j, k, 1, l)] *
               kernels::gaussLegendreWeights[order][m];
 
-          // Fortran: lShi(:,k,j) = lSh(:,k,j,:) * wGPN(:)
-          lShi[idx_lShi(j, k, l)] += lFi[idx_lFi(m, j, k, 2, l)] *
-              kernels::gaussLegendreWeights[order][m];
+          if(useSourceOrNCP) {
+            // Fortran: lShi(:,k,j) = lSh(:,k,j,:) * wGPN(:)
+            lShi[idx_lShi(j, k, l)] += lFi[idx_lFi(m, j, k, 2, l)] *
+                kernels::gaussLegendreWeights[order][m];
+          }
+          
         }
       }
       
@@ -561,7 +581,7 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
 
 }  // namespace
 
-template <typename SolverType>
+template <bool useSource, bool useNCP, typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
@@ -594,14 +614,37 @@ void spaceTimePredictorNonlinear(
   
   double *BGradQ  = tempStateSizedVector; // size: numberOfVariables
 
-  aderPicardLoopNonlinear<SolverType>(solver, luh, dt, dx,
-      lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
-
-  aderPredictorNonlinear(lQi, lFi, numberOfVariables, numberOfParameters, basisSize, lQhi,
-      &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
-      &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
-      &lFhi[2 * basisSize2 * numberOfVariables]   // lShi
-  );
+  if(useSource) {
+    if(useNCP) {
+      aderPicardLoopNonlinear<true, true, SolverType>(solver, luh, dt, dx,
+        lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
+    } else {
+      aderPicardLoopNonlinear<true, false, SolverType>(solver, luh, dt, dx,
+        lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
+    }
+  } else {
+    if(useNCP) {
+      aderPicardLoopNonlinear<false, true, SolverType>(solver, luh, dt, dx,
+        lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
+    } else {
+      aderPicardLoopNonlinear<false, false, SolverType>(solver, luh, dt, dx,
+        lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
+    }
+  }
+  
+  if(useSource || useNCP) {
+    aderPredictorNonlinear<true>(lQi, lFi, numberOfVariables, numberOfParameters, basisSize, lQhi,
+        &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
+        &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
+        &lFhi[2 * basisSize2 * numberOfVariables]   // lShi
+    );
+  } else {
+    aderPredictorNonlinear<false>(lQi, lFi, numberOfVariables, numberOfParameters, basisSize, lQhi,
+        &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
+        &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
+        &lFhi[2 * basisSize2 * numberOfVariables]   // lShi
+    );
+  }
 
   aderExtrapolatorNonlinear(
       lQhi,

@@ -36,7 +36,7 @@ void {{Project}}::{{AbstractSolver}}::constantsToString(std::ostream& os) {
 
 void {{Project}}::{{AbstractSolver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {{BeforeSpaceTimePredictor}}
-  if(useSource || useNCP) {
+  if(useAlgebraicSource() || useNonConservativeProduct()) {
 #if DIMENSIONS==2
     constexpr int lSi_offset  = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
     constexpr int lShi_offset = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
@@ -44,18 +44,18 @@ void {{Project}}::{{AbstractSolver}}::spaceTimePredictor(double* lQhbnd,double* 
     constexpr int lSi_offset  = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded(); //nDim*(nDof**(nDim+1))*nVarPad
     constexpr int lShi_offset = 3*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
 #endif
-    if(useSource) {
-      if(useNCP) { //useSource && useNCP
-        kernels::aderdg::optimised::picardLoopNonlinear<true, true,{{Solver}}::{{Solver}}::flux,{{Solver}}::{{Solver}}::source,{{Solver}}::{{Solver}}::ncp>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors); //lSi, gradQ, BGradQ
-      } else { //useSource && !useNCP
-        kernels::aderdg::optimised::picardLoopNonlinear<true, false,{{Solver}}::{{Solver}}::flux,{{Solver}}::{{Solver}}::source,{{Solver}}::{{Solver}}::ncp>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], nullptr, nullptr); //lSi, gradQ, BGradQ
+    if(useAlgebraicSource()) {
+      if(useNonConservativeProduct()) { //useAlgebraicSource && useNonConservativeProduct
+        kernels::aderdg::optimised::picardLoopNonlinear<true, true,{{Solver}}::{{Solver}}::flux,{{Solver}}::{{Solver}}::algebraicSource,{{Solver}}::{{Solver}}::nonConservativeProduct>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors); //lSi, gradQ, BGradQ
+      } else { //useAlgebraicSource && !useNonConservativeProduct
+        kernels::aderdg::optimised::picardLoopNonlinear<true, false,{{Solver}}::{{Solver}}::flux,{{Solver}}::{{Solver}}::algebraicSource,{{Solver}}::{{Solver}}::nonConservativeProduct>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], nullptr, nullptr); //lSi, gradQ, BGradQ
       }
-    } else { //!useSource && useNCP
-      kernels::aderdg::optimised::picardLoopNonlinear<false, true,{{Solver}}::{{Solver}}::flux,{{Solver}}::{{Solver}}::source,{{Solver}}::{{Solver}}::ncp>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors); //lSi, gradQ, BGradQ
-    } // useSource || useNCP
+    } else { //!useAlgebraicSource && useNonConservativeProduct
+      kernels::aderdg::optimised::picardLoopNonlinear<false, true,{{Solver}}::{{Solver}}::flux,{{Solver}}::{{Solver}}::algebraicSource,{{Solver}}::{{Solver}}::nonConservativeProduct>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempSpaceTimeFluxUnknowns[1], tempStateSizedVectors); //lSi, gradQ, BGradQ
+    } // useAlgebraicSource || useNonConservativeProduct
     kernels::aderdg::optimised::predictorNonlinear<true>(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], &tempSpaceTimeFluxUnknowns[0][lSi_offset], tempUnknowns, tempFluxUnknowns, &tempFluxUnknowns[lShi_offset]);
-  } else { //!useSource && !useNCP
-    kernels::aderdg::optimised::picardLoopNonlinear<false,false,{{Solver}}::{{Solver}}::flux,{{Solver}}::{{Solver}}::source,{{Solver}}::{{Solver}}::ncp>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], nullptr, nullptr, nullptr); //lSi, gradQ, BGradQ
+  } else { //!useAlgebraicSource && !useNonConservativeProduct
+    kernels::aderdg::optimised::picardLoopNonlinear<false,false,{{Solver}}::{{Solver}}::flux,{{Solver}}::{{Solver}}::algebraicSource,{{Solver}}::{{Solver}}::nonConservativeProduct>(luh, dt, dx, tempSpaceTimeUnknowns[0], tempSpaceTimeUnknowns[1], tempSpaceTimeUnknowns[2], tempSpaceTimeUnknowns[3],tempSpaceTimeFluxUnknowns[0], nullptr, nullptr, nullptr); //lSi, gradQ, BGradQ
     kernels::aderdg::optimised::predictorNonlinear<false>(tempSpaceTimeUnknowns[0], tempSpaceTimeFluxUnknowns[0], nullptr, tempUnknowns, tempFluxUnknowns, nullptr);
   }
   kernels::aderdg::optimised::extrapolatorNonlinear(tempUnknowns, tempFluxUnknowns, lQhbnd, lFhbnd);
@@ -75,7 +75,7 @@ void {{Project}}::{{AbstractSolver}}::solutionUpdate(double* luh,const double* c
 
 void {{Project}}::{{AbstractSolver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {{BeforeVolumeIntegral}}
-  if(useSource || useNCP) {
+  if(useAlgebraicSource() || useNonConservativeProduct()) {
 #if DIMENSIONS==2
     constexpr int lShi_offset = 2*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getBasisSize()*kernels::aderdg::optimised::getNumberOfVariablePadded();//nDim*(nDof**nDim)*nVarPad
 #else
@@ -102,10 +102,10 @@ void {{Project}}::{{AbstractSolver}}::riemannSolver(double* FL,double* FR,const 
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
 {{BeforeRiemannSolver}}
-  if(useMatrixb) {
-    kernels::aderdg::optimised::riemannSolver<true,{{Solver}}::{{Solver}}::eigenvalues,{{Solver}}::{{Solver}}::matrixb>( FL, FR, QL, QR, dt, normalNonZeroIndex );
+  if(useNonConservativeProduct()) {
+    kernels::aderdg::optimised::riemannSolver<true,{{Solver}}::{{Solver}}::eigenvalues,{{Solver}}::{{Solver}}::coefficientMatrix>( FL, FR, QL, QR, dt, normalNonZeroIndex );
   } else {
-    kernels::aderdg::optimised::riemannSolver<false,{{Solver}}::{{Solver}}::eigenvalues,{{Solver}}::{{Solver}}::matrixb>( FL, FR, QL, QR, dt, normalNonZeroIndex );
+    kernels::aderdg::optimised::riemannSolver<false,{{Solver}}::{{Solver}}::eigenvalues,{{Solver}}::{{Solver}}::coefficientMatrix>( FL, FR, QL, QR, dt, normalNonZeroIndex );
   }
 {{AfterRiemannSolver}}
 }
@@ -129,9 +129,21 @@ double {{Project}}::{{AbstractSolver}}::stableTimeStepSize(const double* const l
 
 
 
-void {{Project}}::{{AbstractSolver}}::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
+void {{Project}}::{{AbstractSolver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
 {{BeforeSolutionAdjustment}}
-  kernels::aderdg::optimised::solutionAdjustment<{{Solver}}::{{Solver}}::adjustedSolutionValues>( luh, center, dx, t, dt );
+  switch (useAdjustSolution(center, dx, t, dt)) {
+    case AdjustSolutionValue::No:
+      assertionMsg(false, "Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
+      break;
+    case AdjustSolutionValue::PointWisely:
+      kernels::aderdg::optimised::adjustSolution<{{Solver}}::{{Solver}}::adjustPointSolution>( luh, center, dx, t, dt );
+      break;
+    case AdjustSolutionValue::PatchWisely:
+      printf("\nAdjustSolutionValue::PatchWisely not implemented ! \n");
+      exit(1);
+     //TODO JMG not implemented
+      break;
+  }
 {{AfterSolutionAdjustment}}
 }
 

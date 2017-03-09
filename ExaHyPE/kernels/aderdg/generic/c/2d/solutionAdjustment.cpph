@@ -37,7 +37,7 @@ void kernels::aderdg::generic::c::solutionAdjustment(
           kernels::gaussLegendreWeights[order][i] *
           kernels::gaussLegendreWeights[order][j];
 
-      solver.adjustedSolutionValues(x, weight, t, dt, luh + idx_luh(i,j,0));
+      solver.adjustPointSolution(x, weight, t, dt, luh + idx_luh(i,j,0));
     }
   }
 }

@@ -199,6 +199,7 @@ class exahype::runners::Runner {
    * that will be populated by a solver.
    */
   int getCoarsestGridLevelOfAllSolvers() const;
+  int getFinestGridLevelOfAllSolvers() const;
  public:
   explicit Runner(const Parser& parser);
   virtual ~Runner();

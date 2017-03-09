@@ -176,9 +176,9 @@ double {{Project}}::{{Solver}}::stableTimeStepSize(const double* const luh,doubl
 
 
 
-void {{Project}}::{{Solver}}::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
+void {{Project}}::{{Solver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {
 {{BeforeSolutionAdjustment}}
-  kernels::aderdg::optimised::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt );
+  kernels::aderdg::optimised::adjustSolution<adjustSolution>( luh, center, dx, t, dt );
 {{AfterSolutionAdjustment}}
 }
 

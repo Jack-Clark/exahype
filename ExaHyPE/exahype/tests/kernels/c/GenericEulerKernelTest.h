@@ -57,15 +57,15 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
  public:
   static void flux(const double* const Q, double** F);
 
-  static void source(const double* Q, double* S);
+  static void algebraicSource(const double* Q, double* S);
 
   static void eigenvalues(const double* const Q,
                               const int normalNonZeroIndex, double* lambda);
 
-  static void ncp(const double* const Q, const double* const gradQ,
+  static void nonConservativeProduct(const double* const Q, const double* const gradQ,
                       double* BgradQ);
 
-  static void matrixb(const double* const Q, const int normalNonZero,
+  static void coefficientMatrix(const double* const Q, const int normalNonZero,
                           double* Bn);
 
   const double eps = 1.0e-10;  // for quick adaption of the test cases (say,

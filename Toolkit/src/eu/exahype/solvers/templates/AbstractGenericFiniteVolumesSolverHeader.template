@@ -12,6 +12,14 @@
 
 #include "exahype/Parser.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
+
+/**
+ * We include Peano's assertion collection here.
+ */
+#include "tarch/Assertions.h"
+
+
+
 {{ProfilerInclude}}
 
 namespace {{Project}}{
@@ -33,7 +41,7 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
     
     double stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
-    void solutionAdjustment(double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) override;
+    void adjustSolution(double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) override;
     void solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) override;
     void ghostLayerFilling(double* luh,const double* luhNeighbour,const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) override;
     void ghostLayerFillingAtBoundary(double* luh,const double* luhbnd,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) override;
@@ -41,6 +49,32 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     void boundaryConditions(double* stateOut,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) override;
 
     static void constantsToString(std::ostream& os);
+    
+    /**
+     * Please overwrite in user's solver. See superclass for documentation.
+     */
+    virtual bool useAdjustSolution(
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt) const {return false;}
+
+    virtual bool useSource()                 const { return false; }
+    virtual bool useNonConservativeProduct() const { return false; }
+
+    /**
+     * Please overwrite in user's solver. See superclass for documentation.
+     */
+    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) {
+      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+    };
+
+    /**
+     * Please overwrite in user's solver. See superclass for documentation.
+     */
+    virtual void source(const double* const Q,double* S) {
+      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+    };    
 };
 
 

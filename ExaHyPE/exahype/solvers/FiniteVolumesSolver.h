@@ -30,6 +30,12 @@ class FiniteVolumesSolver;
 
 
 
+/**
+ * Abstract base class for any 1st order finite volume solver. It does not make
+ * sense to use this operation for higher order finite volume solvers as those
+ * require additional data structures (and for ncp, e.g., also the
+ * non-conservative product).
+ */
 class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver {
 public:
   typedef exahype::DataHeap DataHeap;
@@ -319,40 +325,59 @@ public:
       const double dt, double& maxAdmissibleDt) = 0;
 
   /**
-   * This operation allows you to impose time-dependent solution values
-   * as well as to add contributions of source terms.
-   * Please be aware that this operation is called per time step if
-   * the corresponding predicate hasToUpdateSolution() yields true for the
-   * region and time interval.
+   * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
    *
-   * \param t  The new time stamp after the solution update.
-   * \param dt The time step size that was used to update the solution.
-   *           This time step size was computed based on the old solution.
-   *           If we impose initial conditions, i.e, t=0, this value
-   *           equals std::numeric_limits<double>::max().
+   * \note Use this function and ::useAdjustSolution to set initial conditions.
+   *
+   * \param[in]    x         the physical coordinate on the face.
+   * \param[in]    w         (deprecated) the quadrature weight corresponding to the quadrature point w.
+   * \param[in]    t         the start of the time interval.
+   * \param[in]    dt        the width of the time interval.
+   * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
+   *                         as C array (already allocated).
    */
-  virtual void solutionAdjustment(
+  virtual void adjustSolution(
       double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
       const double dt) = 0;
 
+
+
+
   /**
-   * This hook can be used to trigger solution adjustments within the
-   * region corresponding to \p cellCentre and \p dx
-   * and the time interval corresponding to t and dt.
+   * Check if we need to adjust the conserved variables and parameters (together: Q) in a cell
+   * within the time interval [t,t+dt].
    *
-   * \param t  The new time stamp after the solution update.
-   * \param dt The time step size that was used to update the solution.
-   *           This time step size was computed based on the old solution.
-   *           If we impose initial conditions, i.e, t=0, this value
-   *           equals std::numeric_limits<double>::max().
+   * \note Use this function and ::adjustSolution to set initial conditions.
+   *
+   * \param[in]    center    The center of the cell.
+   * \param[in]    dx        The extent of the cell.
+   * \param[in]    t         the start of the time interval.
+   * \param[in]    dt        the width of the time interval.
+   * \return true if the solution has to be adjusted.
    */
-  virtual bool hasToAdjustSolution(
+  virtual bool useAdjustSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
-      const double dt) = 0;
+      const double dt) const = 0;
+
+  virtual bool useNonConservativeProduct() const = 0;
+  virtual bool useSource()                 const = 0;
+
+  virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) = 0;
+  virtual void adjustSolution(const double* const x,const double w,const double t,const double dt, double* Q) = 0;
+
+
+  /**
+   * Compute the source.
+   *
+   * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
+   *                 as C array (already allocated).
+   * \param[inout] S the source point as C array (already allocated).
+   */
+  virtual void source(const double* const Q,double* S) = 0;
 
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement

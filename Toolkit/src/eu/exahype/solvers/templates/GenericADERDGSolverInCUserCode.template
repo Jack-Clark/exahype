@@ -2,18 +2,22 @@
 
 #include "{{Solver}}_Variables.h"
 
+
+tarch::logging::Log {{Project}}::{{Solver}}::_log( "{{Project}}::{{Solver}}" );
+
+
 void {{Project}}::{{Solver}}::init(std::vector<std::string>& cmdlineargs{{SolverInitSignatureExtension}}) {
   // @todo Please implement/augment if required
 }
 
-bool {{Project}}::{{Solver}}::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
+exahype::solvers::ADERDGSolver::AdjustSolutionValue {{Project}}::{{Solver}}::useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const {
   // @todo Please implement/augment if required
-  return tarch::la::equals(t,0.0);
+  return tarch::la::equals(t,0.0) ? exahype::solvers::ADERDGSolver::AdjustSolutionValue::PointWisely : exahype::solvers::ADERDGSolver::AdjustSolutionValue::No;
 }
 
-void {{Project}}::{{Solver}}::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
+void {{Project}}::{{Solver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  // Number of variables    = {{Elements}} + #parameters
   
   // @todo Please implement/augment if required
 {{AdjustedSolutionValues}}
@@ -21,7 +25,7 @@ void {{Project}}::{{Solver}}::adjustedSolutionValues(const double* const x,const
 
 void {{Project}}::{{Solver}}::eigenvalues(const double* const Q,const int d,double* lambda) {
   // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  // Number of variables    = {{Elements}} + #parameters
   
   // @todo Please implement/augment if required
 {{Eigenvalues}}
@@ -30,27 +34,18 @@ void {{Project}}::{{Solver}}::eigenvalues(const double* const Q,const int d,doub
 
 void {{Project}}::{{Solver}}::flux(const double* const Q,double** F) {
   // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  // Number of variables    = {{Elements}} + #parameters
   
   // @todo Please implement/augment if required
 {{Flux}}
 }
 
 
-void {{Project}}::{{Solver}}::source(const double* const Q,double* S) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
-  
-  // @todo Please implement/augment if required
-{{Source}}
-}
-
-
-void {{Project}}::{{Solver}}::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int d,
+void {{Project}}::{{Solver}}::boundaryValues(const double* const x,const double t,const double dt,const int faceIndex,const int normalNonZero,
   const double * const fluxIn,const double* const stateIn,
   double *fluxOut,double* stateOut) {
   // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
+  // Number of variables    = {{Elements}} + #parameters
 
   // @todo Please implement/augment if required
 {{BoundaryValues}}
@@ -60,39 +55,4 @@ void {{Project}}::{{Solver}}::boundaryValues(const double* const x,const double 
 exahype::solvers::Solver::RefinementControl {{Project}}::{{Solver}}::refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) {
   // @todo Please implement/augment if required
   return exahype::solvers::Solver::RefinementControl::Keep;
-}
-
-
-bool {{Project}}::{{Solver}}::physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) {
-  // @todo Please implement/augment if required
-  return true;
-}
-
-
-void {{Project}}::{{Solver}}::ncp(const double* const Q,const double* const gradQ,double* BgradQ) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
-
-  // @todo Please implement/augment if required
-{{NonConservativeProduct}}
-}
-
-
-void {{Project}}::{{Solver}}::matrixb(const double* const Q,const int d,double* Bn) {
-  // Dimensions             = {{Dimensions}}
-  // Number of variables    = {{Elements}} (#unknowns + #parameters)
-  
-  // @todo Please implement/augment if required
-{{MatrixB}}
-}
-
-//TODO KD
-// tell the user what it is
-bool {{Project}}::{{Solver}}::hasToApplyPointSource() const { 
-  return false;
-}
-
-//TODO KD
-void {{Project}}::{{Solver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-  //TODO KD // @todo Please implement/augment if required and set bool function
 }

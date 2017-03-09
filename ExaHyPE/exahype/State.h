@@ -67,15 +67,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   void readFromCheckpoint(
       const peano::grid::Checkpoint<Vertex, Cell>& checkpoint);
 
-  #ifdef Parallel
-  /**
-   * We need/use this field in the parallel mode, but we use it on the global
-   * master only in operation updateRegularInitialGridRefinementStrategy(). We
-   * memorise the idle ranks per lookup. If it has changed, we assume that some
-   * load balancing is going on.
-   */
-  int _idleRanksAtLastLookup;
-  #endif
  public:
   static bool FuseADERDGPhases;
 
@@ -106,49 +97,6 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    */
   void merge(const State& anotherState);
   ///@}
-
-  /**
-   * Becomes nop in the serial case.
-   *
-   * In the parallel case, we have three different grid refinement strategies
-   * implemented in mappings::Refinement.
-   *
-   * - Default: Just refine the grid in vertexLastTime(). The touch last
-   *   convention (we always refine in touchVertexLastTime; see Peano
-   *   cookbook) ensure that the grid is built up iteration by iteration.
-   * - Veto: We do not refine though the refinement criterion would ask us
-   *   to do so. We set the veto four out of five traversals and thus delay
-   *   the setup and allow the load balancing to keep pace.
-   * - Aggressive: Once we see on the global master that no rank is idle
-   *   anymore, we switch into aggressive and make all ranks build up the
-   *   whole grid in one sweep.
-   */
-  void updateRegularInitialGridRefinementStrategy();
-
-  /**
-   * In the serial version of the code, this predicate always holds. In the
-   * parallel case, it holds if and only if all ranks are already busy. As the
-   * routine only may be used by the setup of the regular initial grid, it
-   * thus is reasonable to invoke enforceRefine in the parallel case if the
-   * result it true.
-   *
-   * If this operation returns refineInitialGridInCreationalEvents(), also
-   * refineInitialGridInTouchVertexLastTime() should hold in the parallel
-   * mode. Without MPI, the two always are different.
-   *
-   * Please consult the Peano cookbook (Sect. 6.3.2) for details/rationale.
-   */
-  bool refineInitialGridInCreationalEvents() const;
-
-  /**
-   *
-   * Please consult the Peano cookbook (Sect. 6.3.2) for details/rationale.
-   *
-   * Means that the computational regular initial grid is to be refined in
-   * touchVertexLastTime(), but it basically also means that you may refined
-   * the grid though perhaps not in the creational routines.
-   */
-  bool refineInitialGridInTouchVertexLastTime() const;
 
   /**
    * Return the merge mode that is currently active.
@@ -347,6 +295,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     return _stateData.getTimeStepSizeWeightForPredictionRerun();
   }
 
+  // @todo Please remove
   #ifdef Parallel
   bool firstGridSetupIteration() const {
     return _stateData.getFirstGridSetupIteration();
@@ -355,6 +304,28 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     return _stateData.setFirstGridSetupIteration(state);
   }
   #endif
+
+  /**
+   * Has to be called after the iteration!
+   *
+   * Please consult Peano guidebook Section 6.3.2 for details.
+   */
+  void endedGridConstructionIteration(int finestGridLevelPossible);
+
+  /**
+   * Please consult Peano guidebook Section 6.3.2 for details.
+   */
+  enum RefinementAnswer {
+    DontRefineYet,
+    Refine,
+    EnforceRefinement
+  };
+  RefinementAnswer mayRefine(bool isCreationalEvent, int level) const;
+
+  /**
+   * Please consult Peano guidebook Section 6.3.2 for details.
+   */
+  bool continueToConstructGrid() const;
 };
 
 #endif

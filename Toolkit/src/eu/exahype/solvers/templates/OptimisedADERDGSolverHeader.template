@@ -24,22 +24,25 @@ class {{Project}}::{{Solver}}: public {{Project}}::{{AbstractSolver}} {
   public:  
     {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
 
+    bool useAlgebraicSource()        const override;
+    bool useNonConservativeProduct() const override;
+    bool usePointSource()            const override;
+    AdjustSolutionValue useAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& centre,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) const override;
+    
     void init(std::vector<std::string>& cmdlineargs{{SolverInitSignatureExtension}});
     static void flux(const double* const Q, double** F);
     static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);
-    bool hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) override;
-    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);
-    static void source(const double* const Q, double* S);
+    static void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q);
+    static void algebraicSource(const double* const Q, double* S);
     static void boundaryValues(const double* const x,const double t, const double dt, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut);
-    static void ncp(const double* const Q, const double* const gradQ, double* BgradQ);
-    static void matrixb(const double* const Q, const int normalNonZero, double* Bn);
+    static void nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ);
+    static void coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn);
     exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,const int level) override;
 
     //TODO JMG
     //Not implemented
-    bool hasToApplyPointSource() const override;
     void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0); //TODO KD
-    bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) override;
+    bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const override;
 };
 
 #endif // __{{Solver}}_CLASS_HEADER__

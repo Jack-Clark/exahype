@@ -54,7 +54,7 @@ void GenericEulerKernelTest::flux(const double *const Q, double **F) {
   h[4] = irho * Q[3] * (Q[4] + p);
 }
 
-void GenericEulerKernelTest::source(const double *const Q, double *S) {
+void GenericEulerKernelTest::algebraicSource(const double *const Q, double *S) {
   S[0] = 0.0;
   S[1] = 0.0;
   S[2] = 0.0;
@@ -81,7 +81,7 @@ void GenericEulerKernelTest::eigenvalues(const double *const Q,
   lambda[4] = u_n + c;
 }
 
-void GenericEulerKernelTest::ncp(const double *const Q,
+void GenericEulerKernelTest::nonConservativeProduct(const double *const Q,
     const double *const gradQ,
     double *BgradQ) {
   // Sven: I have no clue what these data shall do, but
@@ -105,7 +105,7 @@ void GenericEulerKernelTest::ncp(const double *const Q,
   }
 }  // ncp
 
-void GenericEulerKernelTest::matrixb(const double *const Q,
+void GenericEulerKernelTest::coefficientMatrix(const double *const Q,
     const int normalNonZero, double *Bn) {
   std::memset(Bn, 0, 5 * 5 * sizeof(double));
 
@@ -228,7 +228,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
 
   std::fill(lShi, lShi + 320, 0.0);
 
-  kernels::aderdg::generic::c::volumeIntegralNonlinear(
+  kernels::aderdg::generic::c::volumeIntegralNonlinear<true>(
       lduh, lFhi, dx[0],
       5,   // getNumberOfVariables(),
       0,   // getNumberOfParameters()
@@ -492,7 +492,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     }
   }
 
-  kernels::aderdg::generic::c::riemannSolverNonlinear<GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::riemannSolverNonlinear<true, GenericEulerKernelTest>(
       *this,
       FL, FR, QL, QR,
       tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,
@@ -722,7 +722,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   double *lFhbnd = new double[6 * nData*basisSize2];  // nData * nDOFy * nDOF_z * 6
 
   _setNcpAndMatrixBToZero = true;
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<true, true, GenericEulerKernelTest>(
       *this,
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,

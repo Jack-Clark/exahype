@@ -53,7 +53,7 @@ void exahype::solvers::ADERDGAPosterioriSubcellLimiter::coupleFirstTime(
     // Set the initial conditions of the finite volumes solver.
     finiteVolumesSolver->synchroniseTimeStepping(cellDescriptionsIndex,finiteVolumesElement);
 
-    if (finiteVolumesSolver->hasToAdjustSolution(
+    if (finiteVolumesSolver->useAdjustSolution(
         finiteVolumesCellDescription.getOffset()+0.5*finiteVolumesCellDescription.getSize(),
         finiteVolumesCellDescription.getSize(),finiteVolumesCellDescription.getTimeStamp())) {
       finiteVolumesSolver->setInitialConditions(

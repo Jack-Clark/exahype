@@ -688,26 +688,6 @@ public:
   // Disallow copy and assignment
   ADERDGSolver(const ADERDGSolver& other) = delete;
   ADERDGSolver& operator=(const ADERDGSolver& other) = delete;
-  /**
-   * Returns the maximum extent a mesh cell is allowed to have
-   * in all coordinate directions.
-   * This maximum mesh size is used both as a
-   * constraint on the AMR as well as to set up the initial
-   * grid. If you return the extent of the computational domain in
-   * each coordinate direction or larger values,
-   * you indicate that this solver is not active in the domain.
-   */
-  double getMaximumMeshSize() const;
-
-  /**
-   * Returns the number of state variables.
-   */
-  int getNumberOfVariables() const;
-
-  /**
-   * Returns the number of parameters, e.g.,material constants etc.
-   */
-  int getNumberOfParameters() const;
 
   /**
    * This operation returns the number of space time
@@ -751,12 +731,6 @@ public:
    */
   int getUnknownsPerFace() const;
 
-  /**
-   * If you use a higher order method, then this operation returns the
-   * polynomial degree plus one. If you use a Finite Volume method, it
-   * returns the number of cells within a patch per coordinate axis.
-   */
-  int getNodesPerCoordinateAxis() const;
 
   /**
    * This operation returns the size of data required
@@ -813,9 +787,7 @@ public:
   virtual bool usePaddedData_nVar() const {return false;}
   virtual bool usePaddedData_nDoF() const {return false;}
   
-  //TODO KD
-  virtual bool hasToApplyPointSource() const {return false;}
-  
+
   /**
    * @brief Adds the solution update to the solution.
    *
@@ -958,11 +930,17 @@ public:
    *           If we impose initial conditions, i.e, t=0, this value
    *           equals std::numeric_limits<double>::max().
    */
-  virtual void solutionAdjustment(
+  virtual void adjustSolution(
       double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
       const double dt) = 0;
+
+  enum class AdjustSolutionValue {
+    No,
+    PointWisely,
+    PatchWisely
+  };
 
   /**
    * This hook can be used to trigger solution adjustments within the
@@ -974,13 +952,73 @@ public:
    *           This time step size was computed based on the old solution.
    *           If we impose initial conditions, i.e, t=0, this value
    *           equals std::numeric_limits<double>::max().
+   *
+   * \note Use this function and ::adjustSolution to set initial conditions.
+   *
+   * \param[in]    centre    The centre of the cell.
+   * \param[in]    dx        The extent of the cell.
+   * \param[in]    t         the start of the time interval.
+   * \param[in]    dt        the width of the time interval.
+   * \return true if the solution has to be adjusted.
    */
-  virtual bool hasToAdjustSolution(
+  virtual AdjustSolutionValue useAdjustSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
-      const double dt) = 0;
+      const double dt) const = 0;
+      
+#ifndef OPT_KERNELS //JMG remove virtual with optimized kernel (user function should be implemented and static)
+  virtual bool useAlgebraicSource()        const = 0;
+  virtual bool usePointSource()            const = 0;
+  virtual bool useNonConservativeProduct() const = 0;
 
+  /**
+   * Compute the Algebraic Sourceterms.
+   *
+   * \param[in]    Q the conserved variables (and parameters) associated with a quadrature point
+   *                 as C array (already allocated).
+   * \param[inout] S the source point as C array (already allocated).
+   */
+  virtual void algebraicSource(const double* const Q,double* S) = 0;
+
+  /**
+    * Non Conservative Product
+    *
+    * !!! Warning: BgradQ is a vector of size NumberOfVariables if you
+    * use the ADER-DG kernels for nonlinear PDEs. If you use
+    * the kernels for linear PDEs, it is a tensor with dimensions
+    * Dim x NumberOfVariables.
+    *
+    */
+  virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) = 0;
+
+
+  virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) = 0;
+
+
+  virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) = 0;
+
+
+  /**
+   * Adjust the conserved variables and parameters (together: Q) at a given time t at the (quadrature) point x.
+   *
+   * \note Use this function and ::useAdjustSolution to set initial conditions.
+   *
+   * \param[in]    x         the physical coordinate on the face.
+   * \param[in]    w         (deprecated) the quadrature weight corresponding to the quadrature point w.
+   * \param[in]    t         the start of the time interval.
+   * \param[in]    dt        the width of the time interval.
+   * \param[inout] Q         the conserved variables (and parameters) associated with a quadrature point
+   *                         as C array (already allocated).
+   */
+  virtual void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) = 0;
+  virtual void adjustPatchSolution(
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt,
+      double* luh) = 0;
+#endif
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement
    */
@@ -1076,7 +1114,7 @@ public:
    *
    * This operation is required for limiting.
    */
-  virtual bool physicalAdmissibilityDetection(const double* const QMin,const double* const QMax) { return true; }
+  virtual bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const =0;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time

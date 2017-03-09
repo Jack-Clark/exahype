@@ -469,7 +469,7 @@ bool exahype::solvers::LimitingADERDGSolver::evaluatePhysicalAdmissibilityCriter
   double* solutionMax = DataHeap::getInstance().getData(
       solverPatch.getSolutionMax()).data();
 
-  return _solver->physicalAdmissibilityDetection(solutionMin,solutionMax);
+  return _solver->isPhysicallyAdmissible(solutionMin,solutionMax);
 }
 
 void exahype::solvers::LimitingADERDGSolver::determineMinAndMax(

@@ -115,16 +115,16 @@ public class GenericADERDG implements Solver {
     // user functions
     int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
     
-    String adjustedSolutionValues = "  // State variables:\n";
+    String adjustSolution = "  // State variables:\n";
     for (int i = 0; i < _numberOfVariables; i++) {
-      adjustedSolutionValues += "  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables-1) adjustedSolutionValues += "\n";
+      adjustSolution += "  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;";
+      if (i<_numberOfVariables-1) adjustSolution += "\n";
     }
     if (_numberOfParameters>0) {
-      adjustedSolutionValues += "  // Material parameters:\n";
+      adjustSolution += "  // Material parameters:\n";
       for (int i = 0; i < _numberOfParameters; i++) {
-        adjustedSolutionValues += "  Q[" + String.format("%" + digits + "d", _numberOfVariables+i) + "] = 0.0;";
-        if (i<_numberOfParameters-1) adjustedSolutionValues += "\n";
+        adjustSolution += "  Q[" + String.format("%" + digits + "d", _numberOfVariables+i) + "] = 0.0;";
+        if (i<_numberOfParameters-1) adjustSolution += "\n";
       }
     }
 
@@ -174,7 +174,7 @@ public class GenericADERDG implements Solver {
       if (i<_numberOfVariables*_numberOfVariables-1) matrixb += "\n";
     }
     
-    content = content.replaceAll("\\{\\{AdjustedSolutionValues\\}\\}",adjustedSolutionValues);
+    content = content.replaceAll("\\{\\{AdjustedSolutionValues\\}\\}",adjustSolution);
     content = content.replaceAll("\\{\\{Eigenvalues\\}\\}",eigenvalues);
     content = content.replaceAll("\\{\\{Flux\\}\\}",flux);
     content = content.replaceAll("\\{\\{Source\\}\\}",source);
@@ -301,6 +301,47 @@ public class GenericADERDG implements Solver {
     content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
     content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
     content = content.replaceAll("\\{\\{SolverConstructorArgumentExtension\\}\\}", solverConstructorArgumentExtension);
+    
+    //TODO JMG move this to template when using template engine
+    String linearStr = _isLinear ? "Linear" : "Nonlinear";
+    if(_isFortran) {
+      content = content.replaceAll("\\{\\{volumeIntegral\\}\\}","kernels::aderdg::generic::fortran::volumeIntegral"+linearStr+"(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());");
+      content = content.replaceAll("\\{\\{riemannSolver\\}\\}","kernels::aderdg::generic::fortran::riemannSolver"+linearStr+"<"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);");
+      content = content.replaceAll("\\{\\{spaceTimePredictor\\}\\}","kernels::aderdg::generic::fortran::spaceTimePredictor"+linearStr+"<"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);");
+    } else {
+      if(_isLinear) {
+        content = content.replaceAll("\\{\\{volumeIntegral\\}\\}","kernels::aderdg::generic::c::volumeIntegralLinear(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());");
+        content = content.replaceAll("\\{\\{riemannSolver\\}\\}","kernels::aderdg::generic::c::riemannSolverLinear<"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);");
+        content = content.replaceAll("\\{\\{spaceTimePredictor\\}\\}","kernels::aderdg::generic::c::spaceTimePredictorLinear<"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);");
+      } else {
+        content = content.replaceAll("\\{\\{volumeIntegral\\}\\}",
+            "if(useAlgebraicSource() || useNonConservativeProduct()) {\n"
+        + "    kernels::aderdg::generic::c::volumeIntegralNonlinear<true>(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());\n"
+        + "  } else {\n"
+        + "    kernels::aderdg::generic::c::volumeIntegralNonlinear<false>(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());\n" 
+        + "  }");
+        content = content.replaceAll("\\{\\{riemannSolver\\}\\}",
+            "if(useNonConservativeProduct()) {\n"
+        + "    kernels::aderdg::generic::c::riemannSolverNonlinear<true,"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);\n"
+        + "  } else {\n"
+        + "    kernels::aderdg::generic::c::riemannSolverNonlinear<false,"+solverName+">(*static_cast<"+solverName+"*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);\n" 
+        + "  }");
+        content = content.replaceAll("\\{\\{spaceTimePredictor\\}\\}",
+            "if(useAlgebraicSource()) {\n"
+        + "    if(useNonConservativeProduct()) {\n"
+        + "      kernels::aderdg::generic::c::spaceTimePredictorNonlinear<true,true,"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);\n"
+        + "    } else {\n"
+        + "      kernels::aderdg::generic::c::spaceTimePredictorNonlinear<true,false,"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);\n"
+        + "    }\n"
+        + "  } else {\n"
+        + "    if(useNonConservativeProduct()) {\n"
+        + "      kernels::aderdg::generic::c::spaceTimePredictorNonlinear<false,true,"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);\n"
+        + "    } else {\n"
+        + "      kernels::aderdg::generic::c::spaceTimePredictorNonlinear<false,false,"+solverName+">(*static_cast<"+solverName+"*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);\n"
+        + "    }\n"
+        + "  }");
+      }
+    }
     
     if (_isLinear) {
       content = content.replaceAll("\\{\\{NonlinearOrLinear\\}\\}","Linear");

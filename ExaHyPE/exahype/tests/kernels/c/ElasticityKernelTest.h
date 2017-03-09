@@ -54,16 +54,16 @@ class ElasticityKernelTest : public tarch::tests::TestCase {
 
   void flux(const double* const Q, double** F);
 
-  void source(const double* Q, double* S);
+  void algebraicSource(const double* Q, double* S);
 
   void eigenvalues(const double* const Q,const int normalNonZeroIndex, double* lambda);
 
   /**
    * BgradQ is a matrix for the linear kernels.
    */
-  void ncp(const double* const Q, const double* const gradQ, double* BgradQ);
+  void nonConservativeProduct(const double* const Q, const double* const gradQ, double* BgradQ);
 
-  void matrixb(const double* const Q, const int normalNonZero, double* Bn);
+  void coefficientMatrix(const double* const Q, const int normalNonZero, double* Bn);
 
   const double eps = 1.0e-9;  // for quick adaption of the test cases (say,
                               // switch to single precision)

@@ -50,7 +50,7 @@ void GenericEulerKernelTest::flux(const double *Q, double **F) {
   g[4] = irho * Q[2] * (Q[4] + p);
 }
 
-void GenericEulerKernelTest::source(const double *Q, double *S) {
+void GenericEulerKernelTest::algebraicSource(const double *Q, double *S) {
   S[0] = 0.0;
   S[1] = 0.0;
   S[2] = 0.0;
@@ -76,7 +76,7 @@ void GenericEulerKernelTest::eigenvalues(const double *const Q,
   lambda[4] = u_n + c;
 }
 
-void GenericEulerKernelTest::ncp(const double *const Q,
+void GenericEulerKernelTest::nonConservativeProduct(const double *const Q,
                                      const double *const gradQ,
                                      double *BgradQ) {
   // Arbitrary BS
@@ -102,7 +102,7 @@ void GenericEulerKernelTest::ncp(const double *const Q,
   }
 }  // ncp
 
-void GenericEulerKernelTest::matrixb(const double *const Q,
+void GenericEulerKernelTest::coefficientMatrix(const double *const Q,
                                          const int normalNonZero, double *Bn) {
   std::memset(Bn, 0, 5 * 5 * sizeof(double));
 
@@ -574,7 +574,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     std::memset(FL, 0, nVar*basisSize * sizeof(double));
     std::memset(FR, 0, nVar*basisSize * sizeof(double));
 
-    kernels::aderdg::generic::c::riemannSolverNonlinear<GenericEulerKernelTest>(
+    kernels::aderdg::generic::c::riemannSolverNonlinear<true,GenericEulerKernelTest>(
         *this,
         FL, FR, QL, QR,
         tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
@@ -637,7 +637,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     double **tempStateSizedSquareMatrices = new double*[1];
     tempStateSizedSquareMatrices[0]       = new double[1*nVar*nVar];
 
-    kernels::aderdg::generic::c::riemannSolverNonlinear<GenericEulerKernelTest>(
+    kernels::aderdg::generic::c::riemannSolverNonlinear<true,GenericEulerKernelTest>(
         *this,
         FL, FR, QL, QR,
         tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
@@ -709,7 +709,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     double **tempStateSizedSquareMatrices = new double*[1];
     tempStateSizedSquareMatrices[0]       = new double[1*nVar*nVar];
 
-    kernels::aderdg::generic::c::riemannSolverNonlinear<GenericEulerKernelTest>(
+    kernels::aderdg::generic::c::riemannSolverNonlinear<true, GenericEulerKernelTest>(
         *this,
         FL, FR, QL, QR,
         tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,
@@ -822,7 +822,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
                     3.70370370370370349811e-02};  // mesh spacing
     // ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi[240]
 
-    kernels::aderdg::generic::c::volumeIntegralNonlinear(
+    kernels::aderdg::generic::c::volumeIntegralNonlinear<true>(
         lduh,
         ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi,
         dx[0],
@@ -863,7 +863,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
     // output:
     double *lduh = new double[80];  // intentionally left uninitialised
 
-    kernels::aderdg::generic::c::volumeIntegralNonlinear(lduh, lFhi, dx[0], 5,
+    kernels::aderdg::generic::c::volumeIntegralNonlinear<true>(lduh, lFhi, dx[0], 5,
                                                          0, 4);
 
     for (int i = 0; i < 80; i++) {
@@ -1014,7 +1014,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   double *lFhbnd = new double[4 * nData*basisSize];  // nData * nDOFy * 4
 
   _setNcpAndMatrixBToZero = true;
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<true,true,GenericEulerKernelTest>(
       *this,
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,

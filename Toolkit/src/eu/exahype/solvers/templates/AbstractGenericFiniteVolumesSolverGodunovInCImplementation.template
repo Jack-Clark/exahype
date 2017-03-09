@@ -40,7 +40,7 @@ void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luhNew,const double
   maxAdmissibleDt = kernels::finitevolumes::godunov::c::solutionUpdate<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhNew,luh,tempStateSizedArrays,tempUnknowns,dx,dt);
 }
 
-void {{Project}}::Abstract{{Solver}}::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
+void {{Project}}::Abstract{{Solver}}::adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) {
   kernels::finitevolumes::godunov::c::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
 }
 

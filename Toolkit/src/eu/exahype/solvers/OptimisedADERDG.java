@@ -130,12 +130,7 @@ public class OptimisedADERDG implements Solver {
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
 	  String solverConstructorArgumentExtension  = "";
-    String solverInitCallExtension             = "";
-    if (_enableProfiler) {
-      profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
-    }
-    
+    String solverInitCallExtension             = "";    
     
 	  if (_enableProfiler) {
 		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
@@ -242,16 +237,16 @@ public class OptimisedADERDG implements Solver {
     // user functions
     int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
     
-    String adjustedSolutionValues = "  // State variables:\n";
+    String adjustSolution = "  // State variables:\n";
     for (int i = 0; i < _numberOfVariables; i++) {
-      adjustedSolutionValues += "  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;";
-      if (i<_numberOfVariables-1) adjustedSolutionValues += "\n";
+      adjustSolution += "  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;";
+      if (i<_numberOfVariables-1) adjustSolution += "\n";
     }
     if (_numberOfParameters>0) {
-      adjustedSolutionValues += "  // Material parameters:\n";
+      adjustSolution += "  // Material parameters:\n";
       for (int i = 0; i < _numberOfParameters; i++) {
-        adjustedSolutionValues += "  Q[" + String.format("%" + digits + "d", _numberOfVariables+i) + "] = 0.0;";
-        if (i<_numberOfParameters-1) adjustedSolutionValues += "\n";
+        adjustSolution += "  Q[" + String.format("%" + digits + "d", _numberOfVariables+i) + "] = 0.0;";
+        if (i<_numberOfParameters-1) adjustSolution += "\n";
       }
     }
 
@@ -301,7 +296,7 @@ public class OptimisedADERDG implements Solver {
       if (i<_numberOfVariables*_numberOfVariables-1) matrixb += "\n";
     }
     
-    content = content.replaceAll("\\{\\{AdjustedSolutionValues\\}\\}",adjustedSolutionValues);
+    content = content.replaceAll("\\{\\{AdjustedSolutionValues\\}\\}",adjustSolution);
     content = content.replaceAll("\\{\\{Eigenvalues\\}\\}",eigenvalues);
     content = content.replaceAll("\\{\\{Flux\\}\\}",flux);
     content = content.replaceAll("\\{\\{Source\\}\\}",source);

@@ -204,9 +204,6 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::finishPlotting() {
 
     std::ostringstream snapshotFileName;
     snapshotFileName << _filename
-    #ifdef Parallel
-                     << "-rank-" << tarch::parallel::Node::getInstance().getRank()
-    #endif
                      << "-" << _fileCounter << ".vtk";
 
     const bool hasBeenSuccessful =

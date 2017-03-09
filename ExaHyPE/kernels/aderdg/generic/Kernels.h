@@ -79,7 +79,7 @@ namespace generic {
 namespace c {
 
 
-template <typename SolverType>
+template <bool useSource, bool useNCP, typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
@@ -101,6 +101,7 @@ void volumeIntegralLinear(double* lduh, const double* const lFhi,
                           const int numberOfVariables,
                           const int numberOfParameters, const int basisSize);
 
+template <bool useSourceOrNCP>
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
                              const int numberOfVariables,
@@ -134,7 +135,7 @@ void solutionAdjustment(SolverType& solver, double* luh,
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments
 // template argument functions and non-template argument function.
-template <typename SolverType>
+template <bool useCoefficientMatrix, typename SolverType>
 void riemannSolverNonlinear(
     SolverType& solver,
     double* FL, double* FR, const double* const QL,
@@ -239,6 +240,7 @@ void pointSource(
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/2d/stableTimeStepSize.cpph"
 #include "kernels/aderdg/generic/c/2d/pointSource.cpph"
+#include "kernels/aderdg/generic/c/2d/volumeIntegralNonlinear.cpph"
 #elif DIMENSIONS == 3
 #include "kernels/aderdg/generic/c/3d/boundaryConditions.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
@@ -249,6 +251,7 @@ void pointSource(
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
 #include "kernels/aderdg/generic/c/3d/pointSource.cpph"
+#include "kernels/aderdg/generic/c/3d/volumeIntegralNonlinear.cpph"
 #endif
 
 // Todo: Recasting the code from function templates to class templates

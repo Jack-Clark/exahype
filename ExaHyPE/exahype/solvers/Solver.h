@@ -139,28 +139,6 @@ namespace exahype {
      */
     void deleteTemporaryVariables(SolutionUpdateTemporaryVariables& temporaryVariables);
 
-    /**
-     * Initialises the temporary variables
-     * used in the TimeStepSizeComputation mapping.
-     *
-     * \note We parallelise over the domain
-     * (mapping is copied for each thread) and
-     * over the solvers registered on a cell.
-     *
-     * \note We need to initialise the temporary variables
-     * per mapping and not in the solvers since the
-     * solvers in exahype::solvers::RegisteredSolvers
-     * are not copied for every thread.
-     */
-    void initialiseTemporaryVariables(TimeStepSizeComputationTemporaryVariables& temporaryVariables);
-
-    /**
-     * Deletes the temporary variables
-     * used in the TimeStepSizeComputation mapping.
-     */
-    void deleteTemporaryVariables(TimeStepSizeComputationTemporaryVariables& temporaryVariables);
-
-
     class SolverFlags;
 
     /**
@@ -269,10 +247,6 @@ public:
   double*** _tempUnknowns = nullptr;
 };
 
-class exahype::solvers::TimeStepSizeComputationTemporaryVariables {
-public:
-  double** _tempEigenValues = nullptr;
-};
 
 class exahype::solvers::SolverFlags {
 public:

@@ -49,7 +49,7 @@ void kernels::aderdg::generic::c::solutionAdjustment(
         const int dofStartIndex = nodeIndex * (numberOfVariables+numberOfParameters);
         assertion(dofStartIndex==idx_luh(k,j,i,0)); 
         // !
-        solver.adjustedSolutionValues(x, weight, t, dt, &luh[idx_luh(i,j,k,0)]);
+        solver.adjustPointSolution(x, weight, t, dt, &luh[idx_luh(i,j,k,0)]);
       }
     }
   }

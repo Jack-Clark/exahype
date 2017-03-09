@@ -27,7 +27,7 @@ peano::MappingSpecification
 exahype::mappings::PostProcessing::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial,true);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 /**

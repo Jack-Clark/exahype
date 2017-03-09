@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   24/02/2017 20:23
+    * @date   04/03/2017 10:45
     */
    class exahype::records::State { 
       
@@ -50,6 +50,7 @@ namespace exahype {
          };
          
          struct PersistentRecords {
+            int _maxRefinementLevelAllowed;
             MergeMode _mergeMode;
             SendMode _sendMode;
             bool _reinitTimeStepData;
@@ -70,7 +71,27 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            
+            
+            inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _maxRefinementLevelAllowed;
+            }
+            
+            
+            
+            inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+            }
+            
             
             
             inline MergeMode getMergeMode() const 
@@ -332,12 +353,32 @@ namespace exahype {
          /**
           * Generated
           */
-         State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+         State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
          
          /**
           * Generated
           */
          virtual ~State();
+         
+         
+         inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._maxRefinementLevelAllowed;
+         }
+         
+         
+         
+         inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+         }
+         
          
          
          inline MergeMode getMergeMode() const 
@@ -676,7 +717,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   24/02/2017 20:23
+       * @date   04/03/2017 10:45
        */
       class exahype::records::StatePacked { 
          
@@ -687,6 +728,7 @@ namespace exahype {
             typedef exahype::records::State::SendMode SendMode;
             
             struct PersistentRecords {
+               int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
                bool _reinitTimeStepData;
@@ -713,7 +755,27 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               
+               
+               inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+               }
+               
                
                
                inline MergeMode getMergeMode() const 
@@ -993,12 +1055,32 @@ namespace exahype {
             /**
              * Generated
              */
-            StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             /**
              * Generated
              */
             virtual ~StatePacked();
+            
+            
+            inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._maxRefinementLevelAllowed;
+            }
+            
+            
+            
+            inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+            }
+            
             
             
             inline MergeMode getMergeMode() const 
@@ -1352,17 +1434,13 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   24/02/2017 20:23
+          * @date   04/03/2017 10:45
           */
          class exahype::records::State { 
             
             public:
                
                typedef exahype::records::StatePacked Packed;
-               
-               enum GridConstructionState {
-                  Default = 0, Veto = 1, Aggressive = 2
-               };
                
                enum MergeMode {
                   MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
@@ -1373,7 +1451,7 @@ namespace exahype {
                };
                
                struct PersistentRecords {
-                  GridConstructionState _gridConstructionState;
+                  int _maxRefinementLevelAllowed;
                   bool _firstGridSetupIteration;
                   MergeMode _mergeMode;
                   SendMode _sendMode;
@@ -1419,25 +1497,25 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  PersistentRecords(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   
-                  inline GridConstructionState getGridConstructionState() const 
+                  inline int getMaxRefinementLevelAllowed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _gridConstructionState;
+                     return _maxRefinementLevelAllowed;
                   }
                   
                   
                   
-                  inline void setGridConstructionState(const GridConstructionState& gridConstructionState) 
+                  inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _gridConstructionState = gridConstructionState;
+                     _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
                   }
                   
                   
@@ -2117,7 +2195,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               State(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -2125,22 +2203,22 @@ namespace exahype {
                virtual ~State();
                
                
-               inline GridConstructionState getGridConstructionState() const 
+               inline int getMaxRefinementLevelAllowed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._gridConstructionState;
+                  return _persistentRecords._maxRefinementLevelAllowed;
                }
                
                
                
-               inline void setGridConstructionState(const GridConstructionState& gridConstructionState) 
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._gridConstructionState = gridConstructionState;
+                  _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
                }
                
                
@@ -2855,16 +2933,6 @@ namespace exahype {
                /**
                 * Generated
                 */
-               static std::string toString(const GridConstructionState& param);
-               
-               /**
-                * Generated
-                */
-               static std::string getGridConstructionStateMapping();
-               
-               /**
-                * Generated
-                */
                static std::string toString(const MergeMode& param);
                
                /**
@@ -2959,20 +3027,18 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   24/02/2017 20:23
+             * @date   04/03/2017 10:45
              */
             class exahype::records::StatePacked { 
                
                public:
-                  
-                  typedef exahype::records::State::GridConstructionState GridConstructionState;
                   
                   typedef exahype::records::State::MergeMode MergeMode;
                   
                   typedef exahype::records::State::SendMode SendMode;
                   
                   struct PersistentRecords {
-                     GridConstructionState _gridConstructionState;
+                     int _maxRefinementLevelAllowed;
                      bool _firstGridSetupIteration;
                      MergeMode _mergeMode;
                      SendMode _sendMode;
@@ -3016,25 +3082,25 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     PersistentRecords(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      
-                     inline GridConstructionState getGridConstructionState() const 
+                     inline int getMaxRefinementLevelAllowed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _gridConstructionState;
+                        return _maxRefinementLevelAllowed;
                      }
                      
                      
                      
-                     inline void setGridConstructionState(const GridConstructionState& gridConstructionState) 
+                     inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _gridConstructionState = gridConstructionState;
+                        _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
                      }
                      
                      
@@ -3741,7 +3807,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  StatePacked(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   /**
                    * Generated
@@ -3749,22 +3815,22 @@ namespace exahype {
                   virtual ~StatePacked();
                   
                   
-                  inline GridConstructionState getGridConstructionState() const 
+                  inline int getMaxRefinementLevelAllowed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._gridConstructionState;
+                     return _persistentRecords._maxRefinementLevelAllowed;
                   }
                   
                   
                   
-                  inline void setGridConstructionState(const GridConstructionState& gridConstructionState) 
+                  inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._gridConstructionState = gridConstructionState;
+                     _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
                   }
                   
                   
@@ -4506,16 +4572,6 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  static std::string toString(const GridConstructionState& param);
-                  
-                  /**
-                   * Generated
-                   */
-                  static std::string getGridConstructionStateMapping();
-                  
-                  /**
-                   * Generated
-                   */
                   static std::string toString(const MergeMode& param);
                   
                   /**
@@ -4608,7 +4664,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   24/02/2017 20:23
+             * @date   04/03/2017 10:45
              */
             class exahype::records::State { 
                
@@ -4625,6 +4681,7 @@ namespace exahype {
                   };
                   
                   struct PersistentRecords {
+                     int _maxRefinementLevelAllowed;
                      MergeMode _mergeMode;
                      SendMode _sendMode;
                      bool _reinitTimeStepData;
@@ -4666,7 +4723,27 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                     PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                     
+                     
+                     inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _maxRefinementLevelAllowed;
+                     }
+                     
+                     
+                     
+                     inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+                     }
+                     
                      
                      
                      inline MergeMode getMergeMode() const 
@@ -5264,12 +5341,32 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                  State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                   
                   /**
                    * Generated
                    */
                   virtual ~State();
+                  
+                  
+                  inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._maxRefinementLevelAllowed;
+                  }
+                  
+                  
+                  
+                  inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+                  }
+                  
                   
                   
                   inline MergeMode getMergeMode() const 
@@ -5996,7 +6093,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   24/02/2017 20:23
+                * @date   04/03/2017 10:45
                 */
                class exahype::records::StatePacked { 
                   
@@ -6007,6 +6104,7 @@ namespace exahype {
                      typedef exahype::records::State::SendMode SendMode;
                      
                      struct PersistentRecords {
+                        int _maxRefinementLevelAllowed;
                         MergeMode _mergeMode;
                         SendMode _sendMode;
                         bool _reinitTimeStepData;
@@ -6046,7 +6144,27 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                        PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                        
+                        
+                        inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _maxRefinementLevelAllowed;
+                        }
+                        
+                        
+                        
+                        inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+                        }
+                        
                         
                         
                         inline MergeMode getMergeMode() const 
@@ -6662,12 +6780,32 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                     StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                      
                      /**
                       * Generated
                       */
                      virtual ~StatePacked();
+                     
+                     
+                     inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._maxRefinementLevelAllowed;
+                     }
+                     
+                     
+                     
+                     inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+                     }
+                     
                      
                      
                      inline MergeMode getMergeMode() const 
@@ -7410,17 +7548,13 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   24/02/2017 20:23
+                * @date   04/03/2017 10:45
                 */
                class exahype::records::State { 
                   
                   public:
                      
                      typedef exahype::records::StatePacked Packed;
-                     
-                     enum GridConstructionState {
-                        Default = 0, Veto = 1, Aggressive = 2
-                     };
                      
                      enum MergeMode {
                         MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
@@ -7431,7 +7565,7 @@ namespace exahype {
                      };
                      
                      struct PersistentRecords {
-                        GridConstructionState _gridConstructionState;
+                        int _maxRefinementLevelAllowed;
                         bool _firstGridSetupIteration;
                         MergeMode _mergeMode;
                         SendMode _sendMode;
@@ -7456,25 +7590,25 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                        PersistentRecords(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                         
                         
-                        inline GridConstructionState getGridConstructionState() const 
+                        inline int getMaxRefinementLevelAllowed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _gridConstructionState;
+                           return _maxRefinementLevelAllowed;
                         }
                         
                         
                         
-                        inline void setGridConstructionState(const GridConstructionState& gridConstructionState) 
+                        inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _gridConstructionState = gridConstructionState;
+                           _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
                         }
                         
                         
@@ -7818,7 +7952,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     State(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     State(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      /**
                       * Generated
@@ -7826,22 +7960,22 @@ namespace exahype {
                      virtual ~State();
                      
                      
-                     inline GridConstructionState getGridConstructionState() const 
+                     inline int getMaxRefinementLevelAllowed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _persistentRecords._gridConstructionState;
+                        return _persistentRecords._maxRefinementLevelAllowed;
                      }
                      
                      
                      
-                     inline void setGridConstructionState(const GridConstructionState& gridConstructionState) 
+                     inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _persistentRecords._gridConstructionState = gridConstructionState;
+                        _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
                      }
                      
                      
@@ -8168,16 +8302,6 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     static std::string toString(const GridConstructionState& param);
-                     
-                     /**
-                      * Generated
-                      */
-                     static std::string getGridConstructionStateMapping();
-                     
-                     /**
-                      * Generated
-                      */
                      static std::string toString(const MergeMode& param);
                      
                      /**
@@ -8272,20 +8396,18 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   24/02/2017 20:23
+                   * @date   04/03/2017 10:45
                    */
                   class exahype::records::StatePacked { 
                      
                      public:
-                        
-                        typedef exahype::records::State::GridConstructionState GridConstructionState;
                         
                         typedef exahype::records::State::MergeMode MergeMode;
                         
                         typedef exahype::records::State::SendMode SendMode;
                         
                         struct PersistentRecords {
-                           GridConstructionState _gridConstructionState;
+                           int _maxRefinementLevelAllowed;
                            bool _firstGridSetupIteration;
                            MergeMode _mergeMode;
                            SendMode _sendMode;
@@ -8316,25 +8438,25 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                           PersistentRecords(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                            
                            
-                           inline GridConstructionState getGridConstructionState() const 
+                           inline int getMaxRefinementLevelAllowed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              return _gridConstructionState;
+                              return _maxRefinementLevelAllowed;
                            }
                            
                            
                            
-                           inline void setGridConstructionState(const GridConstructionState& gridConstructionState) 
+                           inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              _gridConstructionState = gridConstructionState;
+                              _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
                            }
                            
                            
@@ -8705,7 +8827,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        StatePacked(const GridConstructionState& gridConstructionState, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                        StatePacked(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                         
                         /**
                          * Generated
@@ -8713,22 +8835,22 @@ namespace exahype {
                         virtual ~StatePacked();
                         
                         
-                        inline GridConstructionState getGridConstructionState() const 
+                        inline int getMaxRefinementLevelAllowed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _persistentRecords._gridConstructionState;
+                           return _persistentRecords._maxRefinementLevelAllowed;
                         }
                         
                         
                         
-                        inline void setGridConstructionState(const GridConstructionState& gridConstructionState) 
+                        inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _persistentRecords._gridConstructionState = gridConstructionState;
+                           _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
                         }
                         
                         
@@ -9078,16 +9200,6 @@ namespace exahype {
    _persistentRecords._packedRecords0 = static_cast<short int>( subWorkerIsInvolvedInJoinOrFork ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
                         }
                         
-                        
-                        /**
-                         * Generated
-                         */
-                        static std::string toString(const GridConstructionState& param);
-                        
-                        /**
-                         * Generated
-                         */
-                        static std::string getGridConstructionStateMapping();
                         
                         /**
                          * Generated

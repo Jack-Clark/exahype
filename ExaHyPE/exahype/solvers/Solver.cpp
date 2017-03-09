@@ -83,7 +83,7 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::Prediction
          //
         temporaryVariables._tempStateSizedVectors[solverNumber] = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempStateSizedVectorsSize(), ALIGNMENT);
 
-        if(aderdgSolver->hasToApplyPointSource()) { //TODO KD
+        if(aderdgSolver->usePointSource()) { //TODO KD
           temporaryVariables._tempPointForceSources    [solverNumber] = (double *) _mm_malloc(sizeof(double)*aderdgSolver->getTempSpaceTimeUnknownsSize(), ALIGNMENT);
         } else {
           temporaryVariables._tempPointForceSources    [solverNumber] = nullptr;
@@ -107,7 +107,7 @@ void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::Prediction
          //
         temporaryVariables._tempStateSizedVectors[solverNumber] = new double[aderdgSolver->getTempStateSizedVectorsSize()];
 
-        if(aderdgSolver->hasToApplyPointSource()) { //TODO KD
+        if(aderdgSolver->usePointSource()) { //TODO KD
           temporaryVariables._tempPointForceSources    [solverNumber] = new double[aderdgSolver->getTempSpaceTimeUnknownsSize()];
         } else {
           temporaryVariables._tempPointForceSources    [solverNumber] = nullptr;
@@ -174,7 +174,7 @@ void exahype::solvers::deleteTemporaryVariables(exahype::solvers::PredictionTemp
           _mm_free(temporaryVariables._tempStateSizedVectors[solverNumber]);
           temporaryVariables._tempStateSizedVectors[solverNumber] = nullptr;
 
-          if(aderdgSolver->hasToApplyPointSource()) { //TODO KD
+          if(aderdgSolver->usePointSource()) { //TODO KD
             _mm_free(temporaryVariables._tempPointForceSources[solverNumber]);
             temporaryVariables._tempPointForceSources[solverNumber] = nullptr;
           }
@@ -201,7 +201,7 @@ void exahype::solvers::deleteTemporaryVariables(exahype::solvers::PredictionTemp
           delete[] temporaryVariables._tempStateSizedVectors[solverNumber];
           temporaryVariables._tempStateSizedVectors[solverNumber] = nullptr;
 
-          if(aderdgSolver->hasToApplyPointSource()) { //TODO KD
+          if(aderdgSolver->usePointSource()) { //TODO KD
             delete[] temporaryVariables._tempPointForceSources[solverNumber];
             temporaryVariables._tempPointForceSources[solverNumber] = nullptr;
           }
@@ -422,33 +422,6 @@ void exahype::solvers::deleteTemporaryVariables(exahype::solvers::SolutionUpdate
   }
 }
 
-
-
-void exahype::solvers::initialiseTemporaryVariables(exahype::solvers::TimeStepSizeComputationTemporaryVariables& temporaryVariables) {
-  if (temporaryVariables._tempEigenValues==nullptr) {
-    int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
-    temporaryVariables._tempEigenValues = new double*[numberOfSolvers];
-
-    int solverNumber=0;
-    for (auto solver : exahype::solvers::RegisteredSolvers) {
-      temporaryVariables._tempEigenValues[solverNumber]  = new double[solver->getNumberOfVariables()]; // TOOD(Dominic): Check if we need number of parameters too
-      ++solverNumber;
-    }
-  }
-}
-
-void exahype::solvers::deleteTemporaryVariables(exahype::solvers::TimeStepSizeComputationTemporaryVariables& temporaryVariables) {
-  if(temporaryVariables._tempEigenValues!=nullptr) {
-    for (unsigned int solverNumber=0;
-        solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
-      delete[] temporaryVariables._tempEigenValues[solverNumber];
-      temporaryVariables._tempEigenValues[solverNumber] = nullptr;
-    }
-
-    delete[] temporaryVariables._tempEigenValues;
-    temporaryVariables._tempEigenValues = nullptr;
-  }
-}
 
 void exahype::solvers::initialiseSolverFlags(exahype::solvers::SolverFlags& solverFlags) {
   assertion(solverFlags._limiterDomainHasChanged==nullptr);

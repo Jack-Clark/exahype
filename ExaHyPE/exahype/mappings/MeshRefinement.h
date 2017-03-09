@@ -65,6 +65,7 @@ private:
   void refineVertexIfNecessary(
       exahype::Vertex&                              fineGridVertex,
       const tarch::la::Vector<DIMENSIONS, double>&  fineGridH,
+      int                                           fineGridLevel,
       bool                                          isCalledByCreationalEvent
   ) const;
 

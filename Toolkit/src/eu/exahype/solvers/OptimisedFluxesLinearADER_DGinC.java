@@ -56,7 +56,7 @@ public class OptimisedFluxesLinearADER_DGinC implements Solver {
     writer.write(
         "    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
     writer.write(
-        "    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);\n");
+        "    static void adjustSolution(const double* const x,const double w,const double t,const double dt,double* Q);\n");
 
     writer.write("};\n\n\n");
   }
@@ -150,7 +150,7 @@ public class OptimisedFluxesLinearADER_DGinC implements Solver {
       writer.write("   _profiler->start(\"solutionAdjustment\");\n");
     }
     writer.write(
-        "   kernels::aderdg::optimised::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt );\n");
+        "   kernels::aderdg::optimised::solutionAdjustment<adjustSolution>( luh, center, dx, t, dt );\n");
     if (_enableProfiler) {
       writer.write("   _profiler->stop(\"solutionAdjustment\");\n");
     }
@@ -204,7 +204,7 @@ public class OptimisedFluxesLinearADER_DGinC implements Solver {
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
-        + "::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {\n");
+        + "::adjustSolution(const double* const x,const double w,const double t,const double dt,double* Q) {\n");
     writer.write("  // Dimensions             = " + _dimensions + "\n");
     writer.write("  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters) + " (#unknowns + #parameters)\n");
     writer.write("  // @todo Please implement\n");

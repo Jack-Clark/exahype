@@ -92,7 +92,7 @@ void ElasticityKernelTest::flux(const double *Q, double **F) {
 /*
  * Q stores parameters, S doesn't.
  */
-void ElasticityKernelTest::source(const double *Q, double *S) {
+void ElasticityKernelTest::algebraicSource(const double *Q, double *S) {
   constexpr int nVar       = NumberOfVariables;
 
   std::fill_n (S, nVar, 0.0);
@@ -128,7 +128,7 @@ void ElasticityKernelTest::eigenvalues(const double *const Q,
 /*
  * Q stores parameters, gradQ and BgradQ doesn't.
  */
-void ElasticityKernelTest::ncp(const double *const Q,
+void ElasticityKernelTest::nonConservativeProduct(const double *const Q,
                                    const double *const gradQ, double *BgradQ) {
   constexpr int nVar  = NumberOfVariables;
 
@@ -180,7 +180,7 @@ void ElasticityKernelTest::ncp(const double *const Q,
 
 }  // ncp
 
-void ElasticityKernelTest::matrixb(const double *const Q,
+void ElasticityKernelTest::coefficientMatrix(const double *const Q,
                                        const int normalNonZero, double *Bn) {
   constexpr int nVar       = NumberOfVariables;
   constexpr int nVar2      = nVar*nVar;

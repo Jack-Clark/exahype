@@ -1,13 +1,12 @@
 Packed-Type: short int;
 
 class exahype::dastgen::State {    
+  /**
+   * Consult Peano guidebook Section 6.3.2
+   */
+  persistent parallelise int maxRefinementLevelAllowed;
+  
   #ifdef Parallel
-  enum GridConstructionState {
-    Default, Veto, Aggressive
-  };
-  
-  parallelise persistent GridConstructionState  gridConstructionState;
-  
   /**
    * Indicates if this is the first grid setup iteration.
    * Then, we do not receive any metadata.

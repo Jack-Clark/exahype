@@ -16,6 +16,7 @@
 #include "exahype/plotters/ADERDG2CartesianVTK.h"
 #include "exahype/plotters/ADERDG2LegendreVTK.h"
 #include "exahype/plotters/ADERDG2LegendreCSV.h"
+#include "exahype/plotters/ADERDG2LegendreDivergenceVTK.h"
 #include "exahype/plotters/ADERDG2ProbeAscii.h"
 #include "exahype/plotters/FiniteVolumes2VTK.h"
 #include "exahype/plotters/LimitingADERDG2CartesianVTK.h"
@@ -143,6 +144,7 @@ exahype::plotters::Plotter::Plotter(
       if (_identifier.compare( ADERDG2CartesianCellsVTKBinary::getIdentifier() ) == 0) {
         _device = new ADERDG2CartesianCellsVTKBinary(postProcessing);
       }
+
       if (_identifier.compare( ADERDG2LegendreVerticesVTKAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreVerticesVTKAscii(postProcessing);
       }
@@ -155,6 +157,7 @@ exahype::plotters::Plotter::Plotter(
       if (_identifier.compare( ADERDG2LegendreCellsVTKBinary::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreCellsVTKBinary(postProcessing);
       }
+
       if (_identifier.compare( ADERDG2CartesianVerticesVTUAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2CartesianVerticesVTUAscii(postProcessing);
       }
@@ -179,6 +182,20 @@ exahype::plotters::Plotter::Plotter(
       if (_identifier.compare( ADERDG2LegendreCellsVTUBinary::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreCellsVTUBinary(postProcessing);
       }
+
+      if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTKAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreDivergenceVerticesVTKAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTKBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreDivergenceVerticesVTKBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTUAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreDivergenceVerticesVTUAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreDivergenceVerticesVTUBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreDivergenceVerticesVTUBinary(postProcessing);
+      }
+
       if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2ProbeAscii(postProcessing);
       }

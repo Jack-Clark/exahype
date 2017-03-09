@@ -47,12 +47,14 @@ exahype::mappings::MeshRefinement::touchVertexLastTimeSpecification() {
       #endif
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
+
 peano::MappingSpecification
 exahype::mappings::MeshRefinement::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
+
 peano::MappingSpecification
 exahype::mappings::MeshRefinement::enterCellSpecification() {
   return peano::MappingSpecification(
@@ -128,34 +130,36 @@ void exahype::mappings::MeshRefinement::endIteration(exahype::State& solverState
   }
 
   #ifdef Parallel
+  // @todo raus
   solverState.setFirstGridSetupIteration(false);
   #endif
-  if ( tarch::parallel::Node::getInstance().isGlobalMaster() ) {
-    solverState.updateRegularInitialGridRefinementStrategy();
-  }
 }
 
 void exahype::mappings::MeshRefinement::refineVertexIfNecessary(
   exahype::Vertex&                              fineGridVertex,
   const tarch::la::Vector<DIMENSIONS, double>&  fineGridH,
+  int                                           fineGridLevel,
   bool                                          isCalledByCreationalEvent
 ) const {
+  bool refine = false;
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    if (
-      fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
-      &&
-      tarch::la::allGreater(fineGridH,p->getMaximumMeshSize())
-    ) {
-      #ifdef Parallel
-      if (isCalledByCreationalEvent) {
-        fineGridVertex.enforceRefine();
-      }
-      else {
+    refine |= tarch::la::allGreater(fineGridH,p->getMaximumMeshSize());
+  }
+
+  if (
+    refine
+    &&
+    fineGridVertex.getRefinementControl()==Vertex::Records::Unrefined
+  ) {
+    switch ( _localState.mayRefine(isCalledByCreationalEvent,fineGridLevel) ) {
+      case State::RefinementAnswer::DontRefineYet:
+        break;
+      case State::RefinementAnswer::Refine:
         fineGridVertex.refine();
-      }
-      #else
-      fineGridVertex.refine();
-      #endif
+        break;
+      case State::RefinementAnswer::EnforceRefinement:
+        fineGridVertex.enforceRefine();
+        break;
     }
   }
 }
@@ -169,9 +173,7 @@ void exahype::mappings::MeshRefinement::touchVertexLastTime(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  if (_localState.refineInitialGridInTouchVertexLastTime()) {
-    refineVertexIfNecessary(fineGridVertex,fineGridH,false);
-  }
+  refineVertexIfNecessary(fineGridVertex,fineGridH,coarseGridVerticesEnumerator.getLevel()+1,false);
 }
 
 
@@ -187,9 +189,8 @@ void exahype::mappings::MeshRefinement::createBoundaryVertex(
                            fineGridX, fineGridH,
                            coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
-  if (_localState.refineInitialGridInCreationalEvents()) {
-    refineVertexIfNecessary(fineGridVertex,fineGridH,true);
-  }
+
+  refineVertexIfNecessary(fineGridVertex,fineGridH,coarseGridVerticesEnumerator.getLevel()+1,true);
 
   logTraceOutWith1Argument("createBoundaryVertex(...)", fineGridVertex);
 }
@@ -207,9 +208,7 @@ void exahype::mappings::MeshRefinement::createInnerVertex(
                            fineGridH, coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
 
-  if (_localState.refineInitialGridInCreationalEvents()) {
-    refineVertexIfNecessary(fineGridVertex,fineGridH,true);
-  }
+  refineVertexIfNecessary(fineGridVertex,fineGridH,coarseGridVerticesEnumerator.getLevel()+1,true);
 
   logTraceOutWith1Argument("createInnerVertex(...)", fineGridVertex);
 }
@@ -348,6 +347,8 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
   if (vertex.isBoundary()) return;
 #endif
 
+  // @todo If this assertion holds, then we should remove firstGridSetupIteration from the state.
+  assertion( !_localState.firstGridSetupIteration() );
   if (_localState.firstGridSetupIteration()) return; // TODO is reset in end iteration.
 
   dfor2(myDest)

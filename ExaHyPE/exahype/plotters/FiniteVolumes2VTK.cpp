@@ -144,25 +144,20 @@ void exahype::plotters::FiniteVolumes2VTK::finishPlotting() {
     
     std::ostringstream snapshotFileName;
     snapshotFileName << _filename
-    #ifdef Parallel
-                   << "-rank-" << tarch::parallel::Node::getInstance().getRank()
-    #endif
                    << "-" << _fileCounter;
 
     switch (_plotterType) {
       case PlotterType::BinaryVTK:
-        snapshotFileName << ".vtk"; break;
+        break;
       case PlotterType::ASCIIVTK:
-        snapshotFileName << ".vtk"; break;
+        break;
       case PlotterType::BinaryVTU:
-        snapshotFileName << ".vtu";
         _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
-        _timeSeriesWriter.writeFile(_filename + ".pvd");
+        _timeSeriesWriter.writeFile(_filename);
         break;
       case PlotterType::ASCIIVTU:
-        snapshotFileName << ".vtu";
         _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
-        _timeSeriesWriter.writeFile(_filename + ".pvd");
+        _timeSeriesWriter.writeFile(_filename);
         break;
     }
 
