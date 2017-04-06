@@ -12,12 +12,12 @@ void EulerFV::MyEulerSolver::init(std::vector<std::string>& cmdlineargs) {
 }
 
 
-bool EulerFV::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) {
+bool EulerFV::MyEulerSolver::useAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, const double t, const double dt) const {
   return tarch::la::equals(t,0.0);
 }
 
 
-void EulerFV::MyEulerSolver::adjustedSolutionValues(const double* const x,
+void EulerFV::MyEulerSolver::adjustSolution(const double* const x,
                                                   const double w,
                                                   const double t,
                                                   const double dt, double* Q) {
@@ -81,14 +81,6 @@ void EulerFV::MyEulerSolver::flux(const double* const Q, double** F) {
   fluxes.rho ( vars.j()                                 );
   fluxes.j   ( irho * outerDot(vars.j(),vars.j()) + p*I );
   fluxes.E   ( irho * (vars.E() + p) * vars.j()         );
-}
-
-
-void EulerFV::MyEulerSolver::source(const double* const Q, double* S) {
-  Variables source(S);
-  source.rho()=0;
-  source.E()=0;
-  source.j(0,0,0);
 }
 
 
