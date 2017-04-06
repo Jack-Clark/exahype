@@ -43,27 +43,31 @@ void aderPicardLoopNonlinear(SolverType& solver,
     double* lFi, double* gradQ, double* BGradQ) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int basisSize          = SolverType::Order+1;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
+  constexpr int order              = SolverType::Order;
+  constexpr int basisSize          = order+1;
   constexpr int basisSize2         = basisSize * basisSize;
   constexpr int basisSize4         = basisSize2 * basisSize2;
-  constexpr int order              = basisSize - 1;
-  
+
   assertion(numberOfVariables>=0);
   assertion(numberOfParameters>=0);
+
+  idx4 idx_luh(basisSize, basisSize, basisSize, numberOfData);
   
-  idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
-  
-  idx5 idx_lQi(basisSize, basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
+  idx5 idx_lQi(basisSize, basisSize, basisSize, basisSize, numberOfData);
   
   idx6 idx_lFi(basisSize, basisSize, basisSize, basisSize, DIMENSIONS + 1, numberOfVariables);
 
   // 1. Trivial initial guess
+  #ifdef SharedMemoryParallelisation
+  #pragma omp parallel for
+  #endif
   for (int i = 0; i < basisSize; i++) { // i == z
     for (int j = 0; j < basisSize; j++) { // j == y
       for (int k = 0; k < basisSize; k++) { // k == x
         for (int l = 0; l < basisSize; l++) { // l==t
           // Fortran: lQi(m,:,k,j,i) = luh(m,k,j,i)
-          std::copy_n (luh + idx_luh(i, j, k, 0), numberOfVariables+numberOfParameters, 
+          std::copy_n (luh + idx_luh(i, j, k, 0), numberOfData,
                        lQi + idx_lQi(i, j, k, l, 0));
         }
       }
@@ -73,6 +77,9 @@ void aderPicardLoopNonlinear(SolverType& solver,
   // 2. Compute the contribution of the initial condition uh to the time update
   // ASSUMABLY: idx_rhs(t,z,y,x,nVar)
   idx5 idx_rhs(basisSize, basisSize, basisSize, basisSize, numberOfVariables);
+  #ifdef SharedMemoryParallelisation
+  #pragma omp parallel for
+  #endif
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {
@@ -98,7 +105,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
 
   for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
-    std::memcpy(lQi_old, lQi, basisSize4 * (numberOfVariables+numberOfParameters) * sizeof(double));
+    std::memcpy(lQi_old, lQi, basisSize4 * numberOfData * sizeof(double));
 
     for (int i = 0; i < basisSize; i++) {  // time DOF
       // Compute the fluxes
@@ -111,14 +118,10 @@ void aderPicardLoopNonlinear(SolverType& solver,
             F[0] = lFi + idx_lFi(i, j, k, l, 0, 0);
             F[1] = lFi + idx_lFi(i, j, k, l, 1, 0);
             F[2] = lFi + idx_lFi(i, j, k, l, 2, 0);
-            double* S = lFi + idx_lFi(i, j, k, l, 3, 0);
             solver.flux(Q, F);
-            if(useSource) {
-              solver.algebraicSource(Q, S);
-            }
-            else if (useNCP) {
-              std::memset(S, 0, (numberOfVariables+numberOfParameters) * sizeof(double)); //initialize S
-            }
+
+            // the algebraic source call moved together with ncp products
+            // to the end.
           }
         }
       }
@@ -225,18 +228,13 @@ void aderPicardLoopNonlinear(SolverType& solver,
                   kernels::gaussLegendreWeights[order][k] *
                   kernels::gaussLegendreWeights[order][l];
               const double updateSize = weight * dt;
-              double* S = &lFi[idx_lFi(i, j, k, l, 3, 0)];
+              double* S = lFi + idx_lFi(i, j, k, l, 3, 0);
 
-              if(useNCP) {
-                // Compute the Nonconservative part NCP. Caveats: BGradQ is a vector
-                solver.nonConservativeProduct(&lQi[idx_lQi(j, k, l, i, 0)], &gradQ[idx_gradQ(j, k, l, i, 0, 0)], BGradQ);
-              }
+              // by intention, gradQ is undefined here if useNCP is not true.
+              // This is because algebraicSource is only a function of Q and S.
+              solver.fusedSource(&lQi[idx_lQi(j, k, l, i, 0)], &gradQ[idx_gradQ(j, k, l, i, 0, 0)], S);
 
-              // TODO: numberOfVariables - numberOfParameters would do
               for (int m = 0; m < numberOfVariables; m++) {
-                if(useNCP) {
-                  S[m] -= BGradQ[m];
-                }
                 rhs[idx_rhs(i, j, k, l, m)] += updateSize * S[m];
               }
             }
@@ -288,7 +286,7 @@ void aderPicardLoopNonlinear(SolverType& solver,
     // 5. Exit condition
     constexpr double tol = 1e-7;
     double sq_res = 0.0;
-    for (int i = 0; i < basisSize4 * (numberOfVariables+numberOfParameters); i++) {
+    for (int i = 0; i < basisSize4 * numberOfData; i++) {
       sq_res += (lQi_old[i] - lQi[i]) * (lQi_old[i] - lQi[i]);
     }
     if (sq_res < tol * tol) {
@@ -312,32 +310,33 @@ void aderPicardLoopNonlinear(SolverType& solver,
  *  We have to consider that we store parameters in lQi
  *  and lQhi, and have to adjust the index accordingly.
  */
-template <bool useSourceOrNCP>
+template <bool useSourceOrNCP, int numberOfVariables, int numberOfParameters, int basisSize>
 void aderPredictorNonlinear(const double* lQi, const double* lFi,
-    int numberOfVariables, int numberOfParameters, int basisSize, double* lQhi,
-    double* lFhi_x, double* lFhi_y, double* lFhi_z,
+    double* lQhi,double* lFhi_x, double* lFhi_y, double* lFhi_z,
     double* lShi) {
   // Immediately compute the time - averaged space - time polynomials
 
-  const int basisSize2 = basisSize * basisSize;
-  const int basisSize3 = basisSize2 * basisSize;
-  const int order = basisSize - 1;
+  constexpr int basisSize2 = basisSize * basisSize;
+  constexpr int basisSize3 = basisSize2 * basisSize;
+  constexpr int order = basisSize - 1;
 
-  idx5 idx_lQi(basisSize, basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
+  constexpr int numberOfData = numberOfVariables+numberOfParameters;
+
+  idx5 idx_lQi(basisSize, basisSize, basisSize, basisSize, numberOfData);
   
   idx6 idx_lFi(basisSize, basisSize, basisSize, basisSize, DIMENSIONS + 1, numberOfVariables);
 
-  idx4 idx_lQhi(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
+  idx4 idx_lQhi(basisSize, basisSize, basisSize, numberOfData);
   
   idx4 idx_lFhi(basisSize, basisSize, basisSize, numberOfVariables);
   idx4 idx_lShi(basisSize, basisSize, basisSize, numberOfVariables);
 
-  std::memset(lQhi, 0, basisSize3 * (numberOfVariables+numberOfParameters) * sizeof(double));
+  std::fill_n(lQhi, basisSize3 * numberOfData, 0.0);
   
-  std::memset(lFhi_x, 0, basisSize3 * numberOfVariables * sizeof(double));
-  std::memset(lFhi_y, 0, basisSize3 * numberOfVariables * sizeof(double));
-  std::memset(lFhi_z, 0, basisSize3 * numberOfVariables * sizeof(double));
-  std::memset(lShi, 0, basisSize3 * numberOfVariables * sizeof(double));
+  std::fill_n(lFhi_x, basisSize3 * numberOfVariables, 0.0);
+  std::fill_n(lFhi_y, basisSize3 * numberOfVariables, 0.0);
+  std::fill_n(lFhi_z, basisSize3 * numberOfVariables, 0.0);
+  std::fill_n(lShi,   basisSize3 * numberOfVariables, 0.0);
 
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
@@ -369,7 +368,7 @@ void aderPredictorNonlinear(const double* lQi, const double* lFi,
             
           }
         }
-        for (int l = 0; l < numberOfVariables+numberOfParameters; l++) {
+        for (int l = 0; l < numberOfData; l++) {
           // Matrix-Vector Products
           for (int m = 0; m < basisSize; m++) {
             // Fortran: lQhi(:,k,j,i) = lQi(:,:,k,j,i) * wGPN(:)
@@ -383,27 +382,26 @@ void aderPredictorNonlinear(const double* lQi, const double* lFi,
   }
 }
 
+template <int numberOfVariables, int numberOfParameters, int basisSize>
 void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
-    const double* lFhi_y, const double* lFhi_z, int numberOfVariables, int numberOfParameters,
-    int basisSize, double* lQhbnd, double* lFhbnd) {
+    const double* lFhi_y, const double* lFhi_z, double* lQhbnd, double* lFhbnd) {
   // Compute the boundary-extrapolated values for Q and F*n
+  constexpr int basisSize2 = basisSize * basisSize;
+  constexpr int order = basisSize - 1;
 
-  const int basisSize2 = basisSize * basisSize;
-  const int order = basisSize - 1;
+  constexpr int numberOfData = numberOfVariables+numberOfParameters;
 
-  idx4 idx_lQhi(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
+  idx4 idx_lQhi(basisSize, basisSize, basisSize, numberOfData);
   
   idx4 idx_lFhi(basisSize, basisSize, basisSize, numberOfVariables);
 
   
-  idx4 idx_lQhbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables+numberOfParameters);
+  idx4 idx_lQhbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfData);
   
   idx4 idx_lFhbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);
 
-  std::memset(lQhbnd, 0,
-      2 * DIMENSIONS * basisSize2 *  (numberOfVariables+numberOfParameters) * sizeof(double));
-  std::memset(lFhbnd, 0,
-      2 * DIMENSIONS * basisSize2 * numberOfVariables * sizeof(double));
+  std::fill_n(lQhbnd, 2 * DIMENSIONS * basisSize2 *  numberOfData, 0.0);
+  std::fill_n(lFhbnd, 2 * DIMENSIONS * basisSize2 * numberOfVariables, 0.0);
 
   // x-direction: face 1 (left) and face 2 (right)
   for (int i = 0; i < basisSize; i++) {
@@ -420,7 +418,7 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
               lFhi_x[idx_lFhi(i, j, l, k)] * kernels::FRCoeff[order][l];
         }
       }
-      for (int k = 0; k < numberOfVariables+numberOfParameters; k++) {
+      for (int k = 0; k < numberOfData; k++) {
         for (int l = 0; l < basisSize; l++) {
           // Fortran: lQhbnd(:,j,i,1) = lQhi(:,:,j,i) * FLCoeff(:)
           lQhbnd[idx_lQhbnd(0, i, j, k)] +=
@@ -449,7 +447,7 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
               lFhi_y[idx_lFhi(i, j, l, k)] * kernels::FRCoeff[order][l];
         }
       }
-      for (int k = 0; k < numberOfVariables+numberOfParameters; k++) {
+      for (int k = 0; k < numberOfData; k++) {
         // Matrix-Vector Products
         for (int l = 0; l < basisSize; l++) {
           // Fortran: lQhbnd(:,j,i,3) = lQhi(:,j,:,i) * FLCoeff(:)
@@ -479,7 +477,7 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
               lFhi_z[idx_lFhi(i, j, l, k)] * kernels::FRCoeff[order][l];
         }
       }
-      for (int k = 0; k < numberOfVariables+numberOfParameters; k++) {
+      for (int k = 0; k < numberOfData; k++) {
         // Matrix-Vector Products
         for (int l = 0; l < basisSize; l++) {
           // Fortran: lQhbnd(:,j,i,5) = lQhi(:,j,i,:) * FLCoeff(:)
@@ -497,7 +495,7 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
 
 }  // namespace
 
-template <bool useSource, bool useNCP, typename SolverType>
+template <typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
@@ -508,14 +506,16 @@ void spaceTimePredictorNonlinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx, 
-    double dt,
-    double* tempPointForceSources //not used should be nullptr
+    double dt
 ) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int basisSize          = SolverType::Order+1;
   constexpr int basisSize2         = basisSize * basisSize;
   constexpr int basisSize3         = basisSize2 * basisSize;
+
+  const bool useSource = solver.useAlgebraicSource();
+  const bool useNCP    = solver.useNonConservativeProduct();
 
   double* lQi     = tempSpaceTimeUnknowns[0];
   double* lQi_old = tempSpaceTimeUnknowns[1];
@@ -550,14 +550,14 @@ void spaceTimePredictorNonlinear(
   }
 
   if(useSource || useNCP) {
-    aderPredictorNonlinear<true>(lQi, lFi, numberOfVariables, numberOfParameters, basisSize, lQhi,
+    aderPredictorNonlinear<true, numberOfVariables, numberOfParameters, basisSize>(lQi, lFi, lQhi,
         &lFhi[0 * basisSize3 * numberOfVariables],  // lFhi_x
         &lFhi[1 * basisSize3 * numberOfVariables],  // lFhi_y
         &lFhi[2 * basisSize3 * numberOfVariables],  // lFhi_z
         &lFhi[3 * basisSize3 * numberOfVariables]   // lShi
     );
   } else {
-    aderPredictorNonlinear<false>(lQi, lFi, numberOfVariables, numberOfParameters, basisSize, lQhi,
+    aderPredictorNonlinear<false, numberOfVariables, numberOfParameters, basisSize>(lQi, lFi, lQhi,
         &lFhi[0 * basisSize3 * numberOfVariables],  // lFhi_x
         &lFhi[1 * basisSize3 * numberOfVariables],  // lFhi_y
         &lFhi[2 * basisSize3 * numberOfVariables],  // lFhi_z
@@ -565,12 +565,12 @@ void spaceTimePredictorNonlinear(
     );
   }
 
-  aderExtrapolatorNonlinear(
+  aderExtrapolatorNonlinear<numberOfVariables, numberOfParameters, basisSize>(
       lQhi,
       &lFhi[0 * basisSize3 * numberOfVariables],  // lFhi_x
       &lFhi[1 * basisSize3 * numberOfVariables],  // lFhi_y
       &lFhi[2 * basisSize3 * numberOfVariables],  // lFhi_z
-      numberOfVariables, numberOfParameters, basisSize, lQhbnd, lFhbnd);
+      lQhbnd, lFhbnd);
 }
 
 }  // namespace c

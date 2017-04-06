@@ -28,17 +28,14 @@ namespace c {
 
 #if DIMENSIONS == 2
 
-template <bool useSourceOrNCP>
+template <bool useSourceOrNCP, const int numberOfVariables, int basisSize>
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
-                             const tarch::la::Vector<DIMENSIONS, double>& dx,
-                             const int numberOfVariables,
-                             const int numberOfParameters, /*not used*/ // TODO(Dominic): Remove from arg list.
-                             const int basisSize) {
-  const int order = basisSize - 1;
-  const int basisSize2 = basisSize * basisSize;
+                             const tarch::la::Vector<DIMENSIONS, double>& dx) {
+  constexpr int order      = basisSize - 1;
+  constexpr int basisSize2 = basisSize * basisSize;
 
   // Initialize the update DOF
-  std::memset(lduh, 0, basisSize2 * numberOfVariables * sizeof(double));
+  std::fill_n(lduh, basisSize2 * numberOfVariables, 0.0);
 
   // x-direction
   {

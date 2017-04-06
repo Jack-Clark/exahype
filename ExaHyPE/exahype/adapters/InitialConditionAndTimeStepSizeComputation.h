@@ -19,7 +19,7 @@
 
 
  #include "exahype/mappings/PreProcessing.h"
- #include "exahype/mappings/DropIncomingMPIMetadataMessages.h"
+ #include "exahype/mappings/FinaliseMeshRefinement.h"
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/InitialCondition.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
@@ -45,7 +45,7 @@ namespace exahype {
 class exahype::adapters::InitialConditionAndTimeStepSizeComputation {
   private:
     typedef mappings::PreProcessing Mapping0;
-    typedef mappings::DropIncomingMPIMetadataMessages Mapping1;
+    typedef mappings::FinaliseMeshRefinement Mapping1;
     typedef mappings::Merging Mapping2;
     typedef mappings::InitialCondition Mapping3;
     typedef mappings::TimeStepSizeComputation Mapping4;
@@ -53,7 +53,7 @@ class exahype::adapters::InitialConditionAndTimeStepSizeComputation {
     typedef mappings::Sending Mapping6;
 
      Mapping0  _map2PreProcessing;
-     Mapping1  _map2DropIncomingMPIMetadataMessages;
+     Mapping1  _map2FinaliseMeshRefinement;
      Mapping2  _map2Merging;
      Mapping3  _map2InitialCondition;
      Mapping4  _map2TimeStepSizeComputation;

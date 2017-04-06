@@ -1,0 +1,166 @@
+/**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
+ *
+ * The project has received funding from the European Union's Horizon
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ **/
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+#if DIMENSIONS==2
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * A simple Rusanov flux considering pointwise
+ * left and right values.
+ */
+template <typename SolverType>
+double kernels::finitevolumes::riemannsolvers::c::rusanov(
+    SolverType& solver,
+    double* fnL, double *fnR, const double* qL, const double* qR, int normalNonZero) { // TODO(Dominic): I need four of those
+  constexpr int numberOfVariables = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData = numberOfVariables + numberOfParameters;
+
+  double sL[numberOfVariables ];
+  double sR[numberOfVariables ];
+
+  solver.eigenvalues(qL, normalNonZero, sL);
+  solver.eigenvalues(qR, normalNonZero, sR);
+
+  double s_max = -1.0;
+  for (int i = 0; i < numberOfVariables; i++) {
+    const double abs_sL_i = std::abs(sL[i]);
+    s_max = std::max( abs_sL_i, s_max );
+  }
+  for (int i = 0; i < numberOfVariables; i++) {
+    const double abs_sR_i = std::abs(sR[i]);
+    s_max = std::max( abs_sR_i, s_max );
+  }
+
+  double FL2a[numberOfVariables ];
+  double FL2b[numberOfVariables ];
+  double FR2a[numberOfVariables ];
+  double FR2b[numberOfVariables ];
+
+  double* FL2[2] = {FL2a,FL2b}; // dim a numberOfVariables
+  double* FR2[2] = {FR2a,FR2b}; // dim a numberOfVariables
+
+  solver.flux(qL, FL2);
+  solver.flux(qR, FR2);
+
+  double ncp[numberOfData];
+
+  // determine BgradQ from ncp
+  if (solver.useNonConservativeProduct()) {
+    double Qavg[numberOfData];
+    idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+    double gradQ[DIMENSIONS*numberOfVariables] = {0.0};
+    for(int k=0; k < numberOfData; k++) {
+       Qavg[k] = (qR[k] + qL[k]) / 2;
+       gradQ[idx_gradQ(normalNonZero,k)] = qR[k] - qL[k];
+    }
+    solver.nonConservativeProduct(Qavg, gradQ, ncp);
+  }
+  
+  for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
+    fnL[i] = 0.5 * (FL2[normalNonZero][i] + FR2[normalNonZero][i]) +
+             0.5 * s_max * (qL[i] - qR[i]);
+
+    if(solver.useNonConservativeProduct()) {
+      fnR[i] = fnL[i] - 0.5 * ncp[i];
+      fnL[i] = fnL[i] + 0.5 * ncp[i];
+    } else {
+      fnR[i] = fnL[i];
+    }
+  }
+
+  return s_max;
+}
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+#elif DIMENSIONS == 3
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+/**
+ * A simple Rusanov flux considering pointwise
+ * left and right values.
+ */
+//template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+//                              double* lambda),
+//          void PDEFlux(const double* const Q, double** F)>
+template <typename SolverType>
+double kernels::finitevolumes::riemannsolvers::c::rusanov(SolverType& solver, double* fnL, double *fnR, const double* qL, const double* qR,
+                     int normalNonZero) { // TODO(Dominic): I need four of those
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
+  
+  double sL[numberOfVariables];
+  double sR[numberOfVariables];
+
+
+  solver.eigenvalues(qL, normalNonZero, sL);
+  solver.eigenvalues(qR, normalNonZero, sR);
+
+  double s_max = -1.0;
+  for (int i = 0; i < numberOfVariables; i++) {
+    const double abs_sL_i = std::abs(sL[i]);
+    s_max = std::max( abs_sL_i, s_max );
+  }
+  for (int i = 0; i < numberOfVariables; i++) {
+    const double abs_sR_i = std::abs(sR[i]);
+    s_max = std::max( abs_sR_i, s_max );
+  }
+
+  double FL3a[numberOfVariables];
+  double FL3b[numberOfVariables];
+  double FL3c[numberOfVariables];
+  double FR3a[numberOfVariables];
+  double FR3b[numberOfVariables];
+  double FR3c[numberOfVariables];
+
+  double* FL3[3] = {FL3a,FL3b,FL3c}; // dim a numberOfVariables
+  double* FR3[3] = {FR3a,FR3b,FR3c}; // dim a numberOfVariables
+
+  solver.flux(qL, FL3);
+  solver.flux(qR, FR3);
+
+  double ncp[numberOfData];
+
+  // determine BgradQ from ncp
+  if (solver.useNonConservativeProduct()) {
+    double Qavg[numberOfData];
+    idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+    double gradQ[DIMENSIONS*numberOfVariables] = {0.0};
+    for(int k=0; k < numberOfData; k++) {
+       Qavg[k] = (qR[k] + qL[k]) / 2;
+       gradQ[idx_gradQ(normalNonZero,k)] = qR[k] - qL[k];
+    }
+    solver.nonConservativeProduct(Qavg, gradQ, ncp);
+  }
+  
+  for (int i = 0; i < numberOfData; i++) {
+    fnL[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
+             0.5 * s_max * (qL[i] - qR[i]);
+
+    if(solver.useNonConservativeProduct()) {
+      fnR[i] = fnL[i] - 0.5 * ncp[i];
+      fnL[i] = fnL[i] + 0.5 * ncp[i];
+    } else {
+      fnR[i] = fnL[i];
+    }
+  }
+
+  return s_max;  // TODO(guera): Use to check if dt was okay in surfaceIntegral
+}
+#endif

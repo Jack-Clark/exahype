@@ -38,90 +38,90 @@ void kernels::aderdg::generic::c::pointSource(
     const int numberOfParameters, 
     const int basisSize,
     double* pointForceSources //memory space for forceVector
-    ) { 
+) {
 
-    //TODO KD
-    double x0[DIMENSIONS];
-    double x[DIMENSIONS];
-    
-    //maybe reset tempStateSizedVector to 0 with std::memset
-    
-    //idx4 idx_pointForceSources(basisSize + 1, basisSize, basisSize,
-    //           numberOfVariables);
-    //loop over all quadrature point
-      //do your stuff to get ready to get the value for one quadrature pointer
-      //solver.pointSource(x, t, dt, &pointForceSources[idx_pointForceSources(0,ndof1,ndof2,0)], &x0);
-      //apply the result for this quadrature point
+  //TODO KD
+  double x0[DIMENSIONS];
+  double x[DIMENSIONS];
+
+  //maybe reset tempStateSizedVector to 0 with std::memset
+
+  //idx4 idx_pointForceSources(basisSize + 1, basisSize, basisSize,
+  //           numberOfVariables);
+  //loop over all quadrature point
+  //do your stuff to get ready to get the value for one quadrature pointer
+  //solver.pointSource(x, t, dt, &pointForceSources[idx_pointForceSources(0,ndof1,ndof2,0)], &x0);
+  //apply the result for this quadrature point
 
 
-int order = basisSize-1;
-    
-    //maybe reset tempStateSizedVector to 0 with std::memset
-    
-    idx4 idx_pointForceSources(basisSize + 1, basisSize, basisSize,
-               numberOfVariables);
+  int order = basisSize-1;
 
-    //loop over all quadrature point
-    	   for (int n = 0; n < basisSize+1; n++) { // time loop
-	  double tn;
-	   if (n == 0){
-	   tn = t;
-	   }
-	   else {
-	    tn = dt* gaussLegendreNodes[order][n-1] + t;
-	   }
-    	   for (int i = 0; i < basisSize; i++) {   //x loop
-	   x[1] = center[1] + dx[1] * (kernels::gaussLegendreNodes[basisSize-1][i] - 0.5);
+  //maybe reset tempStateSizedVector to 0 with std::memset
+
+  idx4 idx_pointForceSources(basisSize + 1, basisSize, basisSize,
+                             numberOfVariables);
+
+  //loop over all quadrature point
+  for (int n = 0; n < basisSize+1; n++) { // time loop
+    double tn;
+    if (n == 0){
+      tn = t;
+    }
+    else {
+      tn = dt* gaussLegendreNodes[order][n-1] + t;
+    }
+    for (int i = 0; i < basisSize; i++) {   //x loop
+      x[1] = center[1] + dx[1] * (kernels::gaussLegendreNodes[basisSize-1][i] - 0.5);
       for (int j = 0; j < basisSize; j++) {  //y loop
-       x[0] = center[0] + dx[0] * (kernels::gaussLegendreNodes[basisSize-1][j] - 0.5);
-	 
-   // get the source vector located at x0 = (x, y) and at tn = t; and at the quadrature nodes tn
-  solver.pointSource(x, tn, dt, &pointForceSources[idx_pointForceSources(n,i,j,0)], &x0[0]);
-       
- // position the source inside the dG cell
-  const tarch::la::Vector<DIMENSIONS, double> _x(x0[0], x0[1]);
-  const tarch::la::Vector<DIMENSIONS, double> offsetOfPatch = center - dx / 2.;
-  const tarch::la::Vector<DIMENSIONS, double> sizeOfPatch = dx;  // / 2.;
+        x[0] = center[0] + dx[0] * (kernels::gaussLegendreNodes[basisSize-1][j] - 0.5);
+
+        // get the source vector located at x0 = (x, y) and at tn = t; and at the quadrature nodes tn
+        solver.pointSource(x, tn, dt, &pointForceSources[idx_pointForceSources(n,i,j,0)], &x0[0]);
+
+        // position the source inside the dG cell
+        const tarch::la::Vector<DIMENSIONS, double> _x(x0[0], x0[1]);
+        const tarch::la::Vector<DIMENSIONS, double> offsetOfPatch = center - dx / 2.;
+        const tarch::la::Vector<DIMENSIONS, double> sizeOfPatch = dx;  // / 2.;
 
 
- 
-  
-   /** Generation of a point source **/
-   
-  // Map coordinate vector x0 onto reference element
-  tarch::la::Vector<DIMENSIONS, double> xRef = _x - offsetOfPatch;
-  xRef(0) /= sizeOfPatch(0);
-  xRef(1) /= sizeOfPatch(1);
 
-  if (xRef(0) >= 0. && xRef(1) >= 0. && xRef(0) <= 1.0 && xRef(1) <= 1.0) {
 
-      	for (int unknown = 0; unknown < numberOfVariables /*numberOfParameters*/;
-         unknown++) {
+        /** Generation of a point source **/
 
-          double value = kernels::basisFunctions[order][i](xRef(1)) *
-            kernels::basisFunctions[order][j](xRef(0))*
-             pointForceSources[idx_pointForceSources(n,i,j,unknown)];
-          value /= ((kernels::gaussLegendreWeights[order][i])*dx[1]*
-                   (kernels::gaussLegendreWeights[order][j])*dx[0]);
-		   
-          pointForceSources[idx_pointForceSources(n,i,j,unknown)] = value;
+        // Map coordinate vector x0 onto reference element
+        tarch::la::Vector<DIMENSIONS, double> xRef = _x - offsetOfPatch;
+        xRef(0) /= sizeOfPatch(0);
+        xRef(1) /= sizeOfPatch(1);
 
-	  
+        if (xRef(0) >= 0. && xRef(1) >= 0. && xRef(0) <= 1.0 && xRef(1) <= 1.0) {
 
-       // }  // dfor
-    } // for
+          for (int unknown = 0; unknown < numberOfVariables /*numberOfParameters*/;
+              unknown++) {
 
-  }  // endif xRef inside the domain
+            double value = kernels::basisFunctions[order][i](xRef(1)) *
+                kernels::basisFunctions[order][j](xRef(0))*
+                pointForceSources[idx_pointForceSources(n,i,j,unknown)];
+            value /= ((kernels::gaussLegendreWeights[order][i])*dx[1]*
+                (kernels::gaussLegendreWeights[order][j])*dx[0]);
 
-else {
-	for (int unknown = 0; unknown < numberOfVariables /*numberOfParameters*/;
-         unknown++) {
-           
-          pointForceSources[idx_pointForceSources(n,i,j,unknown)] = 0.0;
+            pointForceSources[idx_pointForceSources(n,i,j,unknown)] = value;
 
-                     } //end unknown
-      }//endif else
-      
+
+
+            // }  // dfor
+          } // for
+
+        }  // endif xRef inside the domain
+
+        else {
+          for (int unknown = 0; unknown < numberOfVariables /*numberOfParameters*/;
+              unknown++) {
+
+            pointForceSources[idx_pointForceSources(n,i,j,unknown)] = 0.0;
+
+          } //end unknown
+        }//endif else
+
       }// y loop
     }// x loop
   }// time loop

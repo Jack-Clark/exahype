@@ -23,6 +23,8 @@
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
+#include "tarch/multicore/BooleanSemaphore.h"
+
 #include "exahype/Cell.h"
 #include "exahype/State.h"
 #include "exahype/Vertex.h"
@@ -45,6 +47,12 @@ class exahype::mappings::Plot {
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
+
+  /**
+   * This semaphore is used for locking the plotters'
+   * plotPatch function which is usually not thread-safe.
+   */
+  static tarch::multicore::BooleanSemaphore _semaphoreForPlotting;
 
   /**
    * Local copy of the state.

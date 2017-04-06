@@ -27,7 +27,7 @@
 
 #include "exahype/solvers/ADERDGSolver.h"
 
-
+#include "kernels/aderdg/generic/c/computeGradients.cpph" // derivatives
 
 
 std::string exahype::plotters::ADERDG2LegendreVerticesVTKAscii::getIdentifier() {
@@ -343,42 +343,49 @@ void exahype::plotters::ADERDG2LegendreVTK::plotVertexData(
   int firstVertexIndex,
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-  double* u,
+  double* u, double* gradU,
   double timeStamp
 ) {
   assertion( _vertexDataWriter!=nullptr || _writtenUnknowns==0 );
 
-  double* interpoland = new double[_solverUnknowns];
   double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
 
+  // this should go to the header or similar
+  const int basisX = _order + 1;
+  const int basisY = _order + 1;
+  const int basisZ = (DIMENSIONS == 3 ? _order  : 0 ) + 1;
+
+  kernels::index idx_u(basisZ, basisY, basisX, _solverUnknowns);
+  kernels::index idx_gradU(basisZ, basisY, basisX, DIMENSIONS, _solverUnknowns);
+
   dfor(i,_order+1) {
-    // This is inefficient but works. We could look it up directly from the arrays
     tarch::la::Vector<DIMENSIONS, double> p;
     for (int d=0; d<DIMENSIONS; d++) {
       p(d) = offsetOfPatch(d) + kernels::gaussLegendreNodes[_order][i(d)] * sizeOfPatch(d);
     }
-    for (int unknown=0; unknown < _solverUnknowns; unknown++) {
-      interpoland[unknown] = kernels::interpolate(
-        offsetOfPatch.data(),
-        sizeOfPatch.data(),
-        p.data(), // das ist die Position
-        _solverUnknowns,
-        unknown,
-        _order,
-        u
+
+    if(_postProcessing->mapWithDerivatives()) {
+      _postProcessing->mapQuantities(
+        offsetOfPatch,
+        sizeOfPatch,
+        p,
+        i,
+        u + idx_u(DIMENSIONS == 3 ? i(2) : 0, i(1), i(0), 0),
+        gradU + idx_gradU(DIMENSIONS == 3 ? i(2) : 0, i(1), i(0), 0, 0),
+        value,
+        timeStamp
+      );
+    } else {
+      _postProcessing->mapQuantities(
+        offsetOfPatch,
+        sizeOfPatch,
+        p,
+        i,
+        u + idx_u(DIMENSIONS == 3 ? i(2) : 0, i(1), i(0), 0),
+        value,
+        timeStamp
       );
     }
-
-    assertion(sizeOfPatch(0)==sizeOfPatch(1));
-    _postProcessing->mapQuantities(
-      offsetOfPatch,
-      sizeOfPatch,
-      p,
-      i,
-      interpoland,
-      value,
-      timeStamp
-    );
 
     if (_writtenUnknowns>0) {
       _vertexDataWriter->plotVertex(firstVertexIndex, value, _writtenUnknowns );
@@ -386,9 +393,6 @@ void exahype::plotters::ADERDG2LegendreVTK::plotVertexData(
 
     firstVertexIndex++;
   }
-
-  if (interpoland!=nullptr)  delete[] interpoland;
-  if (value!=nullptr)        delete[] value;
 }
 
 
@@ -396,13 +400,31 @@ void exahype::plotters::ADERDG2LegendreVTK::plotCellData(
   int firstCellIndex,
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-  double* u,
+  double* u, double* gradU,
   double timeStamp
 ) {
   assertion( _cellDataWriter!=nullptr || _writtenUnknowns==0 );
 
   double* interpoland = new double[_solverUnknowns];
   double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
+  
+  /****************************
+   *  Note: The vtk::Legendre::cells::... plotter has not been tested yet
+   *        because it tends to fail with the assertion
+   *     ADERDG2LegendreVTK.cpp, line 516 failed: _writtenUnknowns==0 || _vertexTimeStampDataWriter!=nullptr
+   * So this has to be fixed, afterwards this very method can be checked
+   * for correctness.
+   ****************************/
+
+  // this should go to the header or similar
+  const int basisX = _order + 1;
+  const int basisY = _order + 1;
+  const int basisZ = (DIMENSIONS == 3 ? _order  : 0 ) + 1;
+
+  const bool interpolateDerivatives = _postProcessing->mapWithDerivatives();
+  double* inter_gradQ = interpolateDerivatives ? new double[DIMENSIONS * _solverUnknowns] : nullptr;
+  kernels::index idx_gradU(basisZ, basisY, basisX, DIMENSIONS, _solverUnknowns);
+  kernels::index idx_inter_gradU(DIMENSIONS, _solverUnknowns);
 
   dfor(i,_order) {
     // This is inefficient but works. We could look it up directly from the arrays
@@ -422,16 +444,44 @@ void exahype::plotters::ADERDG2LegendreVTK::plotCellData(
       );
     }
 
-    assertion(sizeOfPatch(0)==sizeOfPatch(1));
-    _postProcessing->mapQuantities(
-      offsetOfPatch,
-      sizeOfPatch,
-      p,
-      i,
-      interpoland,
-      value,
-      timeStamp
-    );
+    if(interpolateDerivatives) {
+      // Inteprolate the given gradients between the cells. We abuse the interpolate' argument
+      // `numberOfUnknowns` with the value `nDim*nVar` in order to circumvent the gradU data ordering.
+      for (int d=0; d < DIMENSIONS; d++) {
+        for (int unknown=0; unknown < _solverUnknowns; unknown++) {
+          inter_gradQ[idx_inter_gradU(d,unknown)] = kernels::interpolate(
+            offsetOfPatch.data(),
+            sizeOfPatch.data(),
+            p.data(),
+            DIMENSIONS * _solverUnknowns,
+            d * _solverUnknowns + unknown,
+            _order,
+            gradU
+          );
+        }
+      }
+
+      _postProcessing->mapQuantities(
+        offsetOfPatch,
+        sizeOfPatch,
+        p,
+        i,
+        interpoland,
+	inter_gradQ,
+        value,
+        timeStamp
+      );
+    } else {
+      _postProcessing->mapQuantities(
+        offsetOfPatch,
+        sizeOfPatch,
+        p,
+        i,
+        interpoland,
+        value,
+        timeStamp
+      );
+    }
 
     if (_writtenUnknowns>0) {
       _cellDataWriter->plotCell(firstCellIndex, value, _writtenUnknowns );
@@ -441,6 +491,7 @@ void exahype::plotters::ADERDG2LegendreVTK::plotCellData(
   }
 
   if (interpoland!=nullptr)  delete[] interpoland;
+  if (inter_gradQ!=nullptr)  delete[] inter_gradQ;
   if (value!=nullptr)        delete[] value;
 }
 
@@ -467,20 +518,33 @@ void exahype::plotters::ADERDG2LegendreVTK::plotPatch(
     &&
     tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
   ) {
-    assertion( _writtenUnknowns==0 || _vertexWriter!=nullptr );
-    assertion( _writtenUnknowns==0 || _cellWriter!=nullptr );
-    assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
-    assertion( _writtenUnknowns==0 || _vertexTimeStampDataWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || ( _vertexWriter && _cellWriter && _gridWriter ));
+    assertion( _writtenUnknowns==0 || (_plotCells && _cellTimeStampDataWriter!=nullptr) || (!_plotCells && _vertexTimeStampDataWriter!=nullptr ));
+    assertion(sizeOfPatch(0)==sizeOfPatch(1));
 
     std::pair<int,int> vertexAndCellIndex = plotLegendrePatch(offsetOfPatch, sizeOfPatch);
 
     writeTimeStampDataToPatch( timeStamp, vertexAndCellIndex.first, vertexAndCellIndex.second );
 
+    // this should go to the header or similar
+    const int basisX = _order + 1;
+    const int basisY = _order + 1;
+    const int basisZ = (DIMENSIONS == 3 ? _order  : 0 ) + 1;
+
+    double *gradU = nullptr;
+    if(_postProcessing->mapWithDerivatives()) {
+      gradU = new double[basisZ*basisY*basisX * DIMENSIONS * _solverUnknowns];
+      kernels::aderdg::generic::c::computeGradQ(gradU, u, sizeOfPatch, _solverUnknowns, _order);
+    }
+
     if (_plotCells) {
-      plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, u, timeStamp );
+      plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, u, gradU, timeStamp );
     }
     else {
-      plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, u, timeStamp );
+      plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, u, gradU, timeStamp );
     }
+
+    if(gradU!=nullptr) delete[] gradU;
   }
 }
+

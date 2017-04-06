@@ -27,11 +27,11 @@ const uint64_t kNumberOfSamples1 = 1000000;
 const uint64_t kNumberOfSamples2 = 10;
 
 std::unordered_map<std::string,
-                   std::chrono::time_point<std::chrono::steady_clock>>
+                   std::chrono::time_point<clockType>>
     overhead_time_points;
 
 void initOverheadMeasurementMap() {
-  static const int kNumberOfKeys = 12;
+  static const int kNumberOfKeys = 15;
   std::array<std::string, kNumberOfKeys> keys = {"boundaryConditions",
                                                  "volumeUnknownsRestriction",
                                                  "riemannSolver",
@@ -39,6 +39,9 @@ void initOverheadMeasurementMap() {
                                                  "surfaceIntegral",
                                                  "solutionUpdate",
                                                  "spaceTimePredictor",
+                                                 "spaceTimePredictor_PDEflux",
+                                                 "spaceTimePredictor_PDEsource",
+                                                 "spaceTimePredictor_PDEncp",
                                                  "stableTimeStepSize",
                                                  "faceUnknownsRestriction",
                                                  "solutionAdjustment",
@@ -50,19 +53,19 @@ void initOverheadMeasurementMap() {
 }
 
 void storeInMap() {
-  overhead_time_points["solutionUpdate"] = std::chrono::steady_clock::now();
+  overhead_time_points["solutionUpdate"] = clockType::now();
   escape(&overhead_time_points);
 }
 
 void getCurrentTime() {
-  auto now = std::chrono::steady_clock::now();
+  auto now = clockType::now();
   escape(&now);
 }
 
 static void estimateOverhead() {
-  std::cout << "steady_clock::period = "
-            << static_cast<double>(std::chrono::steady_clock::period::num) /
-                   std::chrono::steady_clock::period::den
+  std::cout << "clock::period = "
+            << static_cast<double>(clockType::period::num) /
+                   clockType::period::den
             << "sec" << std::endl;
 
   // noop
@@ -129,11 +132,11 @@ void ChronoElapsedTimeProfiler::registerTag(const std::string& tag) {
 }
 
 void ChronoElapsedTimeProfiler::start(const std::string& tag) {
-  time_points_[tag] = std::chrono::steady_clock::now();
+  time_points_[tag] = clockType::now();
 }
 
 void ChronoElapsedTimeProfiler::stop(const std::string& tag) {
-  auto end = std::chrono::steady_clock::now();
+  auto end = clockType::now();
   escape(&end);
 
   auto start = time_points_[tag];

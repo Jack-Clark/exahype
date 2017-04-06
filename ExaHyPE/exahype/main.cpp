@@ -10,7 +10,7 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #include "tarch/logging/Log.h"
 #include "tarch/tests/TestCaseRegistry.h"
 #include "tarch/logging/CommandLineLogger.h"
@@ -20,6 +20,7 @@
 #include "peano/peano.h"
 
 #include "exahype/Parser.h"
+#include "exahype/Vertex.h"
 #include "exahype/runners/Runner.h"
 #include "buildinfo.h"
 
@@ -38,6 +39,131 @@ tarch::logging::Log _log("");
 
 void version(const std::string& programname); // version dumping, see below
 void help(const std::string& programname);  // A help message
+
+
+
+/**
+ * The ping pong test has to be triggered by main very very early. There should
+ * be no other message in the MPI subsystem.
+ */
+void pingPoingTest() {
+  #if defined(Asserts) && defined(Parallel)
+  logInfo( "run()", "start ping-pong test" );
+  exahype::Vertex::initDatatype();
+  exahype::Vertex sendVertex[5];
+
+  if (tarch::parallel::Node::getInstance().getNumberOfNodes()>1) {
+    if (tarch::parallel::Node::getInstance().getRank()==0) {
+      sendVertex[0].setPosition( tarch::la::Vector<DIMENSIONS,double>(2.0), 4);
+      sendVertex[0].setAdjacentRank( 0, 10 );
+      sendVertex[0].setAdjacentRank( 1, 11 );
+      sendVertex[0].setAdjacentRank( 2, 12 );
+      sendVertex[0].setAdjacentRank( 3, 13 );
+      sendVertex[1].setPosition( tarch::la::Vector<DIMENSIONS,double>(3.0), 5);
+      sendVertex[1].setAdjacentRank( 0, 20 );
+      sendVertex[1].setAdjacentRank( 1, 21 );
+      sendVertex[1].setAdjacentRank( 2, 22 );
+      sendVertex[1].setAdjacentRank( 3, 23 );
+      sendVertex[2].setPosition( tarch::la::Vector<DIMENSIONS,double>(4.0), 6);
+      sendVertex[2].setAdjacentRank( 0, 30 );
+      sendVertex[2].setAdjacentRank( 1, 31 );
+      sendVertex[2].setAdjacentRank( 2, 32 );
+      sendVertex[2].setAdjacentRank( 3, 33 );
+
+      logInfo( "run()", "send one vertex" );
+      sendVertex[0].send(1,100,false,-1);
+      logInfo( "run()", "vertex left system" );
+
+      logInfo( "run()", "send three vertices from call stack" );
+      MPI_Send( sendVertex, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 1, 1, tarch::parallel::Node::getInstance().getCommunicator() );
+      logInfo( "run()", "vertices left system" );
+    }
+    if (tarch::parallel::Node::getInstance().getRank()==1) {
+      logInfo( "run()", "start to receive single vertex " );
+      exahype::Vertex receivedVertex;
+      receivedVertex.receive(0,100,false,-1);
+      logInfo( "run()", "received vertex " << receivedVertex.toString() );
+      assertion1( receivedVertex.getLevel()==4, receivedVertex.toString() );
+      assertion1( receivedVertex.getX()(0)==2.0, receivedVertex.toString() );
+      assertion1( receivedVertex.getX()(1)==2.0, receivedVertex.toString() );
+      #ifdef Dim3
+      assertion1( receivedVertex.getX()(2)==2.0, receivedVertex.toString() );
+      #endif
+
+      exahype::Vertex receivedVertices[5];
+      logInfo( "run()", "start to receive three vertices on call stack" );
+      MPI_Recv( receivedVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 0, 1, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+      logInfo( "run()", "received vertices" );
+      assertion3( receivedVertices[0].getLevel()==4,  receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[0].getX()(0)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[0].getX()(1)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      #ifdef Dim3
+      assertion3( receivedVertices[0].getX()(2)==2.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      #endif
+
+      assertion3( receivedVertices[1].getLevel()==5,  receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[1].getX()(0)==3.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[1].getX()(1)==3.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      #ifdef Dim3
+      assertion3( receivedVertices[1].getX()(2)==3.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      #endif
+
+      assertion3( receivedVertices[2].getLevel()==6,  receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[2].getX()(0)==4.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      assertion3( receivedVertices[2].getX()(1)==4.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      #ifdef Dim3
+      assertion3( receivedVertices[2].getX()(2)==4.0, receivedVertices[0].toString(), receivedVertices[1].toString(), receivedVertices[2].toString() );
+      #endif
+      logInfo( "run()", "first part of ping pong test ok" );
+    }
+    MPI_Barrier( tarch::parallel::Node::getInstance().getCommunicator() );
+
+    if (tarch::parallel::Node::getInstance().getRank()==0) {
+      //exahype::Vertex* heapVertices = new exahype::Vertex[5];
+      exahype::Vertex heapVertices[5];
+      logInfo( "run()", "wait for three vertices to arrive on heap" );
+      MPI_Recv( heapVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 1, 1, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+      logInfo( "run()", "vertices have arrived" );
+
+      assertion3( heapVertices[0].getLevel()==4,  heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[0].getX()(0)==2.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[0].getX()(1)==2.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      #ifdef Dim3
+      assertion3( heapVertices[0].getX()(2)==2.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      #endif
+
+      assertion3( heapVertices[1].getLevel()==5,  heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[1].getX()(0)==3.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[1].getX()(1)==3.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      #ifdef Dim3
+      assertion3( heapVertices[1].getX()(2)==3.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      #endif
+
+      assertion3( heapVertices[2].getLevel()==6,  heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[2].getX()(0)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      assertion3( heapVertices[2].getX()(1)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      #ifdef Dim3
+      assertion3( heapVertices[2].getX()(2)==4.0, heapVertices[0].toString(), heapVertices[1].toString(), heapVertices[2].toString() );
+      #endif
+
+      //delete[] heapVertices;
+      logInfo( "run()", "second part of ping-poing test ok" );
+    }
+    if (tarch::parallel::Node::getInstance().getRank()==1) {
+      exahype::Vertex* heapVertices = new exahype::Vertex[5];
+      heapVertices[0].setPosition( tarch::la::Vector<DIMENSIONS,double>(2.0), 4);
+      heapVertices[1].setPosition( tarch::la::Vector<DIMENSIONS,double>(3.0), 5);
+      heapVertices[2].setPosition( tarch::la::Vector<DIMENSIONS,double>(4.0), 6);
+      logInfo( "run()", "send out three vertices from heap" );
+      MPI_Send( heapVertices, 3, exahype::Vertex::MPIDatatypeContainer::Datatype, 0, 1, tarch::parallel::Node::getInstance().getCommunicator() );
+      delete[] heapVertices;
+      logInfo( "run()", "vertices have left the system" );
+    }
+    MPI_Barrier( tarch::parallel::Node::getInstance().getCommunicator() );
+  }
+  #endif
+}
+
 
 int main(int argc, char** argv) {
   peano::fillLookupTables();
@@ -67,11 +193,12 @@ int main(int argc, char** argv) {
     return sharedMemorySetup;
   }
 
+//  pingPoingTest();
+
   //
   //   Parse config file
   // =====================
   //
-
   std::string progname = argv[0];
 
   if (argc < 2) {
@@ -103,7 +230,6 @@ int main(int argc, char** argv) {
     logError("main()", "invalid config file. Quit");
     return -2;
   }
-  
 
   //
   //   Init solver registries
@@ -177,8 +303,12 @@ int main(int argc, char** argv) {
 //
 //   Run tests
 // =============
+// Our unit tests do cover the generic ADER-DG kernels. The generic kernels do
+// parallelise. As a consequence, they connect to the autotuning feature.
+// Autotuning however is not set up yet, so this will fail. We therefore
+// disable the unit tests in shared memory mode.
 //
-#if defined(Debug) || defined(Asserts)
+#if (defined(Debug) || defined(Asserts)) && !defined(SharedMemoryParallelisation)
 if(! std::getenv("EXAHYPE_SKIP_TESTS")) { // cf issue #74
   tarch::tests::TestCaseRegistry::getInstance().getTestCaseCollection().run();
   int testExitCode = tarch::tests::TestCaseRegistry::getInstance()

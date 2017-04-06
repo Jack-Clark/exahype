@@ -44,7 +44,7 @@ public class OptimisedFluxesLinearADER_DGinC implements Solver {
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
     Helpers.invokeCodeGenerator(solverName, _numberOfUnknowns, _numberOfParameters, _order, true, _dimensions,
-        _microarchitecture, _pathToLibxsmm);
+        _microarchitecture, _pathToLibxsmm, false);
 
     writer.write("  private:\n");
     if (_dimensions == 2) {
@@ -64,7 +64,7 @@ public class OptimisedFluxesLinearADER_DGinC implements Solver {
   public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
     Helpers.invokeCodeGenerator(solverName, _numberOfUnknowns, _numberOfParameters, _order, true, _dimensions,
-        _microarchitecture, _pathToLibxsmm);
+        _microarchitecture, _pathToLibxsmm, false);
 
     writer.write("// ==============================================\n");
     writer.write("// Please do not change the implementations below\n");

@@ -10,28 +10,6 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
-// #include "kernels/aderdg/generic/Kernels.h"
-
-// #include "string.h"
-
-// #include "tarch/la/Scalar.h"
-// #include "tarch/la/ScalarOperations.h"
-
-// #include "kernels/GaussLegendreQuadrature.h"
-// #include "kernels/DGMatrices.h"
-
-#ifndef EXAHYPE_CFL_FACTOR
-// Sven, addressing issue #100:
-// Set CFL factor with compiler option like -DEXAHYPE_CFL_FACTOR=0.3
-#define EXAHYPE_CFL_FACTOR 0.9 // TODO(Dominic): Move into solver
-#endif
-
-// #include <fstream>
-
-// using std::endl;
-// using std::cout;
-
 template <typename SolverType>
 double kernels::aderdg::generic::c::stableTimeStepSize(
     SolverType& solver,
@@ -40,11 +18,15 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
     const tarch::la::Vector<DIMENSIONS, double>& dx) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int basisSize          = SolverType::Order+1;
-  constexpr double PNPM[10]        = {1.0,   0.33,  0.17, 0.1,  0.069,
-                                      0.045, 0.038, 0.03, 0.02, 0.015};
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
+  constexpr int order              = SolverType::Order;
+  constexpr int basisSize          = order+1;
+  constexpr double cflFactor       = SolverType::CFL;
+  
+  constexpr double PNPM[10]  = {1.0,   0.33,  0.17, 0.1,  0.069,
+                                0.045, 0.038, 0.03, 0.02, 0.015};
 
-  idx3 idx_luh(basisSize, basisSize, numberOfVariables+numberOfParameters); // idx_luh(y,x,nVar)
+  idx3 idx_luh(basisSize, basisSize, numberOfData); // idx_luh(y,x,nVar)
   
   double dt = std::numeric_limits<double>::max();
   for (int i = 0; i < basisSize; i++) {
@@ -56,18 +38,19 @@ double kernels::aderdg::generic::c::stableTimeStepSize(
 
         double maxEigenvalue = 0.0;
         for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-          maxEigenvalue = std::max(fabs(lambda[ivar]), maxEigenvalue);
+          maxEigenvalue = std::max(std::abs(lambda[ivar]), maxEigenvalue);
         }
         denominator += maxEigenvalue / dx[d];
       }
 
-      dt = std::min(dt, EXAHYPE_CFL_FACTOR * PNPM[basisSize - 1] / // TODO(Dominic): Move CFL_Factor into solver.
-                            denominator);  // order N = basisSize-1
+      dt = std::min(dt, cflFactor * PNPM[order] / denominator);
     }
   }
 
-  // std::cout << "-----------------------------------" << std::endl;
-  // std::cout << dt << std::endl;
-  // std::cout << "-----------------------------------" << std::endl;
+//   std::cout << "-----------------------------------" << std::endl;
+//   std::cout << "dt="<< dt << std::endl;
+//   std::cout << "order="<< order << std::endl;
+//   std::cout << "basisSize="<< basisSize << std::endl;
+//   std::cout << "-----------------------------------" << std::endl;
   return dt;
 }

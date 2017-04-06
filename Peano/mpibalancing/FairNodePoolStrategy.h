@@ -71,34 +71,42 @@ class mpibalancing::FairNodePoolStrategy: public tarch::parallel::NodePoolStrate
       private:
         /**
          * Is a copy of the encapsulating class' field.
+         *
+         * Should be const but then using the operator= becomes a mess.
          */
-        int         _mpiRanksPerNode;
+        int         _ranksPerNode;
+
+        int         _ranksToSpareFromWork;
 
         /**
          * Holds the rank of the process represented by this object.
+         *
+         * Should be const but then using the operator= becomes a mess.
          */
-        int         _rank;
+        int               _rank;
 
         /**
          * Keep track how many workers are booked by this node.
          */
-        double      _bookedWorkers;
+        double            _bookedWorkers;
 
         /**
          * Holds the state of the process.
          */
-        State       _state;
+        State             _state;
 
         /**
          * Machine name
+         *
+         * Should be const but then using the operator= becomes a mess.
          */
-        std::string _name;
+        std::string       _name;
 
       public:
         /**
          * Construct one entry. By default this entry corresponds to an idle worker.
          */
-        NodePoolListEntry( const int mpiRanksPerNode, int rank, const std::string& name );
+        NodePoolListEntry( const int ranksPerNode, const int ranksToSpareFromWork, int rank, const std::string& name );
 
         /**
          * I need a default constructor for some resorting, but it is not
@@ -214,7 +222,9 @@ class mpibalancing::FairNodePoolStrategy: public tarch::parallel::NodePoolStrate
 
     double        _waitTimeOut;
 
-    const int     _mpiRanksPerNode;
+    const int     _ranksPerNode;
+
+    const int     _ranksToSpareFromWork;
 
     void logQueue( const RequestQueue& queue ) const;
 
@@ -227,11 +237,15 @@ class mpibalancing::FairNodePoolStrategy: public tarch::parallel::NodePoolStrate
   /**
    * Constructor
    *
-   * Construct all the attributes.
-   *
-   * @todo Wieder auf 1 zueruck stellen
+   * @param mpiRanksPerNode       Number of ranks per node.
+   * @param ranksToSpareFromWork  This is the number of ranks to spare. We
+   *   always spare at least the global master (rank 0) from work. However you
+   *   might want to choose a bigger number of ranks such as all ranks on the
+   *   first node.
+   * @param waitTimeOutSec        How long shall the node wait for more
+   *   messages dropping in before it starts to answer them.
    */
-    FairNodePoolStrategy(int mpiRanksPerNode = 1, double waitTimeOutSec = 1e-5);
+    FairNodePoolStrategy(int mpiRanksPerNode = 1, int ranksToSpareFromWork = 1, double waitTimeOutSec = 1e-5);
     virtual ~FairNodePoolStrategy();
 
     virtual void setNodePoolTag(int tag);

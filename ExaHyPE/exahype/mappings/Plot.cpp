@@ -17,10 +17,15 @@
 
 #include "peano/utils/Globals.h"
 
+#include "tarch/multicore/Lock.h"
+
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 #include "exahype/plotters/Plotter.h"
 
+tarch::logging::Log exahype::mappings::Plot::_log("exahype::mappings::Plot");
+
+tarch::multicore::BooleanSemaphore exahype::mappings::Plot::_semaphoreForPlotting;
 
 peano::CommunicationSpecification
 exahype::mappings::Plot::communicationSpecification() {
@@ -44,13 +49,14 @@ exahype::mappings::Plot::touchVertexFirstTimeSpecification() {
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::Plot::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,
-                                     peano::MappingSpecification::Serial,true);
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::Plot::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidFineGridRaces,true);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::Plot::ascendSpecification() {
   return peano::MappingSpecification(
@@ -62,8 +68,6 @@ peano::MappingSpecification exahype::mappings::Plot::descendSpecification() {
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
-
-tarch::logging::Log exahype::mappings::Plot::_log("exahype::mappings::Plot");
 
 exahype::mappings::Plot::Plot() {
   // do nothing
@@ -247,7 +251,15 @@ void exahype::mappings::Plot::receiveDataFromMaster(
     const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
     exahype::Cell& workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
+  if (!tarch::parallel::Node::getInstance().isGlobalMaster()) {
+    if (!exahype::plotters::startPlottingIfAPlotterIsActive(
+        exahype::solvers::Solver::getMinSolverTimeStampOfAllSolvers())) {
+      logWarning("beginIteration(State)",
+                 "plot invoked though no plotter is active at all at min "
+                 "solver time stamp "
+                 << exahype::solvers::Solver::estimateMinNextSolverTimeStampOfAllSolvers());
+    }
+  }
 }
 
 void exahype::mappings::Plot::mergeWithWorker(
@@ -295,16 +307,17 @@ void exahype::mappings::Plot::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   if ( fineGridCell.isInitialised() ) {
-    for (auto* pPlotter : exahype::plotters::RegisteredPlotters) {
-      int solverNumber=0;
-      for (auto* solver : exahype::solvers::RegisteredSolvers) {
-        if (pPlotter->plotDataFromSolver(solverNumber)) {
+    for (auto* plotter : exahype::plotters::RegisteredPlotters) {
+      for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+        if (plotter->plotDataFromSolver(solverNumber)) {
           int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
           if (element!=exahype::solvers::Solver::NotFound) {
-            pPlotter->plotPatch(fineGridCell.getCellDescriptionsIndex(),element);
+            tarch::multicore::Lock lock(_semaphoreForPlotting);
+            plotter->plotPatch(fineGridCell.getCellDescriptionsIndex(),element);
           }
         }
-        ++solverNumber;
       }
     }
   }
@@ -324,21 +337,6 @@ void exahype::mappings::Plot::beginIteration(exahype::State& solverState) {
   if (exahype::plotters::RegisteredPlotters.empty()) {
     logError("beginIteration(State)",
              "plot mapping invoked though no plotters are registered at all");
-  }
-
-  // @todo This does not work if we use dynamic lb. In this case, ranks will
-  //       drop out and then rejoin the computation. Whenever a rank drops out,
-  //       its plotters will be out of sync. Therefore, we have to broadcast
-  //       the plotter states per plot run to all non-idle ranks which easily
-  //       should be possible exactly here.
-  if (!tarch::parallel::Node::getInstance().isGlobalMaster()) {
-    if (!exahype::plotters::isAPlotterActive(
-            solvers::Solver::getMinSolverTimeStampOfAllSolvers())) {
-      logWarning("beginIteration(State)",
-                 "plot invoked though no plotter is active at all at min "
-                 "solver time stamp "
-                     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
-    }
   }
 }
 

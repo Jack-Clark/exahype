@@ -44,24 +44,23 @@ void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfVariables2 = numberOfVariables*numberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int basisSize          = SolverType::Order+1;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
+  constexpr int order              = SolverType::Order;
+  constexpr int basisSize          = order+1;
   constexpr int basisSize2         = basisSize * basisSize;
-  constexpr int order              = basisSize - 1;
 
   // Compute the average variables and parameters from the left and the right
-  double* QavL = tempStateSizedVectors[0]; // size: numberOfVariables+numberOfParameters
-  double* QavR = tempStateSizedVectors[1]; // size: numberOfVariables+numberOfParameters
+  double QavL[numberOfData]={0.0}; // size: numberOfData
+  double QavR[numberOfData]={0.0}; // size: numberOfData
   {
-    idx3 idx_QLR(basisSize, basisSize, numberOfVariables+numberOfParameters);
-    std::fill_n (QavL, (numberOfVariables+numberOfParameters), 0.0);
-    std::fill_n (QavR, (numberOfVariables+numberOfParameters), 0.0);
+    idx3 idx_QLR(basisSize, basisSize, numberOfData);
     
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
         const double weight = kernels::gaussLegendreWeights[order][i] *
                               kernels::gaussLegendreWeights[order][j];
 
-        for (int k = 0; k < numberOfVariables+numberOfParameters; k++) {
+        for (int k = 0; k < numberOfData; k++) {
           QavL[k] += weight * QL[idx_QLR(i, j, k)];
           QavR[k] += weight * QR[idx_QLR(i, j, k)];
         }
@@ -69,8 +68,8 @@ void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
     }
   }
 
-  double* LL = tempStateSizedVectors[2]; // size: numberOfVariables
-  double* LR = tempStateSizedVectors[3]; // size: numberOfVariables
+  double LL[numberOfVariables] = {0.0}; // size: numberOfVariables
+  double LR[numberOfVariables] = {0.0}; // size: numberOfVariables
   solver.eigenvalues(QavL, normalNonZero, LL);
   solver.eigenvalues(QavR, normalNonZero, LR);
 
@@ -94,37 +93,35 @@ void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
   // TODO(Dominic): Still relevant? matrixb seems to be used?
   
   // evaluate the system matrix just once in the averaged state
-  double* Qav = tempStateSizedVectors[4]; // size: numberOfVariables+numberOfParameters
+  double Qav[numberOfData]; // size: numberOfData
   // Qav = 0.5 * (QavL + QavR) (includes parameters)
-  std::transform(QavL, QavL + (numberOfVariables+numberOfParameters), QavR, Qav,
+  std::transform(QavL, QavL + (numberOfData), QavR, Qav,
                  [](double a, double b) { return 0.5 * (a + b); });
-  double* Bn = tempStateSizedSquareMatrices[0]; // size: numberOfVariables * numberOfVariables
+  double Bn[numberOfVariables][numberOfVariables]={0.0}; // size: numberOfVariables * numberOfVariables
   
-  solver.coefficientMatrix(Qav, normalNonZero, Bn);
+  solver.coefficientMatrix(Qav, normalNonZero, Bn[0]);
 
-  double* BnMinusIdSmax = tempStateSizedSquareMatrices[1]; // size: numberOfVariables * numberOfVariables
-  double* BnPlusIdSmax  = tempStateSizedSquareMatrices[2]; // size: numberOfVariables * numberOfVariables
-  std::copy_n (Bn, numberOfVariables2, BnMinusIdSmax);
-  std::copy_n (Bn, numberOfVariables2, BnPlusIdSmax);
+  double BnMinusIdSmax[numberOfVariables][numberOfVariables] = {0.0}; // size: numberOfVariables * numberOfVariables
+  double BnPlusIdSmax[numberOfVariables][numberOfVariables] = {0.0}; // size: numberOfVariables * numberOfVariables
   {
-    idx2 idx_BnPM(numberOfVariables, numberOfVariables);
     // skip parameters
+    std::copy_n (Bn[0], numberOfVariables2, BnMinusIdSmax[0]);
+    std::copy_n (Bn[0], numberOfVariables2, BnPlusIdSmax[0]);
     for (int i = 0; i < numberOfVariables; i++) {
-      BnMinusIdSmax[idx_BnPM(i, i)] -= smax;
-      BnPlusIdSmax [idx_BnPM(i, i)] += smax;
+      BnMinusIdSmax[i][i] -= smax;
+      BnPlusIdSmax [i][i] += smax;
     }
   }
 
-  double* Q = tempFaceUnknowns; // size: basisSize2 * (numberOfVariables+numberOfParameters)
-  std::transform(QR, QR + basisSize2 * (numberOfVariables+numberOfParameters), QL, Q,
+  double Q[basisSize2*numberOfData];
+  std::transform(QR, QR + basisSize2 * (numberOfData), QL, Q,
                  [](double a, double b) { return 0.5 * (a - b); });
 
   std::fill_n (FL, basisSize2 * numberOfVariables, 0.0);
   std::fill_n (FR, basisSize2 * numberOfVariables, 0.0);
   {
-    idx2 idx_BnPM(numberOfVariables, numberOfVariables);
     idx3 idx_FLR(basisSize, basisSize, numberOfVariables);
-    idx3 idx_QLR(basisSize, basisSize, numberOfVariables+numberOfParameters);
+    idx3 idx_QLR(basisSize, basisSize, numberOfData);
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
         // FL(:,j,i) = 0.5 * (Bn - Id*smax)(:,:) * (QR(:,j,i) - QL(:,j,i))
@@ -132,9 +129,9 @@ void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
         for (int k = 0; k < numberOfVariables; k++) {
           for (int l = 0; l < numberOfVariables; l++) {
             FL[idx_FLR(i, j, k)] +=
-                BnMinusIdSmax[idx_BnPM(l, k)] * Q[idx_QLR(i, j, l)];
+                BnMinusIdSmax[l][k] * Q[idx_QLR(i, j, l)];
             FR[idx_FLR(i, j, k)] +=
-                BnPlusIdSmax[idx_BnPM(l, k)] * Q[idx_QLR(i, j, l)];
+                BnPlusIdSmax[l][k] * Q[idx_QLR(i, j, l)];
           }
         }
       }

@@ -18,12 +18,13 @@ public class OptimisedADERDG implements Solver {
   private String  _microarchitecture;
   private String  _pathToLibxsmm;
   private boolean _enableProfiler;
+  private boolean _enableDeepProfiler;
   private boolean _hasConstants;
   private boolean _isLinear;
   private boolean _isFortran;
 
   public OptimisedADERDG(int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
-      int order,String microarchitecture, String pathToLibxsmm, boolean enableProfiler, boolean hasConstants,boolean isLinear) {
+      int order,String microarchitecture, String pathToLibxsmm, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants,boolean isLinear) {
     _dimensions         = dimensions;
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
@@ -33,6 +34,7 @@ public class OptimisedADERDG implements Solver {
     _microarchitecture  = microarchitecture;
     _pathToLibxsmm      = pathToLibxsmm;
     _enableProfiler     = enableProfiler;
+    _enableDeepProfiler = enableDeepProfiler;
     _hasConstants       = hasConstants;
     _isLinear           = isLinear;
   }
@@ -118,7 +120,7 @@ public class OptimisedADERDG implements Solver {
       String projectName) throws java.io.IOException {
         
     Helpers.invokeCodeGenerator(solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
-        _microarchitecture, _pathToLibxsmm);
+        _microarchitecture, _pathToLibxsmm, _enableDeepProfiler);
         
     String content = IOUtils.convertRessourceContentToString(
         "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverImplementation.template"); //OptimisedADERDGSolverInCGeneratedCode_withConverter for debug (can switch SpaceTimePredictor and RiemannSolver to generic if needed)
@@ -136,6 +138,12 @@ public class OptimisedADERDG implements Solver {
 		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
 		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
 		  solverConstructorArgumentExtension  += ", std::move(profiler)";
+      
+      if(_enableDeepProfiler) {
+        content = content.replaceAll("\\{\\{DeepProfilerArg\\}\\}", ", _profiler.get()");
+      } else {
+        content = content.replaceAll("\\{\\{DeepProfilerArg\\}\\}", "");  
+      }
 		  
       content = content.replaceAll("\\{\\{BeforeSpaceTimePredictor\\}\\}", "  _profiler->start(\"spaceTimePredictor\");");  
       content = content.replaceAll("\\{\\{AfterSpaceTimePredictor\\}\\}", "  _profiler->stop(\"spaceTimePredictor\");"); 
@@ -162,6 +170,7 @@ public class OptimisedADERDG implements Solver {
       content = content.replaceAll("\\{\\{BeforeVolumeUnknownsRestriction\\}\\}", "  _profiler->start(\"volumeUnknownsRestriction\");"); 
       content = content.replaceAll("\\{\\{AfterVolumeUnknownsRestriction\\}\\}", "  _profiler->stop(\"volumeUnknownsRestriction\");");
 	  } else {
+      content = content.replaceAll("\\{\\{DeepProfilerArg\\}\\}", "");  
       content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeSpaceTimePredictor\\}\\}", "");  
       content = content.replaceAll("(\\n|\\r)+\\{\\{AfterSpaceTimePredictor\\}\\}", ""); 
       content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeSolutionUpdate\\}\\}", ""); 

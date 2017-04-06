@@ -26,6 +26,9 @@
 bool exahype::State::FuseADERDGPhases = false;
 
 exahype::State::State() : Base() {
+  // @todo Guidebook
+
+  _stateData.setMaxRefinementLevelAllowed(0);
 }
 
 exahype::State::State(const Base::PersistentState& argument) : Base(argument) {
@@ -53,36 +56,33 @@ void exahype::State::endedGridConstructionIteration(int finestGridLevelPossible)
   const bool nodePoolHasGivenOutRankSizeLastQuery =
     tarch::parallel::NodePool::getInstance().hasGivenOutRankSizeLastQuery();
 
+  if (nodePoolHasGivenOutRankSizeLastQuery && _stateData.getMaxRefinementLevelAllowed()>=3) {
+    _stateData.setMaxRefinementLevelAllowed( _stateData.getMaxRefinementLevelAllowed()-3);
+  }
+  // We already thought that we are done but then suddenly the load balancing
+  // decided to balance once more. So reset counter.
+  else if (nodePoolHasGivenOutRankSizeLastQuery && _stateData.getMaxRefinementLevelAllowed()<0) {
+    _stateData.setMaxRefinementLevelAllowed(0);
+  }
   // No more nodes left. Start to enforce refinement
-  if (!idleNodesLeft && _stateData.getMaxRefinementLevelAllowed()>=0) {
+  else if (!idleNodesLeft && _stateData.getMaxRefinementLevelAllowed()>=0) {
     _stateData.setMaxRefinementLevelAllowed(-1);
   }
   // Refinement is enforced. So we decrease counter. Once we underrun -2, grid
   // construction can terminate as all enforced refined went through.
-  else if (!idleNodesLeft && _stateData.getMaxRefinementLevelAllowed()<=-1) {
-    _stateData.setMaxRefinementLevelAllowed(
-      _stateData.getMaxRefinementLevelAllowed()-1 );
+  else if (_stateData.getMaxRefinementLevelAllowed()<=-1) {
+    _stateData.setMaxRefinementLevelAllowed( _stateData.getMaxRefinementLevelAllowed()-1 );
   }
   // Seems that max permitted level has exceeded max grid level. We may assume
   // that there are more MPI ranks than available trees.
-  else if (isGridStationary() &&
-    _stateData.getMaxRefinementLevelAllowed()>finestGridLevelPossible) {
-    _stateData.setMaxRefinementLevelAllowed( -3 );
-  }
-  else if (nodePoolHasGivenOutRankSizeLastQuery &&
-    _stateData.getMaxRefinementLevelAllowed()>=2) {
-    _stateData.setMaxRefinementLevelAllowed(
-      _stateData.getMaxRefinementLevelAllowed()-2);
+  else if (isGridStationary() && _stateData.getMaxRefinementLevelAllowed()>finestGridLevelPossible) {
+    _stateData.setMaxRefinementLevelAllowed( -1 );
   }
   // Nothing has changed in this grid iteration in the grid and we haven't
   // given out new workers. So increase the permitted maximum grid level by
   // one and give another try whether the grid adds more vertices.
-  else if (
-      !(nodePoolHasGivenOutRankSizeLastQuery)
-    && isGridStationary()
-  ) {
-    _stateData.setMaxRefinementLevelAllowed(
-      _stateData.getMaxRefinementLevelAllowed()+1);
+  else if ( !(nodePoolHasGivenOutRankSizeLastQuery) && isGridStationary() && _stateData.getMaxRefinementLevelAllowed()>=0 ) {
+    _stateData.setMaxRefinementLevelAllowed( _stateData.getMaxRefinementLevelAllowed()+1);
   }
 }
 
@@ -96,7 +96,9 @@ exahype::State::RefinementAnswer exahype::State::mayRefine(
     &&
     isCreationalEvent
   ) {
-    return RefinementAnswer::EnforceRefinement;
+    return RefinementAnswer::Refine;
+    // @todo Dominic
+//    return RefinementAnswer::EnforceRefinement;
   }
   else if ( _stateData.getMaxRefinementLevelAllowed()<0 ) {
     return RefinementAnswer::Refine;
@@ -132,3 +134,128 @@ bool exahype::State::continueToConstructGrid() const {
   #endif
 }
 
+ exahype::records::State::MergeMode exahype::State::getMergeMode() const {
+   return _stateData.getMergeMode();
+ }
+
+ exahype::records::State::SendMode exahype::State::getSendMode() const {
+   return _stateData.getSendMode();
+ }
+
+ void exahype::State::switchToInitialConditionAndTimeStepSizeComputationContext() {
+   _stateData.setReinitTimeStepData(false);
+   _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+   _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
+ }
+
+ void exahype::State::switchToPredictionAndFusedTimeSteppingInitialisationContext() {
+   _stateData.setReinitTimeStepData(false);
+   _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+   _stateData.setSendMode (records::State::SendMode::SendFaceData);
+ }
+
+ void exahype::State::switchToADERDGTimeStepContext() {
+   _stateData.setReinitTimeStepData(false);
+   _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData);
+   _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
+ }
+
+ void exahype::State::switchToPredictionRerunContext() {
+   switchToPredictionContext();
+ }
+
+ void exahype::State::switchToNeighbourDataMergingContext() {
+   _stateData.setReinitTimeStepData(false);
+   _stateData.setMergeMode(records::State::MergeMode::MergeFaceData);
+   _stateData.setSendMode (records::State::SendMode::SendNothing);
+ }
+
+ void exahype::State::switchToPredictionContext() {
+   _stateData.setReinitTimeStepData(false);
+   _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+   _stateData.setSendMode (records::State::SendMode::SendFaceData);
+ }
+
+ void exahype::State::switchToSolutionUpdateContext() {
+   _stateData.setReinitTimeStepData(false);
+   _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+   _stateData.setSendMode (records::State::SendMode::SendNothing);
+ }
+
+ void exahype::State::switchToTimeStepSizeComputationContext() {
+   _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
+   _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+   _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
+ }
+
+ void exahype::State::switchToPreAMRContext() {
+   _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
+   _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+   _stateData.setSendMode (records::State::SendMode::SendNothing);
+ }
+
+ void exahype::State::switchToPostAMRContext() {
+   _stateData.setReinitTimeStepData(true);
+   _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+   _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
+ }
+
+ void exahype::State::switchToLimiterStatusSpreadingContext() {
+   _stateData.setReinitTimeStepData(false);
+   _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+   _stateData.setSendMode (records::State::SendMode::SendNothing);
+ }
+
+ void exahype::State::switchToLimiterStatusSpreadingFusedTimeSteppingContext() {
+   _stateData.setReinitTimeStepData(false);
+   _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
+   _stateData.setSendMode (records::State::SendMode::SendNothing);
+ }
+
+ void exahype::State::switchToReinitialisationContext() {
+   _stateData.setReinitTimeStepData(false);
+   // We are merging a limiter status but we do not use the merging and sending mappings. So, we can use any value here.
+   _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+   _stateData.setSendMode (records::State::SendMode::SendNothing);
+ }
+
+ void exahype::State::switchToRecomputeSolutionAndTimeStepSizeComputationContext() {
+   _stateData.setReinitTimeStepData(false);
+   _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+   _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
+ }
+
+ void exahype::State::switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext() {
+   _stateData.setReinitTimeStepData(false);
+   _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
+   _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
+ }
+
+ //
+ void exahype::State::setStabilityConditionOfOneSolverWasViolated(bool state) {
+   _stateData.setStabilityConditionOfOneSolverWasViolated(state);
+ }
+
+ bool exahype::State::stabilityConditionOfOneSolverWasViolated() const {
+   return _stateData.getStabilityConditionOfOneSolverWasViolated();
+ }
+
+ void exahype::State::setReinitTimeStepData(bool state) {
+   _stateData.setReinitTimeStepData(state);
+ }
+
+ bool exahype::State::reinitTimeStepData() const  {
+   return _stateData.getReinitTimeStepData();
+ }
+
+ bool exahype::State::fuseADERDGPhases()  {
+   return FuseADERDGPhases;
+ }
+
+ void exahype::State::setTimeStepSizeWeightForPredictionRerun(double value) {
+   _stateData.setTimeStepSizeWeightForPredictionRerun(value);
+ }
+
+ double exahype::State::getTimeStepSizeWeightForPredictionRerun() const {
+   return _stateData.getTimeStepSizeWeightForPredictionRerun();
+ }

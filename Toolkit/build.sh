@@ -31,6 +31,11 @@ set -e
 cd src
 make clean
 make createParser
-make -j${NUMPROCS} compile
+# parallel make frequently fails due to dependencies. We fall back to serial make then.
+make -j${NUMPROCS} compile || {
+	echo "Parallel make failed, trying serial make again"
+	make compile
+	echo "This time, it worked."
+}
 make dist
 

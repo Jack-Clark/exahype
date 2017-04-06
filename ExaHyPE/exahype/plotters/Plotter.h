@@ -16,6 +16,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdlib>
 
 #include "exahype/Parser.h"
 #include "peano/utils/Globals.h"
@@ -29,7 +30,7 @@ namespace exahype {
 
     extern std::vector<Plotter*> RegisteredPlotters;
 
-    bool isAPlotterActive(double currentTimeStamp);
+    bool startPlottingIfAPlotterIsActive(double currentTimeStamp);
     void finishedPlotting();
     double getTimeOfNextPlot();
   }
@@ -135,10 +136,34 @@ class exahype::plotters::Plotter {
         const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
         const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
         const tarch::la::Vector<DIMENSIONS, double>& x,
-	const tarch::la::Vector<DIMENSIONS, int>&    pos,
+        const tarch::la::Vector<DIMENSIONS, int>&    pos,
         double* Q,
         double* outputQuantities,
-        double timeStamp) = 0;
+        double timeStamp) { abort(); /* catch missing API implementations */ }
+
+      /**
+       * This is an alternative version which offers you the gradients of Q.
+       * 
+       * The Ordering of gradQ is (nDim, nVars). It's the derivative locally
+       * at point x, computed by your friendly plotter on the whole ADERDG patch.
+       *
+       * By changing the value of the class property `mapWithDerivatives` to true
+       * this method is used, not the other one.
+       **/
+      virtual void mapQuantities(
+        const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+        const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+        const tarch::la::Vector<DIMENSIONS, double>& x,
+	const tarch::la::Vector<DIMENSIONS, int>&    pos,
+        double* Q,
+	double* gradQ,
+        double* outputQuantities,
+        double timeStamp) { abort(); /* catch missing API implementations */ }
+
+      /**
+       * Here you can specify if you want to map using gradients or not.
+       **/
+      virtual bool mapWithDerivatives() { return false; }
   };
 
   /**
@@ -237,7 +262,7 @@ class exahype::plotters::Plotter {
    * Checks whether there should be a plotter according to this class.
    * If it should become open, it is opened
    */
-  bool checkWetherPlotterBecomesActive(double currentTimeStamp);
+  bool checkWetherPlotterBecomesActiveAndStartPlottingIfActive(double currentTimeStamp);
   bool isActive() const;
   bool plotDataFromSolver(int solver) const;
 
@@ -267,6 +292,25 @@ class exahype::plotters::Plotter {
   double getNextPlotTime() const;
 
   std::string toString() const;
+
+  #ifdef Parallel
+  /**
+   * This operation is used for the synchronisation
+   * of a global plotter time stamp over all MPI ranks.
+   */
+  void sendDataToWorker(
+      const int                                    workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+
+  /**
+   * Merge with plotter data from master rank.
+   */
+  void mergeWithMasterData(
+      const int                                    masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level);
+  #endif
 };
 
 #endif

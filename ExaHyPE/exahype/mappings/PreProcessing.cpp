@@ -37,7 +37,7 @@ peano::MappingSpecification
 exahype::mappings::PreProcessing::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::Serial,true);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::PreProcessing::
     touchVertexLastTimeSpecification() {

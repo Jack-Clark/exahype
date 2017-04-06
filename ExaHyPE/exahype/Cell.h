@@ -236,8 +236,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   void addNewCellDescription(
       const int solverNumber,
       const exahype::records::ADERDGCellDescription::Type cellType,
-      const exahype::records::ADERDGCellDescription::RefinementEvent
-          refinementEvent,
+      const exahype::records::ADERDGCellDescription::RefinementEvent refinementEvent,
       const int level,
       const int parentIndex,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize,
@@ -246,8 +245,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   void addNewCellDescription(
       const int solverNumber,
       const exahype::records::FiniteVolumesCellDescription::Type cellType,
-//      const exahype::records::FiniteVolumesCellDescription::RefinementEvent
-//          refinementEvent,    @todo Dominic
+      const exahype::records::FiniteVolumesCellDescription::RefinementEvent refinementEvent,
       const int level,
       const int parentIndex,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize,

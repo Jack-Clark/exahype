@@ -77,7 +77,7 @@ event-mapping:
   name: MeshRefinement
   
 event-mapping:
-  name: DropIncomingMPIMetadataMessages  
+  name: FinaliseMeshRefinement  
 // 
 
 event-mapping:
@@ -103,7 +103,7 @@ adapter:
 adapter:
   name: InitialConditionAndTimeStepSizeComputation
   merge-with-user-defined-mapping: PreProcessing // Merging does not merge face data  
-  merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
+  merge-with-user-defined-mapping: FinaliseMeshRefinement
   merge-with-user-defined-mapping: Merging 
   merge-with-user-defined-mapping: InitialCondition
   // needs current time step size
@@ -164,11 +164,11 @@ adapter:
   name: PlotAndADERDGTimeStep
   // needs corrector time step size
   merge-with-user-defined-mapping: Merging // Merging must start new time step in touchVertexFirstTime
+  merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: SolutionUpdate
   // needs predictor time step size
   merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange 
   merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: Sending
  
 /**
@@ -267,8 +267,8 @@ adapter:
   
 // Additional adapters for AMR
 adapter:
-  name: DropMPIMetadataMessagesAndTimeStepSizeComputation
-  merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
+  name: FinaliseMeshRefinementAndTimeStepSizeComputation
+  merge-with-user-defined-mapping: FinaliseMeshRefinement
   merge-with-user-defined-mapping: PreProcessing
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending      // Only send time step data

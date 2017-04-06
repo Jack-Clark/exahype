@@ -116,7 +116,7 @@ class sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling: public peano:
      * (division of integers otherwise gives a spacing of 0 between different
      * sample values).
      */
-    void parallelSectionHasTerminated(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod, double costPerProblemElement) override;
+    void parallelSectionHasTerminated(int problemSize, int grainSize, peano::datatraversal::autotuning::MethodTrace askingMethod, double costPerProblemElement) override;
 
     void plotStatistics(std::ostream& out, int oracleNumber) const override;
     void loadStatistics(const std::string& filename, int oracleNumber) override;

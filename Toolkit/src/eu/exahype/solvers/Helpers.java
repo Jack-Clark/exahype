@@ -158,7 +158,7 @@ public class Helpers {
   }
 
   static public void invokeCodeGenerator(String solverName, int numberOfUnknowns, int numberOfParameters, int order,
-      boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm)
+      boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm, boolean enableDeepProfiler)
       throws IOException {
     String currentDirectory = System.getProperty("user.dir");
     java.io.File pathToCodeGenerator =
@@ -173,19 +173,20 @@ public class Helpers {
       throw new IOException();
     }
     
-    java.io.File pathToLibxsmmMakefile = //To test if the libxsmm folder is correct
+/*    java.io.File pathToLibxsmmMakefile = //To test if the libxsmm folder is correct
         new java.io.File(java.nio.file.Paths.get(currentDirectory,pathToLibxsmm,"Makefile").toString());
     if (!pathToLibxsmmMakefile.exists()) {
       System.err.println("ERROR: Libxsmm makefile not found. Can't generate optimised kernels. Path: " + pathToLibxsmmMakefile.toString());
       throw new IOException();
     }
-
+*/
     String numericsParameter = isLinear ? "linear" : "nonlinear";
+    String deepProfiler = enableDeepProfiler ? "--deepProfiling " : "";
 
     // set up the command to execute the code generator
     String args = " " + "Euler" + " " + numberOfUnknowns + " " + order + " " //TODO JMG see why Euler instead of solverName
         + Integer.toString(dimensions) + " " + numericsParameter + " " + microarchitecture + " "
-        + currentDirectory + "/"  + pathToLibxsmm + " "; 
+        + currentDirectory + "/"  + pathToLibxsmm + " " + deepProfiler; 
 
     String bashCommand = "env python3 " + pathToCodeGenerator + args;
 

@@ -27,6 +27,8 @@
 #include "exahype/State.h"
 #include "exahype/Vertex.h"
 
+#include "exahype/solvers/TemporaryVariables.h"
+
 namespace exahype {
 namespace mappings {
 class SolutionRecomputation;

@@ -12,21 +12,25 @@
 tarch::logging::Log mpibalancing::FairNodePoolStrategy::_log( "mpibalancing::FairNodePoolStrategy" );
 
 
-mpibalancing::FairNodePoolStrategy::FairNodePoolStrategy(int mpiRanksPerNode, double waitTimeOutSec):
+mpibalancing::FairNodePoolStrategy::FairNodePoolStrategy(int mpiRanksPerNode, int ranksToSpareFromWork, double waitTimeOutSec):
   NodePoolStrategy(),
   _tag(-1),
   _nodes(),
   _waitTimeOut(waitTimeOutSec),
-  _mpiRanksPerNode(mpiRanksPerNode) {
+  _ranksPerNode(mpiRanksPerNode),
+  _ranksToSpareFromWork(ranksToSpareFromWork) {
+
+  assertion(_ranksPerNode>0);
+  assertion(_ranksToSpareFromWork>0);
 
   if (
-    tarch::parallel::Node::getInstance().getNumberOfNodes() <= _mpiRanksPerNode &&
+    tarch::parallel::Node::getInstance().getNumberOfNodes() <= _ranksToSpareFromWork &&
     tarch::parallel::Node::getInstance().isGlobalMaster()
   ) {
     logWarning(
       "FairNodePoolStrategy(int,double)",
-      "number of mpi ranks is smaller than modulo argument of FairNodePoolStrategy. First " <<
-      _mpiRanksPerNode << " will not be assigned any job, so setting reduces to serial run"
+      "number of mpi ranks is smaller than number of ranks to spare from Work. First " <<
+      _ranksToSpareFromWork << " will not be assigned any job, so setting reduces to serial run"
     );
   }
 }
@@ -115,11 +119,12 @@ int mpibalancing::FairNodePoolStrategy::getWorkersOfNode( int rank ) const {
 
 void mpibalancing::FairNodePoolStrategy::addNode(const tarch::parallel::messages::RegisterAtNodePoolMessage& node) {
   #ifdef Parallel
-  assertion( !isRegisteredNode(node.getSenderRank()) );
+  //assertion( !isRegisteredNode(node.getSenderRank()) );
 
   logTraceInWith1Argument( "addNode(...)", node.getSenderRank() );
   NodePoolListEntry newEntry(
-    _mpiRanksPerNode,
+    _ranksPerNode,
+    _ranksToSpareFromWork,
     node.getSenderRank(),
     tarch::parallel::StringTools::convert(node.getNodeName())
   );
@@ -323,7 +328,8 @@ void mpibalancing::FairNodePoolStrategy::setNodePoolTag(int tag) {
 
 
 mpibalancing::FairNodePoolStrategy::NodePoolListEntry::NodePoolListEntry():
-  _mpiRanksPerNode(-1),
+  _ranksPerNode(-1),
+  _ranksToSpareFromWork(-1),
   _rank(-1),
   _bookedWorkers(-1),
   _state(WORKING),
@@ -332,11 +338,13 @@ mpibalancing::FairNodePoolStrategy::NodePoolListEntry::NodePoolListEntry():
 
 
 mpibalancing::FairNodePoolStrategy::NodePoolListEntry::NodePoolListEntry(
-  const int   mpiRanksPerNode,
+  const int   ranksPerNode,
+  const int   ranksToSpareFromWork,
   int         rank,
   const std::string& name
   ):
-  _mpiRanksPerNode(mpiRanksPerNode),
+  _ranksPerNode(ranksPerNode),
+  _ranksToSpareFromWork(ranksToSpareFromWork),
   _rank(rank),
   _bookedWorkers(0),
   _state(WORKING),
@@ -399,16 +407,16 @@ bool mpibalancing::FairNodePoolStrategy::NodePoolListEntry::isIdle() const {
 
 
 bool mpibalancing::FairNodePoolStrategy::NodePoolListEntry::operator<( const mpibalancing::FairNodePoolStrategy::NodePoolListEntry& than ) const {
-  const bool lhsIsClassA = isIdle()       && _rank>=_mpiRanksPerNode;
-  const bool rhsIsClassA = than.isIdle()  && than._rank>=_mpiRanksPerNode;
-  const bool lhsIsClassB = !isIdle()      && _rank>=_mpiRanksPerNode;
-  const bool rhsIsClassB = !than.isIdle() && than._rank>=_mpiRanksPerNode;
-  const bool lhsIsClassC = _rank<_mpiRanksPerNode;
-  const bool rhsIsClassC = than._rank<_mpiRanksPerNode;
+  const bool lhsIsClassA = isIdle()       && _rank>=_ranksToSpareFromWork;
+  const bool rhsIsClassA = than.isIdle()  && than._rank>=_ranksToSpareFromWork;
+  const bool lhsIsClassB = !isIdle()      && _rank>=_ranksToSpareFromWork;
+  const bool rhsIsClassB = !than.isIdle() && than._rank>=_ranksToSpareFromWork;
+  const bool lhsIsClassC = _rank<_ranksToSpareFromWork;
+  const bool rhsIsClassC = than._rank<_ranksToSpareFromWork;
 
   const bool smallerDueToClassOrder =
-    (_rank % _mpiRanksPerNode <  than._rank % _mpiRanksPerNode) ||
-    (_rank % _mpiRanksPerNode == than._rank % _mpiRanksPerNode && _rank < than._rank);
+    (_rank % _ranksPerNode <  than._rank % _ranksPerNode) ||
+    (_rank % _ranksPerNode == than._rank % _ranksPerNode && _rank < than._rank);
 
   return
          (lhsIsClassA && !rhsIsClassA)

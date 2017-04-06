@@ -60,8 +60,8 @@ public:
    * Rank-local heap that stores ADERDGCellDescription instances.
    *
    * \note This heap might be shared by multiple ADERDGSolver instances
-     that differ in their solver number and other attributes.
-     @see solvers::Solver::RegisteredSolvers.
+   * that differ in their solver number and other attributes.
+   * @see solvers::Solver::RegisteredSolvers.
    */
   typedef exahype::records::ADERDGCellDescription CellDescription;
   typedef peano::heap::PlainHeap<CellDescription> Heap;
@@ -126,22 +126,6 @@ private:
   const int _dataPointsPerCell;
 
   /**
-   * Minimum corrector time stamp of all cell descriptions
-   * 2 iterations ago
-   */
-  double _previousPreviousMinCorrectorTimeStamp;
-
-  /**
-   * Minimum corrector time step size of all
-   * cell descriptions in the iteration before the
-   * previous iteration.
-   *
-   * This time step size is necessary for the fused time stepping + limiting
-   * to reconstruct the previousMinCorrectorTimeStepSize during a rollback.
-   */
-  double _previousPreviousMinCorrectorTimeStepSize;
-
-  /**
    * Minimum corrector time stamp of all cell descriptions.
    */
   double _previousMinCorrectorTimeStamp;
@@ -161,16 +145,16 @@ private:
   double _minCorrectorTimeStamp;
 
   /**
-   * Minimum predictor time stamp of all cell descriptions.
-   * Always equal or larger than the minimum corrector time stamp.
-   */
-  double _minPredictorTimeStamp;
-
-  /**
    * Minimum corrector time step size of
    * all cell descriptions.
    */
   double _minCorrectorTimeStepSize;
+
+  /**
+   * Minimum predictor time stamp of all cell descriptions.
+   * Always equal or larger than the minimum corrector time stamp.
+   */
+  double _minPredictorTimeStamp;
 
   /**
    * Minimum predictor time step size of
@@ -206,6 +190,12 @@ private:
    * and then let its children of type Cell veto
    * this request if they want to keep their
    * solution or refine even further.
+   *
+   * No erasing children request can be set on cell descriptions
+   * of type NewAncestor and NewEmptyAncestor.
+   * This prevents races where a refinement criterion has triggered a
+   * refinement event on the parent cell but does trigger an erasing
+   * event on the children cells.
    *
    * We further veto erasing events if
    * a child of the parent itself is a parent
@@ -268,6 +258,9 @@ private:
       const int fineGridCellDescriptionsIndex);
 
   /*
+   * Starts of finish collective operations from a
+   * fine cell description point of view.
+   *
    * Resets the refinement event of a fine grid cell of type
    * Descendant to None if it was set to Refining.
    * The latter event indicates that the fine grid cells in
@@ -280,8 +273,9 @@ private:
    * the next finer level have all been initialised with
    * type Descendant.
    *
-   * TODO(Dominic): Erasing
-   * TODO(Dominic): Make template function as soon as verified.
+   * TODO(Dominic): More docu.
+   *
+   * \return true if a fine grid cell can be erased.
    */
   void startOrFinishCollectiveRefinementOperations(
       CellDescription& fineGridCellDescription);
@@ -291,6 +285,11 @@ private:
    * or erase them from the grid, we first restrict
    * volume data up to the parent and further
    * copy the corrector and predictor time stamps.
+   *
+   * \return true if we erase descendants from
+   * the grid. In this case, to call an erase
+   * on the grid/Peano cell if no other cell descriptions are
+   * registered. Returns false otherwise.
    *
    * TODO(Dominic): More docu.
    */
@@ -936,6 +935,9 @@ public:
       const double t,
       const double dt) = 0;
 
+  /**
+   * Adjust solution value specification.
+   */
   enum class AdjustSolutionValue {
     No,
     PointWisely,
@@ -966,10 +968,10 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
       const double dt) const = 0;
-      
-#ifndef OPT_KERNELS //JMG remove virtual with optimized kernel (user function should be implemented and static)
-  virtual bool useAlgebraicSource()        const = 0;
+
   virtual bool usePointSource()            const = 0;
+      
+  virtual bool useAlgebraicSource()        const = 0;
   virtual bool useNonConservativeProduct() const = 0;
 
   /**
@@ -1018,7 +1020,7 @@ public:
       const double t,
       const double dt,
       double* luh) = 0;
-#endif
+
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement
    */
@@ -1270,12 +1272,6 @@ public:
   void setPreviousMinCorrectorTimeStepSize(double value);
   double getPreviousMinCorrectorTimeStepSize() const;
 
-  void setPreviousPreviousMinCorrectorTimeStepSize(double value);
-  double getPreviousPreviousMinCorrectorTimeStepSize() const;
-
-  void setPreviousPreviousMinCorrectorTimeStamp(double value);
-  double getPreviousPreviousMinCorrectorTimeStamp() const;
-
   double getMinTimeStamp() const override {
     return getMinCorrectorTimeStamp();
   }
@@ -1293,19 +1289,16 @@ public:
   }
 
   void initSolverTimeStepData(double value) override {
-    setPreviousPreviousMinCorrectorTimeStepSize(0.0);
     setPreviousMinCorrectorTimeStepSize(0.0);
     setMinCorrectorTimeStepSize(0.0);
     setMinPredictorTimeStepSize(0.0);
 
-    setPreviousPreviousMinCorrectorTimeStamp(value);
     setPreviousMinCorrectorTimeStamp(value);
     setMinCorrectorTimeStamp(value);
     setMinPredictorTimeStamp(value);
   }
 
   void initFusedSolverTimeStepSizes() {
-    setPreviousPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
     setPreviousMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
     setMinCorrectorTimeStepSize(getMinPredictorTimeStepSize());
     setMinPredictorTimeStepSize(getMinPredictorTimeStepSize());
@@ -1347,6 +1340,22 @@ public:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
+  bool attainedStableState(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      const int solverNumber) const override;
+
+  void finaliseStateUpdates(
+      exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const int solverNumber) override;
+
   ///////////////////////////////////
   // CELL-LOCAL
   ///////////////////////////////////
@@ -1376,8 +1385,7 @@ public:
 
   void validateNoNansInADERDGSolver(
       const CellDescription& cellDescription,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      const std::string&                   methodTraceOfCaller);
+      const std::string& methodTraceOfCaller);
 
   double startNewTimeStep(
       const int cellDescriptionsIndex,
@@ -1441,7 +1449,7 @@ public:
       const int element);
 
   /**
-   * TODO(Dominic): Remove; not necessary
+   * TODO(Dominic): Docu
    */
   void reconstructStandardTimeSteppingDataAfterRollback(
       const int cellDescriptionsIndex,

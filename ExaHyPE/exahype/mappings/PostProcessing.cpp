@@ -37,7 +37,7 @@ peano::MappingSpecification
 exahype::mappings::PostProcessing::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::Serial,true);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::PostProcessing::
     touchVertexLastTimeSpecification() {

@@ -143,6 +143,9 @@ void mpibalancing::HotspotBalancing::computeMaxForksOnCriticalWorker( peano::par
       logInfo( "identifyCriticalPathes(LoadBalancingFlag)", msg.str() );
     }
   }
+  else {
+    logInfo( "computeMaxForksOnCriticalWorker(LoadBalancingFlag)", "set of critical workers is empty" );
+  }
 }
 
 

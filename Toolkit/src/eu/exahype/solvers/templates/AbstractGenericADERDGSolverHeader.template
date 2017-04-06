@@ -30,6 +30,7 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
     static constexpr int NumberOfVariables  = {{NumberOfVariables}};
     static constexpr int NumberOfParameters = {{NumberOfParameters}};
     static constexpr int Order              = {{Order}};
+    static constexpr double CFL             = 0.9;
   
     class Variables;
     class ReadOnlyVariables;
@@ -65,9 +66,7 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    virtual void algebraicSource(const double* const Q,double* S) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-    }
+    virtual void algebraicSource(const double* const Q,double* S);
         
     /**
      * Default implementation. Has to be be overwritten by user's solver if you 
@@ -75,9 +74,7 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-    }
+    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
         
     /**
      * Default implementation. Has to be be overwritten by user's solver if you 
@@ -85,9 +82,7 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-    }
+    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
         
     /**
      * Default implementation. Has to be be overwritten by user's solver if you 
@@ -95,9 +90,7 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-    }
+    virtual void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0);
        
     /**
      * Default implementation. Has to be be overwritten by user's solver if you 
@@ -105,9 +98,7 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    virtual void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-    }
+    virtual void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q);
     
     
     virtual void adjustPatchSolution(
@@ -115,10 +106,19 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
       const double dt,
-      double* luh) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      }
+      double* luh);
 
+    /**
+     * New API since 2017-04-02.
+     *
+     * The fused source combines the algebraic Source and the NCP as source contribution. By default,
+     * if not implemented, it falls back to the different functions algebraicSource() and
+     * nonConservativeProduct(). Users can implement it to provide a faster implementation.
+     *
+     * The kernels never call the algebraicSource() and nonConservativeProduct() any more.
+     *
+     **/
+    virtual void fusedSource(const double* const Q, const double* const gradQ, double* S);
 
     /**
      * Default implementation. Please overwrite.

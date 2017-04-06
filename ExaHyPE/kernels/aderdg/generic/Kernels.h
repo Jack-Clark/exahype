@@ -79,7 +79,10 @@ namespace generic {
 namespace c {
 
 
-template <bool useSource, bool useNCP, typename SolverType>
+/**
+ * @param SolverType Has to be of type ADERDG Solver.
+ */
+template <typename SolverType>
 void spaceTimePredictorNonlinear(
     SolverType& solver,
     double*  lQhbnd, double* lFhbnd,
@@ -90,32 +93,28 @@ void spaceTimePredictorNonlinear(
     double*  tempStateSizedVector,
     const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double dt,
-    double* tempPointForceSources);
+    const double dt);
 
 template <typename SolverType>
 void solutionUpdate(SolverType& solver, double* luh, const double* const lduh, const double dt);
 
+template <int numberOfVariables, int basisSize>
 void volumeIntegralLinear(double* lduh, const double* const lFhi,
-                          const tarch::la::Vector<DIMENSIONS, double>& dx,
-                          const int numberOfVariables,
-                          const int numberOfParameters, const int basisSize);
+                          const tarch::la::Vector<DIMENSIONS, double>& dx);
 
-template <bool useSourceOrNCP>
+template <bool useSourceOrNCP, int numberOfVariables, int basisSize>
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
-                             const tarch::la::Vector<DIMENSIONS, double>& dx,
-                             const int numberOfVariables,
-                             const int numberOfParameters, const int basisSize);
+                             const tarch::la::Vector<DIMENSIONS, double>& dx);
 
 // todo 10/02/16: Dominic
 // Keep only one surfaceIntegral.
+template <int numberOfVariables, int basisSize>
 void surfaceIntegralNonlinear(double* lduh, const double* const lFbnd,
-                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                              const int numberOfVariables, const int basisSize);
+                              const tarch::la::Vector<DIMENSIONS, double>& dx);
 
+template <int numberOfVariables, int basisSize>
 void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
-                           const tarch::la::Vector<DIMENSIONS, double>& dx,
-                           const int numberOfVariables, const int basisSize);
+                           const tarch::la::Vector<DIMENSIONS, double>& dx);
 
 /*void surfaceIntegral2(
     double* lduh,
@@ -166,51 +165,43 @@ double stableTimeStepSize(SolverType& solver, const double* const luh,
  * \note We need to consider material parameters in
  * lQhbndFine and lQhbndCoarse.
  */
+template <int numberOfVariables,int numberOfParameters,int basisSize>
 void faceUnknownsProlongation(
     double* lQhbndFine, double* lFhbndFine, const double* lQhbndCoarse,
     const double* lFhbndCoarse, const int coarseGridLevel,
     const int fineGridLevel,
-    const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex,
-    const int numberOfVariables,
-    const int numberOfParameters,
-    const int basisSize);
+    const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex);
 
 /**
  * \note We need to consider material parameters in
  * lQhbndFine and lQhbndCoarse.
  */
+template <int numberOfVariables,int numberOfParameters,int basisSize>
 void faceUnknownsRestriction(
     double* lQhbndCoarse, double* lFhbndCoarse, const double* lQhbndFine,
     const double* lFhbndFine, const int coarseGridLevel,
     const int fineGridLevel,
-    const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex,
-    const int numberOfVariables,
-    const int numberOfParameters,
-    const int basisSize);
+    const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex);
 
 /**
  * \note We need to consider material parameters in
  * luhCoarse and luhFine.
  */
+template <int numberOfVariables,int numberOfParameters,int basisSize>
 void volumeUnknownsProlongation(
     double* luhFine, const double* luhCoarse, const int coarseGridLevel,
     const int fineGridLevel,
-    const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
-    const int numberOfVariables,
-    const int numberOfParameters,
-    const int basisSize);
+    const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);
 
 /**
  * \note We need to consider material parameters in
  * luhCoarse and luhFine.
  */
+template <int numberOfVariables,int numberOfParameters,int basisSize>
 void volumeUnknownsRestriction(
     double* luhCoarse, const double* luhFine, const int coarseGridLevel,
     const int fineGridLevel,
-    const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
-    const int numberOfVariables,
-    const int numberOfParameters,
-    const int basisSize);
+    const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);
     
 //TODO KD    
 template <typename SolverType>
@@ -240,7 +231,11 @@ void pointSource(
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/2d/stableTimeStepSize.cpph"
 #include "kernels/aderdg/generic/c/2d/pointSource.cpph"
+#include "kernels/aderdg/generic/c/2d/surfaceIntegralLinear.cpph"
+#include "kernels/aderdg/generic/c/2d/surfaceIntegralNonlinear.cpph"
+#include "kernels/aderdg/generic/c/2d/volumeIntegralLinear.cpph"
 #include "kernels/aderdg/generic/c/2d/volumeIntegralNonlinear.cpph"
+#include "kernels/aderdg/generic/c/2d/amrRoutines.cpph"
 #elif DIMENSIONS == 3
 #include "kernels/aderdg/generic/c/3d/boundaryConditions.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
@@ -251,7 +246,11 @@ void pointSource(
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
 #include "kernels/aderdg/generic/c/3d/pointSource.cpph"
+#include "kernels/aderdg/generic/c/3d/surfaceIntegralLinear.cpph"
+#include "kernels/aderdg/generic/c/3d/surfaceIntegralNonlinear.cpph"
+#include "kernels/aderdg/generic/c/3d/volumeIntegralLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/volumeIntegralNonlinear.cpph"
+#include "kernels/aderdg/generic/c/3d/amrRoutines.cpph"
 #endif
 
 // Todo: Recasting the code from function templates to class templates
@@ -324,13 +323,13 @@ void volumeIntegralLinear(double* lduh, const double* const lFhi,
 
 // todo 10/02/16: Dominic
 // Keep only one surfaceIntegral.
+template <int numberOfVariables, int basisSize>
 void surfaceIntegralNonlinear(double* lduh, const double* const lFbnd,
-                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                              const int numberOfVariables, const int basisSize);
+                              const tarch::la::Vector<DIMENSIONS, double>& dx);
 
+template <int numberOfVariables, int basisSize>
 void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
-                           const tarch::la::Vector<DIMENSIONS, double>& dx,
-                           const int numberOfVariables, const int basisSize);
+                           const tarch::la::Vector<DIMENSIONS, double>& dx);
 
 /*void surfaceIntegral2(
     double* lduh,

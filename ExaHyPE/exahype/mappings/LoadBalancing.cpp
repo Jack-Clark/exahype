@@ -6,7 +6,7 @@
 peano::CommunicationSpecification   exahype::mappings::LoadBalancing::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
       true
   );
 }
@@ -119,7 +119,6 @@ void exahype::mappings::LoadBalancing::mergeWithWorker(
 void exahype::mappings::LoadBalancing::endIteration(
   exahype::State&  solverState
 ) {
-  logInfo("endIteration(State)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
 }
 
 

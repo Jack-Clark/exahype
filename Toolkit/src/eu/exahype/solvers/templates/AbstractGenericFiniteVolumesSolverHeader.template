@@ -18,8 +18,6 @@
  */
 #include "tarch/Assertions.h"
 
-
-
 {{ProfilerInclude}}
 
 namespace {{Project}}{
@@ -32,6 +30,8 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     static constexpr int NumberOfVariables  = {{NumberOfVariables}};
     static constexpr int NumberOfParameters = {{NumberOfParameters}};
     static constexpr int PatchSize          = {{PatchSize}};
+    static constexpr int GhostLayerWidth    = {{GhostLayerWidth}};
+    static constexpr double CFL             = 0.9;
   
     class Variables;
     class ReadOnlyVariables;
@@ -40,9 +40,11 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     
     Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
     
+    void solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) override;
+    
     double stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
     void adjustSolution(double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) override;
-    void solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) override;
+    
     void ghostLayerFilling(double* luh,const double* luhNeighbour,const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) override;
     void ghostLayerFillingAtBoundary(double* luh,const double* luhbnd,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) override;
     void boundaryLayerExtraction(double* luhbnd,const double* luh,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) override;
@@ -65,16 +67,13 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     /**
      * Please overwrite in user's solver. See superclass for documentation.
      */
-    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-    };
 
-    /**
-     * Please overwrite in user's solver. See superclass for documentation.
-     */
-    virtual void source(const double* const Q,double* S) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-    };    
+    /* New April 2017 API changes */
+    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
+    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
+    virtual void algebraicSource(const double* const Q,double* S);
+    virtual void fusedSource(const double* const Q, const double* const gradQ, double* S);
+
 };
 
 

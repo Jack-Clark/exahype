@@ -77,7 +77,7 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
   public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
     Helpers.invokeCodeGenerator(solverName, _numberOfUnknowns, _numberOfParameters, _order, false, _dimensions,
-        _microarchitecture, _pathToLibxsmm);
+        _microarchitecture, _pathToLibxsmm, false);
 
     writer.write("// ==============================================\n");
     writer.write("// Please do not change the implementations below\n");

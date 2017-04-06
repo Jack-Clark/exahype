@@ -1,6 +1,7 @@
 package eu.exahype;
 
 import java.io.IOException;
+import java.io.BufferedWriter;
 
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AAderdgSolver;
@@ -32,12 +33,14 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   private int _dimensions;
 
   private boolean _enableProfiler;
+  private boolean _enableDeepProfiler;
 
   public CreateSolverClasses(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
     _supportedMicroarchitectures =
         java.util.Arrays.asList("wsm", "snb", "hsw", "knc", "knl", "noarch");
     _enableProfiler = false;
+    _enableDeepProfiler = false;
   }
 
   @Override
@@ -103,6 +106,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   @Override
   public void inAProfiling(AProfiling node) {
     _enableProfiler = !node.getProfiler().getText().equals("NoOpProfiler");
+    _enableDeepProfiler = (node.getDeepProfiling() != null) && node.getDeepProfiling().getText().equals("on");
   };
 
   private boolean validate(
@@ -147,10 +151,9 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     Variables variables  = new Variables(node);
     boolean isFortran    = language.equals("Fortran");
     
-    SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler, _microarchitecture, _pathToLibxsmm);
+    SolverFactory solverFactory = new SolverFactory(_dimensions, _enableProfiler,  _enableDeepProfiler, _microarchitecture, _pathToLibxsmm);
     eu.exahype.solvers.Solver solver = solverFactory.createADERDGSolver(
         kernel, isFortran, variables.getNumberOfVariables(), variables.getNumberOfParameters(),variables.getNamingSchemeNames(), order, hasConstants);
-
     valid = validate(variables,order,kernel,language,solverName,solver);
     
     if (valid) {
@@ -158,16 +161,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
       // write the files
       try {
-//        TODO(Dominic): Unused
-//        java.io.File userPDEFile = null;
-//        java.io.File userTypesDefFile = null;
-//        
-//        if (isFortran) {
-//          userPDEFile =
-//              FileSearch.relocatableFile(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
-//          userTypesDefFile = FileSearch.relocatableFile(
-//              _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
-//        }
         tryWriteSolverHeader(solver, solverName);
         tryWriteSolverUserImplementation(solver,solverName);
         
@@ -214,16 +207,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
       // write the files
       try {
-// TODO(Dominic): Unused
-//        java.io.File userPDEFile = null;
-//        java.io.File userTypesDefFile = null;
-//        
-//        if (isFortran) {
-//          userPDEFile =
-//              FileSearch.relocatableFile(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
-//          userTypesDefFile = FileSearch.relocatableFile(
-//              _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
-//        }
         tryWriteSolverHeader(solver, solverName);
         tryWriteSolverUserImplementation(solver,solverName);
         
@@ -269,23 +252,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         limiterKernel,isFortran,variables.getNumberOfVariables(),variables.getNumberOfParameters(),variables.getNamingSchemeNames(),patchSize,hasConstants);
 
     valid = validate(variables,order,kernel,language,solverName,solver);
-    valid = validate(variables,1/*patchSize is always supported*/,limiterKernel,limiterLanguage,solverName,solver);
+    valid = validate(variables,1/*patchSize is always supported*/,limiterKernel,limiterLanguage,solverName,limiter);
     
     if (valid) {
       _definedSolvers.add(solverName);
 
       // write the files
       try {
-//        TODO(Dominic): Unused
-//        java.io.File userPDEFile = null;
-//        java.io.File userTypesDefFile = null;
-//        
-//        if (isFortran) {
-//          userPDEFile =
-//              FileSearch.relocatableFile(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/PDE.f90");
-//          userTypesDefFile = FileSearch.relocatableFile(
-//              _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/typesDef.f90");
-//        }
         String solverNameADERDG = solverName+"_ADERDG";
         String solverNameFV     = solverName+"_FV";
         
@@ -336,8 +309,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           + solverHeaderFile.getAbsoluteFile()
           + " does exist already. Remove to allow toolkit to regenerate it (changes will be lost)");
     } else {
-      java.io.BufferedWriter headerWriter =
-          new java.io.BufferedWriter(new java.io.FileWriter(solverHeaderFile));
+      BufferedWriter headerWriter =
+          new BufferedWriter(new java.io.FileWriter(solverHeaderFile));
       solver.writeHeader(headerWriter, solverName, _projectName);
       System.out.println("create header of solver " + solverName + " ... ok");
       headerWriter.close();
@@ -352,8 +325,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       System.out.println("user's implementation file of solver " + solverName
           + " ... does exist already. Is not overwritten");
     } else {
-      java.io.BufferedWriter userImplementationWriter =
-          new java.io.BufferedWriter(new java.io.FileWriter(solverUserImplementationFile));
+      BufferedWriter userImplementationWriter =
+          new BufferedWriter(new java.io.FileWriter(solverUserImplementationFile));
       solver.writeUserImplementation(userImplementationWriter, solverName, _projectName);
       System.out.println(
           "create user implementation template of solver " + solverName + " ... please complete");
@@ -373,8 +346,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           + " ... does exist already. Is overwritten");
     }
 
-    java.io.BufferedWriter generatedImplementationWriter =
-        new java.io.BufferedWriter(new java.io.FileWriter(solverGeneratedImplementationFile));
+    BufferedWriter generatedImplementationWriter =
+        new BufferedWriter(new java.io.FileWriter(solverGeneratedImplementationFile));
     solver.writeGeneratedImplementation(generatedImplementationWriter, solverName, _projectName);
     System.out.println("create generated implementation file for solver " + solverName + " ... ok");
     generatedImplementationWriter.close();
@@ -404,8 +377,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           + " ... does exist already. Is overwritten");
     }
 
-    java.io.BufferedWriter writer =
-        new java.io.BufferedWriter(new java.io.FileWriter(abstractSolverHeaderFile));
+    BufferedWriter writer =
+        new BufferedWriter(new java.io.FileWriter(abstractSolverHeaderFile));
     solver.writeAbstractHeader(writer, solverName, _projectName);
     System.out.println("create header file for abstract solver superclass Abstract" + solverName + " ... ok");
     writer.close();
@@ -420,8 +393,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           + " ... does exist already. Is overwritten");
     }
 
-    java.io.BufferedWriter writer =
-        new java.io.BufferedWriter(new java.io.FileWriter(abstractSolverImplementationFile));
+    BufferedWriter writer =
+        new BufferedWriter(new java.io.FileWriter(abstractSolverImplementationFile));
     solver.writeAbstractImplementation(writer, solverName, _projectName);
     System.out.println("create implementation file for abstract solver superclass Abstract" + solverName + " ... ok");
     writer.close();
@@ -432,16 +405,16 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + "_Variables.h");
     
     if (solverHeaderFile.exists()) {
-      java.io.BufferedWriter headerWriter =
-          new java.io.BufferedWriter(new java.io.FileWriter(solverHeaderFile));
+      BufferedWriter headerWriter =
+          new BufferedWriter(new java.io.FileWriter(solverHeaderFile));
       variables.writeHeader(headerWriter, solverName, _projectName);
       System.out.println("create header of variables for solver " + solverName + " ... header "
           + solverHeaderFile.getAbsoluteFile()
           + " does exist already and will be overwritten");
       headerWriter.close();
     } else {
-      java.io.BufferedWriter headerWriter =
-          new java.io.BufferedWriter(new java.io.FileWriter(solverHeaderFile));
+      BufferedWriter headerWriter =
+          new BufferedWriter(new java.io.FileWriter(solverHeaderFile));
       variables.writeHeader(headerWriter, solverName, _projectName);
       System.out.println("create header of variables for solver " + solverName + " ... ok");
       headerWriter.close();

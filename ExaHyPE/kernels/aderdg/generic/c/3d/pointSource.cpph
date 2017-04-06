@@ -58,7 +58,7 @@ void kernels::aderdg::generic::c::pointSource(
 
 
   idx5 idx_pointForceSources(basisSize + 1, basisSize, basisSize, basisSize,
-      numberOfVariables);
+                             numberOfVariables);
 
   //loop over all quadrature point
   for (int n = 0; n < basisSize+1; n++) { // time loop
@@ -102,7 +102,7 @@ void kernels::aderdg::generic::c::pointSource(
 
             for (int unknown = 0; unknown < numberOfVariables /*numberOfParameters*/;
                 unknown++) {
-              
+
 
               double value = kernels::basisFunctions[order][i](xRef(2)) *
                   kernels::basisFunctions[order][j](xRef(1)) *

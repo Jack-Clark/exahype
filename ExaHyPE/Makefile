@@ -12,7 +12,8 @@
 #--------------------------------------------------------------------------------------------------
 # ARCHITECTURE        CPU               Phi, KNL, HSW             Hardware-plattfrom
 # COMPILER            Intel             GNU                       Used compiler (and linker)
-# MODE                Release           Debug, Profile, Asserts   Verbosity and Debug level
+# MODE                Release           Debug, PeanoProfile       Verbosity and Debug level
+#                                       Profile, Asserts          
 # SHAREDMEM           None              OMP, TBB                  Shared-memory parallelisation
 # DISTRIBUTEDMEM      None              MPI                       Distributed-memory parallelisation
 # BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions
@@ -59,6 +60,12 @@ ifeq ($(call tolower,$(MODE)),release)
 	COMPILER_CFLAGS += 
 	COMPILER_LFLAGS +=
 
+else ifeq ($(call tolower,$(MODE)),peanoprofile)
+	# Settings for the Release mode
+	# ----------------------------------------------
+	COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics 
+	COMPILER_LFLAGS +=
+
 else ifeq ($(call tolower,$(MODE)),debug)
 	# Settings for the Debug mode
 	# --------------------------------------------
@@ -101,10 +108,10 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	  FC=$(EXAHYPE_FC)
 	endif
 	
-	FCOMPILER_CFLAGS  += -r8 -cpp
+	FCOMPILER_CFLAGS  += -r8 -fast -cpp -auto 
 	LINK_FORTRAN      += -lifcore
 
-	COMPILER_CFLAGS   +=  -restrict
+	COMPILER_CFLAGS   +=  -restrict 
 	COMPILER_LFLAGS   +=
 
 else ifeq ($(call tolower,$(COMPILER)),gnu)
@@ -120,65 +127,17 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	else
 	  FC=$(EXAHYPE_FC)
 	endif
-	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
+	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -O3 -cpp
 	LINK_FORTRAN      += -lgfortran
 
-	COMPILER_CFLAGS   += -D__assume_aligned=__builtin_assume_aligned -pipe -pedantic -Drestrict=__restrict__ -Wall
+	#COMPILER_CFLAGS   += -D__assume_aligned=__builtin_assume_aligned -pipe -pedantic -Drestrict=__restrict__ -Wall
+	COMPILER_CFLAGS   += -pedantic -Wall -Drestrict=__restrict__ -pipe -D__assume_aligned=__builtin_assume_aligned
 	COMPILER_LFLAGS   +=
 
 else
 	# Option not recognized
 	# ----------------------------------------------
 	$(error Unknown option for variable [COMPILER])
-endif
-
-
-
-# ************************************************
-#
-#Set compiler and linker flags for the different architectures
-ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-  # Settings for CPU architectures
-  # ----------------------------------------------
-  ifeq ($(call tolower,$(COMPILER)),intel)
-    COMPILER_CFLAGS += -xHost
-    COMPILER_LFLAGS += -xHost
-  else
-    COMPILER_CFLAGS += -march=native
-    COMPILER_LFLAGS += -march=native
-  endif
-
-else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
-	# Settings for the Xeon Phi architecture
-	# --------------------------------------------
-	COMPILER_CFLAGS += -mmic
-	COMPILER_LFLAGS += -mmic -lrt
-
-else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
-  # Settings for the Xeon Phi architecture
-  # --------------------------------------------
-  ifeq ($(call tolower,$(COMPILER)),intel)
-    COMPILER_CFLAGS += -xMIC-AVX512 -fma
-    COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
-  else
-    COMPILER_CFLAGS += -march=knl
-    COMPILER_LFLAGS += -march=knl -lrt
-  endif
-
-else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
-  # Settings for the Xeon Phi architecture
-  # --------------------------------------------
-  ifeq ($(call tolower,$(COMPILER)),intel)
-    COMPILER_CFLAGS += -xCORE-AVX2 -fma
-    COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
-  else
-    COMPILER_CFLAGS += -march=haswell
-    COMPILER_LFLAGS += -march=haswell -lrt
-  endif
-else
-	# Option not recognized
-	# ----------------------------------------------
-	$(error Unknown option for variable [ARCHITECTURE])
 endif
 
 
@@ -190,7 +149,11 @@ ifneq ($(call tolower,$(MODE)),debug)
 	  # Settings for the Intel compiler
 	  # ----------------------------------------------
 	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
-	  COMPILER_CFLAGS += -O3 -no-ipo -ip
+        ifeq ($(call tolower,$(MODE)),asserts)
+	    COMPILER_CFLAGS += -O0 -no-ipo -ip
+	    else
+	    COMPILER_CFLAGS += -O3 -no-ipo -ip
+	    endif
 	  COMPILER_LFLAGS +=
 	  else
 	  COMPILER_CFLAGS += -fast -no-ipo -ip
@@ -211,6 +174,59 @@ ifneq ($(call tolower,$(MODE)),debug)
 	  COMPILER_LFLAGS +=
 	endif
 endif
+
+
+# ************************************************
+#
+#Set compiler and linker flags for the different architectures
+ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
+  # Settings for CPU architectures
+  # ----------------------------------------------
+  ifeq ($(call tolower,$(COMPILER)),intel)
+    COMPILER_CFLAGS += -xHost
+    COMPILER_LFLAGS += -xHost
+  else
+    #COMPILER_CFLAGS += -march=native
+    #COMPILER_LFLAGS += -march=native
+    COMPILER_CFLAGS += 
+    COMPILER_LFLAGS += 
+  endif
+
+else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
+	# Settings for the Xeon Phi architecture
+	# --------------------------------------------
+	COMPILER_CFLAGS += -mmic
+	COMPILER_LFLAGS += -mmic -lrt
+
+else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
+  # Settings for the Xeon Phi architecture
+  # --------------------------------------------
+  ifeq ($(call tolower,$(COMPILER)),intel)
+    COMPILER_CFLAGS += -xMIC-AVX512 -fma
+    FCOMPILER_CFLAGS += -xMIC-AVX512 -fma
+    COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
+  else
+    COMPILER_CFLAGS += -march=knl
+    COMPILER_LFLAGS += -march=knl -lrt
+  endif
+
+else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
+  # Settings for the Xeon Phi architecture
+  # --------------------------------------------
+  ifeq ($(call tolower,$(COMPILER)),intel)
+    COMPILER_CFLAGS += -xCORE-AVX2 -fma
+	FCOMPILER_CFLAGS += -xCORE-AVX2 -fma
+    COMPILER_LFLAGS += -xCORE-AVX2 -fma -lrt
+  else
+    COMPILER_CFLAGS += -march=haswell
+    COMPILER_LFLAGS += -march=haswell -lrt
+  endif
+else
+	# Option not recognized
+	# ----------------------------------------------
+	$(error Unknown option for variable [ARCHITECTURE])
+endif
+
 
 
 

@@ -23,11 +23,12 @@ namespace generic {
 namespace c {
 
 /* A helper to determine basisSize^DIMENSIONS */
-const int basisSizeD(int basisSize) {
-      const int basisX = basisSize;
-      const int basisY = basisSize;
-      const int basisZ = DIMENSIONS == 3 ? basisSize : 1;
-      return basisX * basisY * basisZ;
+inline constexpr int basisSizeD(int basisSize) {
+      //const int basisX = basisSize;
+      //const int basisY = basisSize;
+      //const int basisZ = DIMENSIONS == 3 ? basisSize : 1;
+      //return basisX * basisY * basisZ;
+    return basisSize * basisSize * (DIMENSIONS == 3 ? basisSize : 1);
 }
 
 /**
@@ -37,7 +38,6 @@ const int basisSizeD(int basisSize) {
  * 
  * In any case, you have to provide the storage, ie. with
  * <code>
- *   double luh[basisSize*3*numberOfVariables] luh = ...
  *   double u[numberOfVariables] = ... // your conserved variables
  *   double dx[3] = {0.5, 0.5, 0.5}; // the cell size
  *   double gradQ[basisSize3 * DIMENSIONS * numberOfVariables];
@@ -60,11 +60,10 @@ const int basisSizeD(int basisSize) {
  * undestands basisSize=1 for the z direction if DIMENSIONS == 2. This
  * applies nicely for the loops as for(int j=0; j<1; j++) { body } just
  * executes "body" one time.
+ * 
+ * @TODO: This should not be an inline function. Make up a seperate cpp file.
  **/
-template <typename SolverType>
-void computeGradQ(double* gradQ, const double* const u, const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch) {
-      const int numberOfVariables = SolverType::NumberOfVariables;
-      const int order = SolverType::Order;
+inline void computeGradQ(double* gradQ, const double* const u, const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, const int numberOfVariables, const int order) {
       const int basisSize = order + 1;
 
       const int basisX = basisSize;
@@ -123,6 +122,16 @@ void computeGradQ(double* gradQ, const double* const u, const tarch::la::Vector<
         }
       }
 } // computeGradQ
+
+/**
+ * Read off values from SolverTypes, for convenience.
+ **/
+template <typename SolverType>
+void computeGradQ(double* gradQ, const double* const u, const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch) {
+	const int numberOfVariables = SolverType::NumberOfVariables;
+	const int order = SolverType::Order;
+	computeGradQ(gradQ, u, sizeOfPatch, numberOfVariables, order);
+}
 
 
 } // c

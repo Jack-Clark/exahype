@@ -21,7 +21,6 @@
 #include "peano/MappingSpecification.h"
 #include "peano/grid/VertexEnumerator.h"
 
-#include "tarch/multicore/BooleanSemaphore.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
 
 #include "exahype/Cell.h"

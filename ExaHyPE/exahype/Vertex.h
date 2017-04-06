@@ -23,19 +23,30 @@
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
 namespace exahype {
-/**
- * We abuse this heap to send and receive metadata from one MPI rank to the other.
- * We never actually store data on this heap.
- * TODO(Dominic): Change to RLEIntegerHeap that compresses data.
- */
-typedef peano::heap::PlainIntegerHeap  MetadataHeap; // TODO(Dominic): Migrate to Vertex.
+  /**
+   * We abuse this heap to send and receive metadata from one MPI rank to the other.
+   * We never actually store data on this heap.
+   * TODO(Dominic): Change to RLEIntegerHeap that compresses data.
+   */
+  typedef peano::heap::PlainIntegerHeap  MetadataHeap; // TODO(Dominic): Migrate to Vertex.
 
-class Vertex;
+  class Vertex;
 
-/**
- * Forward declaration
- */
-class VertexOperations;
+  /**
+   * Forward declaration
+   */
+  class VertexOperations;
+
+  /**
+   * Defines an invalid metadata entry.
+   */
+  const int InvalidMetadataEntry = -1;
+
+  /**
+   * Defines the length of the metadata
+   * we send out per sovler.
+   */
+  const int MetadataPerSolver = 1;
 }
 
 /**
@@ -55,8 +66,6 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   typedef class peano::grid::Vertex<exahype::records::Vertex> Base;
 
   friend class VertexOperations;
-
-  static tarch::logging::Log _log;
  public:
 
   /**
@@ -89,7 +98,7 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   /**
    * Return the cell descriptions indices of the adjacent cells.
    */
-  tarch::la::Vector<TWO_POWER_D, int>& getCellDescriptionsIndex();
+  tarch::la::Vector<TWO_POWER_D, int> getCellDescriptionsIndex() const;
 
 //  struct Face {
 //    int normalDirection;
@@ -160,17 +169,6 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
 
 #ifdef Parallel
   /**
-   * Defines an invalid metadata entry.
-   */
-  static const int InvalidMetadataEntry;
-
-  /**
-   * Defines the length of the metadata
-   * we send out per sovler.
-   */
-  static const int MetadataPerSolver;
-
-  /**
    * Encodes the metadata as integer sequence.
    *
    * The first element refers to the number of
@@ -198,27 +196,13 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    * Creates a sequence of \p InvalidMetadataEntry with length
    * exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver.
    */
-  static exahype::MetadataHeap::HeapEntries createEncodedMetadataSequenceWithInvalidEntries() {
-      exahype::MetadataHeap::HeapEntries encodedMetaData(
-          exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver,
-          exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver);
-      std::fill_n(encodedMetaData.begin(),encodedMetaData.size(),InvalidMetadataEntry); // Implicit conversion.
-      return encodedMetaData;
-  }
+  static exahype::MetadataHeap::HeapEntries createEncodedMetadataSequenceWithInvalidEntries();
 
   /**
    * Checks if all the entries of \p sequence are set to
    * \p InvalidMetadataEntry.
    */
-  static bool isEncodedMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence) {
-     assertion(sequence.size() == exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver);
-
-     for (auto& m : sequence)
-       if (m.getU()==InvalidMetadataEntry)
-         return false;
-
-     return true;
-  }
+  static bool isEncodedMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence);
 
   /**
    * Send metadata to rank \p toRank.

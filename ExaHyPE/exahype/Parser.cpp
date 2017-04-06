@@ -169,6 +169,9 @@ void exahype::Parser::readFile(const std::string& filename) {
 //  for (std::string str : _tokenStream) {
 //    std::cout << "["<<str<<"]" << std::endl;
 //  }
+//  std::string configuration = getMPIConfiguration();
+//  int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks_per_node"));
+//  std::cout << "ranks_per_node="<<ranksPerNode << std::endl;
 }
 
 bool exahype::Parser::isValid() const {
@@ -357,9 +360,9 @@ exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType()
     result = MulticoreOracleType::Dummy;
   } else if (token.compare("autotuning") == 0) {
     result = MulticoreOracleType::AutotuningWithRestartAndLearning;
-  } else if (token.compare("autotuning-without-learning") == 0) {
+  } else if (token.compare("autotuning_without_learning") == 0) {
     result = MulticoreOracleType::AutotuningWithoutLearning;
-  } else if (token.compare("autotuning-without-restart") == 0) {
+  } else if (token.compare("autotuning_without_restart") == 0) {
     result = MulticoreOracleType::AutotuningWithLearningButWithoutRestart;
   } else if (token.compare("sampling") == 0) {
     result = MulticoreOracleType::GrainSizeSampling;

@@ -5,6 +5,7 @@ import java.util.Set;
 public class SolverFactory {
   private int _dimensions;
   private boolean _enableProfiler;
+  private boolean _enableDeepProfiler;
   private String _microarchitecture;
   private String _pathToLibxsmm;
 
@@ -15,6 +16,20 @@ public class SolverFactory {
       String pathToLibxsmm) {
     _dimensions = dimensions;
     _enableProfiler = enableProfiler;
+    _microarchitecture = microarchitecture;
+    _pathToLibxsmm = pathToLibxsmm;
+    _enableDeepProfiler = false;
+  }
+  
+  public SolverFactory(
+      int dimensions,
+      boolean enableProfiler,
+      boolean enableDeepProfiler,
+      String microarchitecture,
+      String pathToLibxsmm) {
+    _dimensions = dimensions;
+    _enableProfiler = enableProfiler;
+    _enableDeepProfiler = enableDeepProfiler;
     _microarchitecture = microarchitecture;
     _pathToLibxsmm = pathToLibxsmm;
   }
@@ -42,7 +57,7 @@ public class SolverFactory {
     else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
       return new eu.exahype.solvers.OptimisedADERDG(_dimensions,
           numberOfVariables, numberOfParameters, namingSchemeNames, order, _microarchitecture, _pathToLibxsmm,
-          _enableProfiler, hasConstants, false);
+          _enableProfiler, _enableDeepProfiler, hasConstants, false);
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {
       return new eu.exahype.solvers.KernelEuler2d();
@@ -60,6 +75,9 @@ public class SolverFactory {
     }
     if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesGodunovInC.Identifier )) {
       return new eu.exahype.solvers.GenericFiniteVolumesGodunovInC(_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants);
+    }
+    if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLHancockInC.Identifier )) {
+        return new eu.exahype.solvers.GenericFiniteVolumesMUSCLHancockInC(_dimensions,numberOfVariables, numberOfParameters, namingSchemeNames, patchSize, _enableProfiler, hasConstants);
     }
 
     return null;

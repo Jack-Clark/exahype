@@ -45,6 +45,7 @@ void spaceTimePredictorLinear(SolverType& solver,
     double* tempPointForceSources) {
    constexpr int numberOfVariables  = SolverType::NumberOfVariables;
    constexpr int numberOfParameters = SolverType::NumberOfParameters;
+   constexpr int numberOfData       = numberOfVariables+numberOfParameters;
    constexpr int basisSize          = SolverType::Order+1;
    constexpr int basisSize2         = basisSize * basisSize;
    constexpr int basisSize3         = basisSize2 * basisSize;
@@ -52,21 +53,21 @@ void spaceTimePredictorLinear(SolverType& solver,
    constexpr int order              = basisSize - 1;
 
    double* PSi = tempPointForceSources;    // size: basisSize3 * (basisSize + 1) * // TODO(Dominic): Put in tempSpaceTimeUnknowns[1]. tempSpaceTimeUnknowns was an array from the start. Why did noone simply increase the size by 1?	
-   double* lQi = tempSpaceTimeUnknowns[0]; // size: basisSize3 * (basisSize + 1) * (numberOfVariables + numberOfParameters);
-   std::fill_n(lQi, basisSize3 * (basisSize + 1) * (numberOfVariables + numberOfParameters), 0.0);
+   double* lQi = tempSpaceTimeUnknowns[0]; // size: basisSize3 * (basisSize + 1) * numberOfData;
+   std::fill_n(lQi, basisSize3 * (basisSize + 1) * numberOfData, 0.0);
 
    idx5 idx_PSi(basisSize + 1, basisSize, basisSize, basisSize, numberOfVariables);
-   idx5 idx_lQi(basisSize + 1, basisSize, basisSize, basisSize, numberOfVariables + numberOfParameters);
+   idx5 idx_lQi(basisSize + 1, basisSize, basisSize, basisSize,numberOfData);
 
    // The zeroth time derivative (time dof number 1) is the initial condition
    // lqh(l,k,j,i,1) += luh(l,k,j,i)
    {
-     idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
+     idx4 idx_luh(basisSize, basisSize, basisSize,numberOfData);
      for (int i = 0; i < basisSize; i++) {
        for (int j = 0; j < basisSize; j++) {
          for (int k = 0; k < basisSize; k++) {
            // Copy parameters here
-           std::copy_n (luh + idx_luh(i, j, k, 0), numberOfVariables+numberOfParameters, 
+           std::copy_n (luh + idx_luh(i, j, k, 0),numberOfData,
                         lQi + idx_lQi(0, i, j, k, 0));
          }
        }
@@ -98,12 +99,12 @@ void spaceTimePredictorLinear(SolverType& solver,
        }
      }
    }
-   double* lFi = tempSpaceTimeFluxUnknowns[0]; // size: basisSize4 * DIMENSIONS * (numberOfVariables + numberOfParameters)
+   double* lFi = tempSpaceTimeFluxUnknowns[0]; // size: basisSize4 * DIMENSIONS * numberOfData
    std::fill_n(lFi+basisSize4*DIMENSIONS*numberOfVariables, basisSize4*numberOfVariables, 0.0); // zero out sources; We should distinguish between Linear and NonLinear solvers
    idx6 idx_lFi(basisSize, basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables);
 
    // spatial gradient of q
-   double* gradQ = tempSpaceTimeFluxUnknowns[1]; // size: basisSize4 * DIMENSIONS * (numberOfVariables + numberOfParameters)
+   double* gradQ = tempSpaceTimeFluxUnknowns[1]; // size: basisSize4 * DIMENSIONS * numberOfData
    std::memset(gradQ, 0,
        basisSize4 * DIMENSIONS * numberOfVariables * sizeof(double));
    idx6 idx_gradQ(basisSize, basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables);
@@ -209,7 +210,7 @@ void spaceTimePredictorLinear(SolverType& solver,
          for (int k = 0; k < basisSize; k++) {
            for (int l = 0; l < basisSize; l++) {
              for (int n = numberOfVariables/* skip parameters */;
-                 n < numberOfVariables + numberOfParameters; n++) {
+                 n <numberOfData; n++) {
                lQi[idx_lQi(i + 1, j, k, l, n)] = lQi[idx_lQi(i, j, k, l, n)];
              }
            }
@@ -219,7 +220,7 @@ void spaceTimePredictorLinear(SolverType& solver,
    }
 
    double* lQh = tempUnknowns;
-   idx4 idx_lQh(basisSize, basisSize, basisSize, numberOfVariables + numberOfParameters);
+   idx4 idx_lQh(basisSize, basisSize, basisSize, numberOfData);
 
    // Immediately compute the time-averaged space-time polynomials
    // Fortran: lQh(:,:,:,:) = lQi(:,:,:,:,1)
@@ -227,7 +228,7 @@ void spaceTimePredictorLinear(SolverType& solver,
      for (int j = 0; j < basisSize; j++) {
        for (int k = 0; k < basisSize; k++) {
          // Copy parameters here
-         for (int l = 0; l < numberOfVariables + numberOfParameters; l++) {
+         for (int l = 0; l <numberOfData; l++) {
            lQh[idx_lQh(i, j, k, l)] = lQi[idx_lQi(0, i, j, k, l)];
          }
        }
@@ -308,10 +309,10 @@ void spaceTimePredictorLinear(SolverType& solver,
 
    // Compute the boundary-extrapolated values for Q and F*n
    std::memset(lQbnd, 0,
-       2 * DIMENSIONS * basisSize2 * (numberOfVariables + numberOfParameters) * sizeof(double));
+       2 * DIMENSIONS * basisSize2 * numberOfData * sizeof(double));
    std::memset(lFbnd, 0,
        2 * DIMENSIONS * basisSize2 * numberOfVariables * sizeof(double));
-   idx4 idx_lQbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables + numberOfParameters);
+   idx4 idx_lQbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfData);
    idx4 idx_lFbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);
 
    // x-direction: face 1 (left) and face 2 (right)
@@ -321,7 +322,7 @@ void spaceTimePredictorLinear(SolverType& solver,
        // lQbnd(:,j,i,1) = lQh(:,:,j,i) * FLCoeff(:)
        // lQbnd(:,j,i,2) = lQh(:,:,j,i) * FRCoeff(:)
        // Copy parameters
-       for (int k = 0; k < numberOfVariables + numberOfParameters; k++) {
+       for (int k = 0; k <numberOfData; k++) {
          for (int l = 0; l < basisSize; l++) {
            // left
            lQbnd[idx_lQbnd(0, i, j, k)] +=
@@ -363,7 +364,7 @@ void spaceTimePredictorLinear(SolverType& solver,
        // lQbnd(:,j,i,4) = lQh(:,j,:,i) * FRCoeff(:)
 
        // Copy parameters
-       for (int k = 0; k < numberOfVariables + numberOfParameters; k++) {
+       for (int k = 0; k <numberOfData; k++) {
          for (int l = 0; l < basisSize; l++) {
            // left
            lQbnd[idx_lQbnd(2, i, j, k)] +=
@@ -402,7 +403,7 @@ void spaceTimePredictorLinear(SolverType& solver,
        // Fortran:
        // lQbnd(:,j,i,5) = lQh(:,j,i,:) * FLCoeff(:)
        // lQbnd(:,j,i,6) = lQh(:,j,i,:) * FRCoeff(:)
-       for (int k = 0; k < numberOfVariables + numberOfParameters; k++) {
+       for (int k = 0; k <numberOfData; k++) {
          // Copy parameters
          for (int l = 0; l < basisSize; l++) {
            // left

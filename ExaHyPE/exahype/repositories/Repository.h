@@ -91,7 +91,7 @@ class exahype::repositories::Repository {
     virtual void switchToPrediction() = 0;    
     virtual void switchToPredictionAndPlot() = 0;    
     virtual void switchToPredictionAndPlot2d() = 0;    
-    virtual void switchToDropMPIMetadataMessagesAndTimeStepSizeComputation() = 0;    
+    virtual void switchToFinaliseMeshRefinementAndTimeStepSizeComputation() = 0;    
     virtual void switchToTimeStepDataMerging() = 0;    
     virtual void switchToTimeStepDataMergingAndDropIncomingMPIMessages() = 0;    
 
@@ -117,7 +117,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterPrediction() const = 0;
     virtual bool isActiveAdapterPredictionAndPlot() const = 0;
     virtual bool isActiveAdapterPredictionAndPlot2d() const = 0;
-    virtual bool isActiveAdapterDropMPIMetadataMessagesAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterFinaliseMeshRefinementAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterTimeStepDataMerging() const = 0;
     virtual bool isActiveAdapterTimeStepDataMergingAndDropIncomingMPIMessages() const = 0;
 

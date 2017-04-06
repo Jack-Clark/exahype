@@ -24,10 +24,11 @@ template <typename SolverType>
 void solutionUpdate(SolverType& solver, double* luh, const double* const lduh, const double dt) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int basisSize          = SolverType::Order+1;
-  constexpr int order              = basisSize-1;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
+  constexpr int order              = SolverType::Order;
+  constexpr int basisSize          = order+1;
 
-  idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables+numberOfParameters);
+  idx4 idx_luh(basisSize, basisSize, basisSize, numberOfData);
   idx4 idx_lduh(basisSize, basisSize, basisSize, numberOfVariables);
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {

@@ -88,6 +88,14 @@ private:
   #endif
 
 public:
+  #ifdef Parallel
+  /**
+   * This variable is unset in MeshRefinement::beginIteration(...) in the first iteration
+   * of MeshRefinement and then reset in
+   * FinaliseMeshRefinement::beginIteration(...).
+   */
+  static bool FirstIteration;
+  #endif
   /**
    * Switched off in serial mode where everything is done in the creational
    * routines. Switched on in parallel mode.

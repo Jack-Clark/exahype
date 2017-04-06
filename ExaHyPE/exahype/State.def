@@ -6,16 +6,6 @@ class exahype::dastgen::State {
    */
   persistent parallelise int maxRefinementLevelAllowed;
   
-  #ifdef Parallel
-  /**
-   * Indicates if this is the first grid setup iteration.
-   * Then, we do not receive any metadata.
-   *
-   * TODO(Dominic): Having this in the State.def should be circumvented
-   */
-  parallelise persistent bool firstGridSetupIteration;
-  #endif
-  
   /**
    * This enum is used to specify
    * which data we want to merge in the

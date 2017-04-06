@@ -87,7 +87,7 @@ class exahype::plotters::ADERDG2LegendreVTK: public exahype::plotters::Plotter::
     int firstVertexIndex,
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-    double* u,
+    double* u, double* gradU,
     double timeStamp
   );
 
@@ -95,7 +95,7 @@ class exahype::plotters::ADERDG2LegendreVTK: public exahype::plotters::Plotter::
     int firstCellIndex,
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
-    double* u,
+    double* u, double* gradU,
     double timeStamp
   );
 

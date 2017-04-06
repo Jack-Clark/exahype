@@ -18,17 +18,18 @@ void kernels::aderdg::generic::c::solutionAdjustment(
     const double dt) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int basisSize          = SolverType::Order+1;
-  constexpr int order              = basisSize-1;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
+  constexpr int order              = SolverType::Order;
+  constexpr int basisSize          = order+1;
 
-  idx3 idx_luh(basisSize, basisSize, numberOfVariables+numberOfParameters);
+  idx3 idx_luh(basisSize, basisSize, numberOfData);
   
   double x[2];
   for (int i = 0; i < basisSize; i++) {  // loop over dof (Major)
-    const double qi = kernels::gaussLegendreNodes[basisSize - 1][i];
+    const double qi = kernels::gaussLegendreNodes[order][i];
 
     for (int j = 0; j < basisSize; j++) { // (Minor)
-      const double qj = kernels::gaussLegendreNodes[basisSize - 1][j];
+      const double qj = kernels::gaussLegendreNodes[order][j];
       
       x[0] = center[0] + dx[0] * (qj - 0.5);
       x[1] = center[1] + dx[1] * (qi - 0.5);

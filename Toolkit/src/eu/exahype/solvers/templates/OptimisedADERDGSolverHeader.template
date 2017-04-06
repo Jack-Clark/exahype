@@ -21,7 +21,8 @@ namespace {{Project}}{
 }
 
 class {{Project}}::{{Solver}}: public {{Project}}::{{AbstractSolver}} {
-  public:  
+  public: 
+
     {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
 
     bool useAlgebraicSource()        const override;

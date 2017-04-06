@@ -227,7 +227,7 @@ void exahype::mappings::LimiterStatusMergingMPI::mergeNeighourMergedLimiterStatu
       int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
 
       if (element!=exahype::solvers::Solver::NotFound
-          && receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+          && receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
         auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
         limitingADERDGSolver->mergeWithNeighbourMergedLimiterStatus(fromRank,destCellDescriptionIndex,element,src,dest,x,level);
       } else {

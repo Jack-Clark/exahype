@@ -163,7 +163,12 @@ void exahype::mappings::TimeStepSizeComputation::reinitialiseTimeStepDataIfLastP
 
   if (aderdgSolver!=nullptr) {
     const double stableTimeStepSize = aderdgSolver->getMinNextPredictorTimeStepSize();
-    const double usedTimeStepSize   = aderdgSolver->getMinPredictorTimeStepSize();
+    double usedTimeStepSize         = aderdgSolver->getMinPredictorTimeStepSize();
+
+    if (tarch::la::equals(usedTimeStepSize,0.0)) {
+      usedTimeStepSize = stableTimeStepSize;
+    }
+
     bool useTimeStepSizeWasInstable = usedTimeStepSize > stableTimeStepSize;
 
     if (useTimeStepSizeWasInstable) {
@@ -265,7 +270,6 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (fineGridCell.isInitialised()) {
-    // ADER-DG
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined18);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
@@ -279,8 +283,6 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
             solver->startNewTimeStep(
                 fineGridCell.getCellDescriptionsIndex(),element,
                 _temporaryVariables._tempEigenValues[solverNumber]);
-
-//        logInfo("enterCell(...)","admissibleTimeStepSize="<<admissibleTimeStepSize); // TODO(Dominic): remove
 
         if (!exahype::State::fuseADERDGPhases()) {
           reconstructStandardTimeSteppingData(solver,fineGridCell.getCellDescriptionsIndex(),element);

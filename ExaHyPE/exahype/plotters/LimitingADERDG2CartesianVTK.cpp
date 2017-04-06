@@ -204,7 +204,7 @@ void exahype::plotters::LimitingADERDG2CartesianVTK::finishPlotting() {
 
     std::ostringstream snapshotFileName;
     snapshotFileName << _filename
-                     << "-" << _fileCounter << ".vtk";
+                     << "-" << _fileCounter;
 
     const bool hasBeenSuccessful =
       _patchWriter->writeToFile(snapshotFileName.str());

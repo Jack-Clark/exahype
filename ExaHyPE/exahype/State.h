@@ -101,105 +101,36 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   /**
    * Return the merge mode that is currently active.
    */
-  records::State::MergeMode getMergeMode() const {
-    return _stateData.getMergeMode();
-  }
+  records::State::MergeMode getMergeMode() const;
 
   /**
    * Return the send mode that is currently active.
    */
-  records::State::SendMode getSendMode() const {
-    return _stateData.getSendMode();
-  }
+  records::State::SendMode getSendMode() const;
 
   /**
    * Merging and Sending contexts.
    * See both mappings for more details.
    */
-  void switchToInitialConditionAndTimeStepSizeComputationContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-    #endif
-    _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
-    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
-  }
+  void switchToInitialConditionAndTimeStepSizeComputationContext();
 
-  void switchToPredictionAndFusedTimeSteppingInitialisationContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-    #endif
-    _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
-    _stateData.setSendMode (records::State::SendMode::SendFaceData);
-  }
+  void switchToPredictionAndFusedTimeSteppingInitialisationContext();
 
-  void switchToADERDGTimeStepContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-    #endif
-    _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepDataAndMergeFaceData);
-    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
-  }
+  void switchToADERDGTimeStepContext();
 
-  void switchToPredictionRerunContext() {
-    switchToPredictionContext();
-  }
+  void switchToPredictionRerunContext();
 
-  void switchToNeighbourDataMergingContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-    #endif
-    _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::MergeFaceData);
-    _stateData.setSendMode (records::State::SendMode::SendNothing);
-  }
+  void switchToNeighbourDataMergingContext();
 
-  void switchToPredictionContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-    #endif
-    _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
-    _stateData.setSendMode (records::State::SendMode::SendFaceData);
-  }
+  void switchToPredictionContext();
 
-  void switchToSolutionUpdateContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-    #endif
-    _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-    _stateData.setSendMode (records::State::SendMode::SendNothing);
-  }
+  void switchToSolutionUpdateContext();
 
-  void switchToTimeStepSizeComputationContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-    #endif
-    _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
-    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
-  }
+  void switchToTimeStepSizeComputationContext();
 
-  void switchToPreAMRContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(true);
-    #endif
-    _stateData.setReinitTimeStepData(false); // TODO(Dominic): rename
-    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
-    _stateData.setSendMode (records::State::SendMode::SendNothing);
-  }
+  void switchToPreAMRContext();
 
-  void switchToPostAMRContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-    #endif
-    _stateData.setReinitTimeStepData(true);
-    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
-  }
+  void switchToPostAMRContext();
 
   /**
    * Merge and synchronise the time step sizes over different
@@ -207,14 +138,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    *
    * TODO Time step size merging might not be necessary.
    */
-  void switchToLimiterStatusSpreadingContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-    #endif
-    _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
-    _stateData.setSendMode (records::State::SendMode::SendNothing);
-  }
+  void switchToLimiterStatusSpreadingContext();
 
   /**
    * Additionally drop face data.
@@ -224,86 +148,32 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    *
    * TODO Time step size merging might not be necessary.
    */
-  void switchToLimiterStatusSpreadingFusedTimeSteppingContext() {
-#ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-#endif
-    _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::BroadcastAndMergeTimeStepData);
-    _stateData.setSendMode (records::State::SendMode::SendNothing);
-  }
+  void switchToLimiterStatusSpreadingFusedTimeSteppingContext();
 
-  void switchToReinitialisationContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-    #endif
-    _stateData.setReinitTimeStepData(false);
-    // We are merging a limiter status but we do not use the merging and sending mappings. So, we can use any value here.
-    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-    _stateData.setSendMode (records::State::SendMode::SendNothing);
-  }
+  void switchToReinitialisationContext();
 
-  void switchToRecomputeSolutionAndTimeStepSizeComputationContext() {
-    #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-    #endif
-    _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepData);
-  }
+  void switchToRecomputeSolutionAndTimeStepSizeComputationContext();
 
-  void switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext() {
-   #ifdef Parallel
-    _stateData.setFirstGridSetupIteration(false);
-    #endif
-    _stateData.setReinitTimeStepData(false);
-    _stateData.setMergeMode(records::State::MergeMode::MergeNothing);
-    _stateData.setSendMode (records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData);
-  }
+  void switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
 
-  //
-  void setStabilityConditionOfOneSolverWasViolated(bool state) {
-    _stateData.setStabilityConditionOfOneSolverWasViolated(state);
-  }
+  void setStabilityConditionOfOneSolverWasViolated(bool state) ;
 
-  bool stabilityConditionOfOneSolverWasViolated() const {
-    return _stateData.getStabilityConditionOfOneSolverWasViolated();
-  }
+  bool stabilityConditionOfOneSolverWasViolated() const;
 
-  void setReinitTimeStepData(bool state) {
-    _stateData.setReinitTimeStepData(state);
-  }
+  void setReinitTimeStepData(bool state);
 
-  bool reinitTimeStepData() const  {
-    return _stateData.getReinitTimeStepData();
-  }
+  bool reinitTimeStepData() const;
 
   /**
    * Indicates that the fused time stepping
    * scheme is used in the runner
    * instead of the standard time stepping.
    */
-  static bool fuseADERDGPhases()  {
-    return FuseADERDGPhases;
-  }
+  static bool fuseADERDGPhases();
 
-  void setTimeStepSizeWeightForPredictionRerun(double value) {
-    _stateData.setTimeStepSizeWeightForPredictionRerun(value);
-  }
+  void setTimeStepSizeWeightForPredictionRerun(double value);
 
-  double getTimeStepSizeWeightForPredictionRerun() const {
-    return _stateData.getTimeStepSizeWeightForPredictionRerun();
-  }
-
-  // @todo Please remove
-  #ifdef Parallel
-  bool firstGridSetupIteration() const {
-    return _stateData.getFirstGridSetupIteration();
-  }
-  void setFirstGridSetupIteration(bool state) {
-    return _stateData.setFirstGridSetupIteration(state);
-  }
-  #endif
+  double getTimeStepSizeWeightForPredictionRerun() const;
 
   /**
    * Has to be called after the iteration!

@@ -5,9 +5,9 @@
 
 
 #include "tarch/logging/Log.h"
+#include "tarch/multicore/BooleanSemaphore.h"
 #include "peano/datatraversal/autotuning/OracleForOnePhase.h"
 #include "peano/datatraversal/autotuning/MethodTrace.h"
-#include "tarch/timing/Measurement.h"
 
 
 #include <map>
@@ -132,20 +132,26 @@ peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
  * @author Tobias Weinzierl
  */
 class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano::datatraversal::autotuning::OracleForOnePhase {
+  public:
+    enum class SelectNextStudiedMeasureTraceStrategy {
+      Randomised,
+      Cyclic,
+      RandomisedWithHigherPrioritiesForSmallProblemSizes
+    };
   private:
     static tarch::logging::Log                           _log;
 
-    /**
-     * We cannot write std::numeric_limit<double>::max() into a file as most
-     * GNU implementations of sttof fail parsing it. So we use an arbitrary
-     * big constant.
-     */
-    static const double                                  _TimingMax;
+    static const double                                  _MaxAccuracy;
+    static const double                                  _WideningFactor;
 
     /**
      * @see parallelSectionHasTerminated()
      */
     static const double                                  _InitialRelativeAccuracy;
+
+    static bool                                          _hasLearnedSinceLastQuery;
+
+    static tarch::multicore::BooleanSemaphore            _semaphore;
 
     /**
      * We never do optimise all traces. We only do it with one trace at a time.
@@ -160,6 +166,7 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      */
     const bool                                           _learn;
     const bool                                           _restart;
+    const SelectNextStudiedMeasureTraceStrategy          _selectNextStudiedMeasureTraceStrategy;
 
     /**
      * Per method trace, we hold multiple problem analyses. See rationale
@@ -193,168 +200,201 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      * than the previous measurement.
      */
     struct DatabaseEntry {
-      int                          _biggestProblemSize;
-      int                          _currentGrainSize;
-      double                       _previousMeasuredTime;
-      int                          _searchDelta;
-      tarch::timing::Measurement   _currentMeasurement;
+      private:
+        int                          _biggestProblemSize;
+        int                          _currentGrainSize;
+        int                          _searchDelta;
+        bool                         _measurementsAreAccurate;
+        double                       _accuracy;
+        double                       _accumulatedSerialMeasurement;
+        double                       _accumulatedParallelMeasurement;
+        double                       _numberOfSerialMeasurements;
+        double                       _numberOfParallelMeasurements;
+        double                       _previousSpeedup;
 
-      /**
-       * Insert/reset entries into search database
-       *
-       * When we insert a new entry we either set the search size such that the
-       * next size is half the problem i.e. we could exploit two cores. If the
-       * problem however is large, it does make sense to split it up more
-       * aggressively right from the start. If this is not a good idea, the
-       * code will reduce the search step size anyway.
-       */
-      DatabaseEntry(int problemSize);
+      public:
+        /**
+         * Insert/reset entries into search database
+         *
+         * When we insert a new entry we either set the search size such that the
+         * next size is half the problem i.e. we could exploit two cores. If the
+         * problem however is large, it does make sense to split it up more
+         * aggressively right from the start. If this is not a good idea, the
+         * code will reduce the search step size anyway.
+         */
+        DatabaseEntry(int problemSize);
 
-      /**
-       * Constructs entry from string. String should be written through
-       * toString(). This is basically a parse constructor interpreting one
-       * line from an input file.
-       *
-       * We do not realise any error handling here and rely solely on std lib
-       * operations, i.e., we inherit their error management.
-       */
-      DatabaseEntry( std::string  myString );
+        /**
+         * Constructs entry from string. String should be written through
+         * toString(). This is basically a parse constructor interpreting one
+         * line from an input file.
+         *
+         * We do not realise any error handling here and rely solely on std lib
+         * operations, i.e., we inherit their error management.
+         */
+        DatabaseEntry( std::string  myString );
 
-      /**
-       * Construct new data base entry using another one as prototype
-       *
-       * This operation may be used if and only if prototype refers to a
-       * database entry corresponding to a smaller problem size than
-       * newProblemSize. Two variants do exist:
-       *
-       * - prototype represents a measurement where no scaling parameter
-       *   choice for prototype's maximum problem size has been found yet.
-       *   In this case, this constructor equals DatabaseEntry(int). It
-       *   starts a completely new search for good grain sizes.
-       * - prototype represents a measurements where a scaling parameter
-       *   has already been found. As prototype handles a maximum problem
-       *   size smaller than newProblemSize, we may assume that prototype's
-       *   grain size does a reasonable job for newProblemSize, too. We
-       *   thus inherit prototype's problem size and invoke restart(). This
-       *   induces a grain size extrapolation.
-       */
-      DatabaseEntry( const DatabaseEntry& prototype, int newProblemSize );
+        /**
+         * Construct new data base entry using another one as prototype
+         *
+         * This operation may be used if and only if prototype refers to a
+         * database entry corresponding to a smaller problem size than
+         * newProblemSize. Two variants do exist:
+         *
+         * - prototype represents a measurement where no scaling parameter
+         *   choice for prototype's maximum problem size has been found yet.
+         *   In this case, this constructor equals DatabaseEntry(int). It
+         *   starts a completely new search for good grain sizes.
+         * - prototype represents a measurements where a scaling parameter
+         *   has already been found. As prototype handles a maximum problem
+         *   size smaller than newProblemSize, we may assume that prototype's
+         *   grain size does a reasonable job for newProblemSize, too. We
+         *   thus inherit prototype's problem size and invoke restart(). This
+         *   induces a grain size extrapolation.
+         */
+        DatabaseEntry( const DatabaseEntry& prototype, int newProblemSize );
 
-      /**
-       * Restart the search for a problem setup
-       *
-       * This operation is used in two contexts. We use it if we have
-       * terminated the search for a given problem size and (through a
-       * random trigger, e.g.) decide that we want to restart the search
-       * once again to ensure we did not run into a local minimum. In this
-       * case, the grain size might be smaller than the maximum problem
-       * size. Yet, it might also be that grain size equals the maximum
-       * problem size if the oracle had the impression that parallelisation
-       * did not pay off at all.
-       *
-       * If the entry results from an extrapolation call, i.e. from the
-       * constructor, then grain size definitely is smaller then the
-       * maximum problem size.
-       *
-       * The restart makes the new grain size the average between the
-       * previous grain size and the maximum problem size. If a restart
-       * is triggered on a non-scaling code part, this grain size will
-       * equal the maximum problem size. If it is triggered on a scaling
-       * code fragment (either one that turned out to be so good that the
-       * oracle stopped to search further or one well-suited for a smaller
-       * maximum problem size), then we choose a new problem size that is
-       * bigger than this working grain size.
-       *
-       * Next, we set _previousMeasuredTime to _TimingMax, i.e. this new
-       * grain size will, once the measurement has terminated, be accepted
-       * as new 'optimal' grain size. Please note that the constructor calls
-       * restart() if and only if the prototype measurement handed in did
-       * already scale.
-       *
-       * We set the accuracy to zero. It will be adopted in
-       * parallelSectionHasTerminated() later on automatically the first time
-       * this database entry is subject of the autotuning.
-       *
-       * Finally, we set the grain size such that the entry tested after
-       * the new grain size will be the previous one. That means we will
-       * first test a new (bigger) grain size and then next compare this
-       * one to the grain size that did work properly before. If the best-case
-       * grain size is bigger than the old grain size, we'll automatically get
-       * close to this one. If increasing the grain size is not a good idea,
-       * we'll fall back automatically to the previous (smaller) grain size
-       * once two measurements have completed.
-       */
-      void restart();
+        /**
+         * Restart the search for a problem setup
+         *
+         * This operation is used in two contexts. We use it if we hav e
+         * terminated the search for a given problem size and (through a
+         * random trigger, e.g.) decide that we want to restart the search
+         * once again to ensure we did not run into a local minimum. In this
+         * case, the grain size might be smaller than the maximum problem
+         * size. Yet, it might also be that grain size equals the maximum
+         * problem size if the oracle had the impression that parallelisation
+         * did not pay off at all.
+         *
+         * If the entry results from an extrapolation call, i.e. from the
+         * constructor, then grain size definitely is smaller then the
+         * maximum problem size.
+         *
+         * The restart makes the new grain size the average between the
+         * previous grain size and the maximum problem size. If a restart
+         * is triggered on a non-scaling code part, this grain size will
+         * equal the maximum problem size. If it is triggered on a scaling
+         * code fragment (either one that turned out to be so good that the
+         * oracle stopped to search further or one well-suited for a smaller
+         * maximum problem size), then we choose a new problem size that is
+         * bigger than this working grain size.
+         *
+         * Next, we set _previousMeasuredTime to _TimingMax, i.e. this new
+         * grain size will, once the measurement has terminated, be accepted
+         * as new 'optimal' grain size. Please note that the constructor calls
+         * restart() if and only if the prototype measurement handed in did
+         * already scale.
+         *
+         * We set the accuracy to zero. It will be adopted in
+         * parallelSectionHasTerminated() later on automatically the first time
+         * this database entry is subject of the autotuning.
+         *
+         * Finally, we set the grain size such that the entry tested after
+         * the new grain size will be the previous one. That means we will
+         * first test a new (bigger) grain size and then next compare this
+         * one to the grain size that did work properly before. If the best-case
+         * grain size is bigger than the old grain size, we'll automatically get
+         * close to this one. If increasing the grain size is not a good idea,
+         * we'll fall back automatically to the previous (smaller) grain size
+         * once two measurements have completed.
+         */
+        void restart();
 
-      /**
-       * Pipes an entry into a string. Can be used to pipe the database
-       * into a file. Is made the counterpart of DatabaseEntry(std::string),
-       * i.e. if we use this operation to dump data, the constructor can
-       * read this data again.
-       */
-      std::string toString() const;
+        /**
+         * Pipes an entry into a string. Can be used to pipe the database
+         * into a file. Is made the counterpart of DatabaseEntry(std::string),
+         * i.e. if we use this operation to dump data, the constructor can
+         * read this data again.
+         */
+        std::string toString() const;
 
-      /**
-       * This operator is a relict. Technically, the database holds only
-       * sets. If we used std::set however, we'd have issues with updating
-       * entries. The C++ set is very restrictive and typically does not
-       * allow you to alter entries as you might alter the set ordering
-       * (though we know we don't here). As a result, it returns only
-       * const references by default and this means that we can't make
-       * set entries learn. I therefore use the vector instead.
-       */
-      bool operator<(const DatabaseEntry& cmp) const;
+        /**
+         * This operator is a relict. Technically, the database holds only
+         * sets. If we used std::set however, we'd have issues with updating
+         * entries. The C++ set is very restrictive and typically does not
+         * allow you to alter entries as you might alter the set ordering
+         * (though we know we don't here). As a result, it returns only
+         * const references by default and this means that we can't make
+         * set entries learn. I therefore use the vector instead.
+         */
+        bool operator<(const DatabaseEntry& cmp) const;
 
-      /**
-       * Make a database entry learn.
-       *
-       * This operation may be called if and only if _currentMeasurement holds
-       * a valid value. That means the previous few measurements obtained did
-       * not alter the mean value more than the prescrived accuracy. There are
-       * various combinations that now can occur:
-       *
-       * - If the new measurement is smaller than the previous measurement, the
-       *   current grain size performs better than the grain size before. So we
-       *   keep it. Before we discuss the details, lets highlight that a maximum
-       *   problem size N might initialise a search delta of N/2. If N/2 is
-       *   better than a serial run, we might run from N into N/2 into 0 as
-       *   grain size.
-       *   -- We first check whether another decrease of the grain size by
-       *      _searchDelta would yields a grain size smaller or equal than 0.
-       *      If this would happen, we reduce half _searchDelta.
-       *   -- We set a new grain size that is smaller than grain size by this
-       *      delta. This is the grain size the oracle will study next. If it
-       *      turns out to be a stupid idea, we'll roll back.
-       *   -- We finally erase the measurement and increase the accuracy. The
-       *      previous grain size choice has paid off, so we'll try a new
-       *      grain size. And we want to get the measurements correct, so we
-       *      increase the accuracy, i.e. we are more picky.
-       * - If the currently studied grain size yields a runtime that is worse
-       *   than the runtime before, we have to roll back. We know that
-       *   _searchDelta holds the step size how we ended up with the present
-       *   grain size.
-       *   -- We add _searchDelta to the grain size. This is effectively a
-       *      roll back to the grain size studied before.
-       *   -- We set _previousMeasuredTime to _TimingMax. We do not know the
-       *      timing results for the previous grain size anymore. We actually
-       *      do know its average timing result, but we do not care - it will
-       *      be reanalysed again next anyway. Yet, we set
-       *      _previousMeasuredTime for these following tests to the maximum to
-       *      ensure that this one will be accepted in any case.
-       *   -- We clear the measurement and increase the accuracy to get more
-       *      accurate data.
-       *   -- We reduce the search delta. We know that the 'next' measurement,
-       *      which is actually a redo of one grain size with an increase
-       *      accuracy, will be accepted and so we'll then reduce this bigger
-       *      grain size again. It should however not go back to the current
-       *      grain size straight away as this would be an infinite oscillation.
-       *      So we decrease _searchDelta. If the maximum problem size is small
-       *      compared to the number of threads, we do decrement the search
-       *      interval. We have to assume that any timinig is very sensitive.
-       *      Otherwise, if the grain size is still big, we divide it by the
-       *      number of threads. At least, we divide by two.
-       */
-      void learn();
+        /**
+         * Make a database entry learn.
+         *
+         * This operation may be called if and only if _currentMeasurement holds
+         * a valid value. That means the previous few measurements obtained did
+         * not alter the mean value more than the prescrived accuracy. There are
+         * various combinations that now can occur:
+         *
+         * - If the new measurement is smaller than the previous measurement, the
+         *   current grain size performs better than the grain size before. So we
+         *   keep it. Before we discuss the details, lets highlight that a maximum
+         *   problem size N might initialise a search delta of N/2. If N/2 is
+         *   better than a serial run, we might run from N into N/2 into 0 as
+         *   grain size.
+         *   -- We first check whether another decrease of the grain size by
+         *      _searchDelta would yields a grain size smaller or equal than 0.
+         *      If this would happen, we reduce half _searchDelta.
+         *   -- We set a new grain size that is smaller than grain size by this
+         *      delta. This is the grain size the oracle will study next. If it
+         *      turns out to be a stupid idea, we'll roll back.
+         *   -- We finally erase the measurement and increase the accuracy. The
+         *      previous grain size choice has paid off, so we'll try a new
+         *      grain size. And we want to get the measurements correct, so we
+         *      increase the accuracy, i.e. we are more picky.
+         * - If the currently studied grain size yields a runtime that is worse
+         *   than the runtime before, we have to roll back. We know that
+         *   _searchDelta holds the step size how we ended up with the present
+         *   grain size.
+         *   -- We add _searchDelta to the grain size. This is effectively a
+         *      roll back to the grain size studied before.
+         *   -- We set _previousMeasuredTime to _TimingMax. We do not know the
+         *      timing results for the previous grain size anymore. We actually
+         *      do know its average timing result, but we do not care - it will
+         *      be reanalysed again next anyway. Yet, we set
+         *      _previousMeasuredTime for these following tests to the maximum to
+         *      ensure that this one will be accepted in any case.
+         *   -- We clear the measurement and increase the accuracy to get more
+         *      accurate data.
+         *   -- We reduce the search delta. We know that the 'next' measurement,
+         *      which is actually a redo of one grain size with an increase
+         *      accuracy, will be accepted and so we'll then reduce this bigger
+         *      grain size again. It should however not go back to the current
+         *      grain size straight away as this would be an infinite oscillation.
+         *      So we decrease _searchDelta. If the maximum problem size is small
+         *      compared to the number of threads, we do decrement the search
+         *      interval. We have to assume that any timinig is very sensitive.
+         *      Otherwise, if the grain size is still big, we divide it by the
+         *      number of threads. At least, we divide by two.
+         */
+        void learn();
+
+        bool isAccurate() const;
+
+        bool isSearching() const;
+
+        bool isScaling() const;
+
+        bool isStudyingScalingSetup() const;
+
+        int  getBiggestProblemSize() const;
+        int  getCurrentGrainSize() const;
+
+        void setValue( int grainSize, double value );
+
+        /**
+         * @return Has widened
+         */
+        bool widenAccuracy();
+        void initAccuracy(double serialComputeTime);
+        bool isAccuracyInitialised() const;
+
+        /**
+         * A stable entry is one that either has terminated its search or
+         * doesn't hold any entries yet.
+         */
+        bool isStable() const;
     };
 
 
@@ -394,8 +434,17 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      * look at the last measurement, and create a new one with twice the
      * problem size. To create a new entry, we do use the copy constructor that
      * extrapolates reasonable grain sizes automatically.
+     *
+     * @todo
      */
     DatabaseEntry& getDatabaseEntry(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod);
+
+    /**
+     * If not availble, return biggest one.
+     */
+    DatabaseEntry  getDatabaseEntry(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) const;
+    bool hasDatabaseEntry(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) const;
+    void createDatabaseEntries(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod);
 
     /**
      * This operation analyses whether a set of entries for a given method
@@ -475,22 +524,15 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      */
     void changeMeasuredMethodTrace();
 
-    /**
-     * Clear all measurements around besides the one currently tracked
-     *
-     * If we invoke learn(), we do invoke learn on the active method trace.
-     * learn() implies that we change a parameter setting. This means all
-     * ongoing measurments are invalid. This operation erases them. We start
-     * to do the timings from scratch.
-     *
-     * @see activateOracle().
-     */
-    void clearAllMeasurementsBesidesActiveOne();
   public:
     /**
      * Oracle Constructor
      */
-    OracleForOnePhaseWithShrinkingGrainSize(bool learn, bool restart);
+    OracleForOnePhaseWithShrinkingGrainSize(
+      bool learn,
+      bool restart,
+      SelectNextStudiedMeasureTraceStrategy selectNextStudiedMeasureTraceStrategy = SelectNextStudiedMeasureTraceStrategy::RandomisedWithHigherPrioritiesForSmallProblemSizes
+    );
 
     /**
      * Nop
@@ -539,7 +581,7 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      * time, we scale it with _InitialRelativeAccuracy and we make this the
      * accuracy we want to see from hereon.
      */
-    void parallelSectionHasTerminated(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod, double costPerProblemElement) override;
+    void parallelSectionHasTerminated(int problemSize, int grainSize, peano::datatraversal::autotuning::MethodTrace askingMethod, double costPerProblemElement) override;
 
     /**
      * See DatabaseEnty's constructor or toString(), respectively.
@@ -580,6 +622,13 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     void activateOracle() override;
 
     peano::datatraversal::autotuning::OracleForOnePhase* createNewOracle() const override;
+
+    /**
+     * Ask weather any oracle has learned. Afterwards reset an internal state.
+     * So the next time you call this operation, you know whether something
+     * had been learned in-between.
+     */
+    static bool hasLearnedSinceLastQuery();
 };
 
 

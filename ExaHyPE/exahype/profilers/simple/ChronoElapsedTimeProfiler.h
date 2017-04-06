@@ -23,6 +23,9 @@
 
 #include "../Profiler.h"
 
+//typedef std::chrono::steady_clock clockType;
+typedef std::chrono::high_resolution_clock clockType;
+
 namespace exahype {
 namespace profilers {
 namespace simple {
@@ -41,10 +44,10 @@ class ChronoElapsedTimeProfiler : public Profiler {
 
  private:
   std::unordered_map<std::string,
-                     std::chrono::time_point<std::chrono::steady_clock>>
+                     std::chrono::time_point<clockType>>
       time_points_;
   std::unordered_map<std::string,
-                     std::pair<int, std::chrono::steady_clock::duration>>
+                     std::pair<long long, clockType::duration>>
       counts_and_durations_;
 };
 

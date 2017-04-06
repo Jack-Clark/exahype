@@ -94,6 +94,14 @@ class exahype::runners::Runner {
    */
   void initDataCompression();
 
+  /**
+   * Initialise all the stuff required for measurments, e.g.
+   *
+   * - Switch off Peano's performance analysis. Otherwise you'll get tons of
+   *   data for the grid construction through codes typically are interested in
+   *   performance data only.
+   */
+  void initHPCEnvironment();
 
   /**
    * Print minimum of current solver time stamps and time step sizes.

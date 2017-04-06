@@ -45,7 +45,7 @@ peano::datatraversal::autotuning::GrainSize sharedmemoryoracles::OracleForOnePha
 }
 
 
-void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::parallelSectionHasTerminated(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod, double costPerProblemElement) {
+void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::parallelSectionHasTerminated(int problemSize, int grainSize, peano::datatraversal::autotuning::MethodTrace askingMethod, double costPerProblemElement) {
   assertion(_executionTimes.count(askingMethod)==1);
   _executionTimes[askingMethod].updateMeasurement(problemSize,_currentBin,costPerProblemElement);
 }

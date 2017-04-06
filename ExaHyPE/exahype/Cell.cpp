@@ -161,10 +161,7 @@ void exahype::Cell::setCellDescriptionsIndex(int cellDescriptionsIndex) {
 void exahype::Cell::addNewCellDescription(
     const int solverNumber,
     const exahype::records::FiniteVolumesCellDescription::Type cellType,
-/*
-    const exahype::records::FiniteVolumesCellDescription::RefinementEvent
-        refinementEvent,
-*/
+    const exahype::records::FiniteVolumesCellDescription::RefinementEvent refinementEvent,
     const int level,
     const int parentIndex,
     const tarch::la::Vector<DIMENSIONS, double>&  cellSize,
@@ -192,7 +189,7 @@ void exahype::Cell::addNewCellDescription(
   // Default AMR settings
   newCellDescription.setType(cellType);
   newCellDescription.setLevel(level);
-  //newCellDescription.setRefinementEvent(refinementEvent);
+  newCellDescription.setRefinementEvent(refinementEvent);
 
   // Pass geometry information to the cellDescription description
   newCellDescription.setSize(cellSize);

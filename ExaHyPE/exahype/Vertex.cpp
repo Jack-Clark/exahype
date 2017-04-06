@@ -22,12 +22,12 @@
 #include "exahype/solvers/ADERDGSolver.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
-tarch::logging::Log exahype::Vertex::_log("exahype::Vertex::Vertex");
+
 
 exahype::Vertex::Vertex() : Base() {
-  _vertexData._persistentRecords._CellDescriptionsIndex =
+  _vertexData.setCellDescriptionsIndex(
       multiscalelinkedcell::HangingVertexBookkeeper::getInstance()
-          .createVertexLinkMapForNewVertex();
+          .createVertexLinkMapForNewVertex() );
 }
 
 exahype::Vertex::Vertex(const Base::DoNotCallStandardConstructor& value)
@@ -40,9 +40,9 @@ exahype::Vertex::Vertex(const Base::PersistentVertex& argument)
   // do nothing
 }
 
-tarch::la::Vector<TWO_POWER_D, int>&
-exahype::Vertex::getCellDescriptionsIndex() {
-  return _vertexData._persistentRecords._CellDescriptionsIndex;
+tarch::la::Vector<TWO_POWER_D, int>
+exahype::Vertex::getCellDescriptionsIndex() const {
+  return _vertexData.getCellDescriptionsIndex();
 }
 
 bool exahype::Vertex::hasToMergeNeighbours(
@@ -52,9 +52,9 @@ bool exahype::Vertex::hasToMergeNeighbours(
     const int pos1Scalar = peano::utils::dLinearisedWithoutLookup(pos1,2);
     const int pos2Scalar = peano::utils::dLinearisedWithoutLookup(pos2,2);
     const int cellDescriptionsIndex1 =
-        _vertexData._persistentRecords._CellDescriptionsIndex[pos1Scalar];
+        _vertexData.getCellDescriptionsIndex(pos1Scalar);
     const int cellDescriptionsIndex2 =
-        _vertexData._persistentRecords._CellDescriptionsIndex[pos2Scalar];
+        _vertexData.getCellDescriptionsIndex(pos2Scalar);
 
     if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1) &&
         exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex2)) {
@@ -114,9 +114,9 @@ bool exahype::Vertex::hasToMergeWithBoundaryData(
     const int pos1Scalar = peano::utils::dLinearisedWithoutLookup(pos1,2);
     const int pos2Scalar = peano::utils::dLinearisedWithoutLookup(pos2,2);
     const int cellDescriptionsIndex1 =
-        _vertexData._persistentRecords._CellDescriptionsIndex[pos1Scalar];
+        _vertexData.getCellDescriptionsIndex(pos1Scalar);
     const int cellDescriptionsIndex2 =
-        _vertexData._persistentRecords._CellDescriptionsIndex[pos2Scalar];
+        _vertexData.getCellDescriptionsIndex(pos2Scalar);
 
     const bool validIndexNextToBoundaryOrRemoteIndex =
         (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex1)
@@ -196,9 +196,9 @@ void exahype::Vertex::setMergePerformed(
   const int pos1Scalar = peano::utils::dLinearisedWithoutLookup(pos1,2);
   const int pos2Scalar = peano::utils::dLinearisedWithoutLookup(pos2,2);
   const int cellDescriptionsIndex1 =
-      _vertexData._persistentRecords._CellDescriptionsIndex[pos1Scalar];
+      _vertexData.getCellDescriptionsIndex(pos1Scalar);
   const int cellDescriptionsIndex2 =
-      _vertexData._persistentRecords._CellDescriptionsIndex[pos2Scalar];
+      _vertexData.getCellDescriptionsIndex(pos2Scalar);
 
   const int normalOfExchangedFace = tarch::la::equalsReturnIndex(pos1, pos2);
   assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
@@ -236,10 +236,6 @@ void exahype::Vertex::setMergePerformed(
 }
 
 #ifdef Parallel
-const int exahype::Vertex::InvalidMetadataEntry   = -1;
-
-const int exahype::Vertex::MetadataPerSolver      =  1;
-
 exahype::MetadataHeap::HeapEntries exahype::Vertex::encodeMetadata(int cellDescriptionsIndex) {
   assertion1(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
 
@@ -268,7 +264,9 @@ bool exahype::Vertex::hasToSendMetadata(
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
 
   return tarch::la::countEqualEntries(dest, src) == (DIMENSIONS-1) &&
+         adjacentRanks(destScalar)   != tarch::parallel::Node::getGlobalMasterRank() &&
          adjacentRanks(destScalar)   == toRank &&
+         adjacentRanks(srcScalar)    != tarch::parallel::Node::getGlobalMasterRank() &&
          (adjacentRanks(srcScalar)   == tarch::parallel::Node::getInstance().getRank() ||
          State::isForkTriggeredForRank(adjacentRanks(srcScalar)));
 }
@@ -282,7 +280,7 @@ bool exahype::Vertex::hasToSendMetadataIgnoreForksJoins(
   const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
 
-  return tarch::la::countEqualEntries(dest, src)  == 1 &&
+  return tarch::la::countEqualEntries(dest, src)  == (DIMENSIONS-1) &&
          adjacentRanks(destScalar) == toRank &&
          adjacentRanks(srcScalar)  == tarch::parallel::Node::getInstance().getRank();
 }
@@ -296,7 +294,9 @@ bool exahype::Vertex::hasToReceiveMetadata(
   const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
 
   return tarch::la::countEqualEntries(dest, src) == (DIMENSIONS-1) &&
+      adjacentRanks(srcScalar)    != tarch::parallel::Node::getGlobalMasterRank() &&
       adjacentRanks(srcScalar)    == fromRank &&
+      adjacentRanks(destScalar)   != tarch::parallel::Node::getGlobalMasterRank() &&
       (adjacentRanks(destScalar)  == tarch::parallel::Node::getInstance().getRank() ||
        State::isForkingRank(adjacentRanks(destScalar)));
 }
@@ -319,7 +319,7 @@ bool exahype::Vertex::hasToSendDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS,int>& dest) const {
   const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
   const int srcCellDescriptionsIndex =
-      _vertexData._persistentRecords._CellDescriptionsIndex[srcScalar];
+      _vertexData.getCellDescriptionsIndex(srcScalar);
 
   if (!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionsIndex) ||
       (exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionsIndex).empty()
@@ -362,7 +362,7 @@ bool exahype::Vertex::hasToMergeWithNeighbourData(
     const tarch::la::Vector<DIMENSIONS,int>& dest) const {
   const int destScalar  = peano::utils::dLinearisedWithoutLookup(dest,2);
   const int destCellDescriptionsIndex =
-      _vertexData._persistentRecords._CellDescriptionsIndex[destScalar];
+      _vertexData.getCellDescriptionsIndex(destScalar);
 
   if (!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(destCellDescriptionsIndex) ||
       (exahype::solvers::ADERDGSolver::Heap::getInstance().getData(destCellDescriptionsIndex).empty()
@@ -404,7 +404,7 @@ void exahype::Vertex::tryDecrementFaceDataExchangeCountersOfSource(
     const tarch::la::Vector<DIMENSIONS,int>& dest) const {
   const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
   const int srcCellDescriptionsIndex =
-      _vertexData._persistentRecords._CellDescriptionsIndex[srcScalar];
+      _vertexData.getCellDescriptionsIndex(srcScalar);
 
   if (!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionsIndex) ||
       (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(srcCellDescriptionsIndex).empty()
@@ -443,7 +443,7 @@ void exahype::Vertex::setFaceDataExchangeCountersOfDestination(
     const int value) const {
   const int destScalar  = peano::utils::dLinearisedWithoutLookup(dest,2);
   const int destCellDescriptionsIndex =
-      _vertexData._persistentRecords._CellDescriptionsIndex[destScalar];
+      _vertexData.getCellDescriptionsIndex(destScalar);
 
   assertion1(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(destCellDescriptionsIndex),destCellDescriptionsIndex);
   assertion1(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(destCellDescriptionsIndex),destCellDescriptionsIndex);
@@ -465,3 +465,26 @@ void exahype::Vertex::setFaceDataExchangeCountersOfDestination(
 }
 
 #endif
+
+
+#ifdef Parallel
+exahype::MetadataHeap::HeapEntries exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries() {
+    exahype::MetadataHeap::HeapEntries encodedMetaData(
+        exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver,
+        exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver);
+    std::fill_n(encodedMetaData.begin(),encodedMetaData.size(),InvalidMetadataEntry); // Implicit conversion.
+    return encodedMetaData;
+}
+
+
+bool exahype::Vertex::isEncodedMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence) {
+   assertion(sequence.size() == exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver);
+
+   for (auto& m : sequence)
+     if (m.getU()==InvalidMetadataEntry)
+       return false;
+
+   return true;
+}
+#endif
+

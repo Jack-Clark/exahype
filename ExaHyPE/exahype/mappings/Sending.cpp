@@ -202,6 +202,10 @@ void exahype::mappings::Sending::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  if (tarch::la::allGreater(h,exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers())) {
+    return;
+  }
+
   if (_localState.getSendMode()==exahype::records::State::SendMode::SendFaceData ||
       _localState.getSendMode()==exahype::records::State::SendMode::ReduceAndMergeTimeStepDataAndSendFaceData) {
     dfor2(dest)
@@ -374,7 +378,7 @@ void exahype::mappings::Sending::mergeWithMaster(
         int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
         if (element!=exahype::solvers::Solver::NotFound &&
-            receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+            receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
           solver->mergeWithWorkerData(
               worker,
               receivedMetadata[solverNumber].getU(),

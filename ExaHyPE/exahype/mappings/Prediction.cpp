@@ -13,12 +13,11 @@
  
 #include "exahype/mappings/Prediction.h"
 
+#include "peano/utils/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "peano/utils/Globals.h"
 
 #include "tarch/multicore/Loop.h"
-
-#include "peano/utils/Loop.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
@@ -87,7 +86,7 @@ exahype::mappings::Prediction::~Prediction() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Prediction::Prediction(const Prediction& masterThread) {
-  initialiseTemporaryVariables(_temporaryVariables);
+  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 }
 
 void exahype::mappings::Prediction::mergeWithWorkerThread(
@@ -97,12 +96,12 @@ void exahype::mappings::Prediction::mergeWithWorkerThread(
 
 void exahype::mappings::Prediction::beginIteration(
     exahype::State& solverState) {
-  initialiseTemporaryVariables(_temporaryVariables);
+  exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 }
 
 void exahype::mappings::Prediction::endIteration(
     exahype::State& solverState) {
-  deleteTemporaryVariables(_temporaryVariables);
+  exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
 }
 
 void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
@@ -113,7 +112,7 @@ void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
   if (cellDescription.getType()==exahype::records::ADERDGCellDescription::Cell) {
     assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
 
-    solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
+    solver->validateNoNansInADERDGSolver(cellDescription,"exahype::mappings::Prediction::enterCell[pre]");
 
     solver->performPredictionAndVolumeIntegral(
         cellDescription,
@@ -124,7 +123,7 @@ void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
         _temporaryVariables._tempStateSizedVectors    [cellDescription.getSolverNumber()],
         _temporaryVariables._tempPointForceSources    [cellDescription.getSolverNumber()]);
 
-    solver->validateNoNansInADERDGSolver(cellDescription,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
+    solver->validateNoNansInADERDGSolver(cellDescription,"exahype::mappings::Prediction::enterCell[post]");
   }
 }
 

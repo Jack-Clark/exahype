@@ -74,11 +74,12 @@ void exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::createHangingVert
 ) {
   const int level = coarseGridVerticesEnumerator.getLevel()+1;
   
-  fineGridVertex.getCellDescriptionsIndex() = 
+  VertexOperations::writeCellDescriptionsIndex(
+    fineGridVertex,
     multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createHangingVertex(
       fineGridX,level,
       fineGridPositionOfVertex,
-      VertexOperations::readCellDescriptionsIndex(coarseGridVerticesEnumerator,coarseGridVertices)
+      VertexOperations::readCellDescriptionsIndex(coarseGridVerticesEnumerator,coarseGridVertices))
     );
 }
 
@@ -105,7 +106,9 @@ void exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::createInnerVertex
   exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  fineGridVertex.getCellDescriptionsIndex() = multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForNewVertex();
+  VertexOperations::writeCellDescriptionsIndex(
+      fineGridVertex,
+      multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForNewVertex());
 }
 
 
@@ -118,7 +121,9 @@ void exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::createBoundaryVer
   exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  fineGridVertex.getCellDescriptionsIndex() = multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForBoundaryVertex();
+  VertexOperations::writeCellDescriptionsIndex(
+      fineGridVertex,
+      multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForBoundaryVertex());
 }
 
 
@@ -367,7 +372,8 @@ void exahype::adapters::MeshRefinement2MultiscaleLinkedCell_5::enterCell(
       )(TWO_POWER_D-kScalar-1) = fineGridCell.getCellDescriptionsIndex();
     }
     else {
-      fineGridVertices[fineGridVerticesEnumerator(k)].getCellDescriptionsIndex()(TWO_POWER_D-kScalar-1) = fineGridCell.getCellDescriptionsIndex();
+      VertexOperations::writeCellDescriptionsIndex(
+          fineGridVertices[fineGridVerticesEnumerator(k)], TWO_POWER_D-kScalar-1, fineGridCell.getCellDescriptionsIndex());
     }
   enddforx
 }

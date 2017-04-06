@@ -285,105 +285,11 @@ void exahype::plotters::ADERDG2LegendreDivergenceVTK::plotVertexData(
   double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
 
   dfor(i,_order+1) {
-/*
-    double gradQ[basisSize3 * DIMENSIONS * numberOfVariables];
-    computeGradQ(gradQ, u, dx.data());
-
-
-    // volume form for integration
-    double scaling = tarch::la::volume(dx);
-    double wx, wy, wz, constraints[4];
-
-    idx5 idx_gradQ(basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables);
-    idx4 idx_u(basisSize, basisSize, basisSize, numberOfVariables);
-
-    for (int iz = 0; iz < basisSize; iz++) {
-    for (int iy = 0; iy < basisSize; iy++) {
-    for (int ix = 0; ix < basisSize; ix++) {
-      // Gauss-Legendre weights from pos argument
-      wx = kernels::gaussLegendreWeights[Z4::AbstractZ4Solver::Order][ix];
-      wy = kernels::gaussLegendreWeights[Z4::AbstractZ4Solver::Order][iy];
-      wz = kernels::gaussLegendreWeights[Z4::AbstractZ4Solver::Order][iz];
-
-      admconstraints_(constraints, &u[idx_u(iz,iy,ix,0)], &gradQ[idx_gradQ(iz,iy,ix,0,0)]);
-      constraintReductions.addValue(constraints, scaling*wx*wy*wz);
-    } // x
-    } // y
-    } // z
-*/
-
-
-  /*
-    void Z4::DerivativeWriter::computeGradQ(double* gradQ, const double* const u, const double* const dx) {
-      // spatial gradient of q: gradQ(z,y,x,nDim,nVar)
-      //double gradQ[basisSize3 * DIMENSIONS * numberOfVariables];
-      idx5 idx_gradQ(basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables);
-      // Index for u:
-      // basisSizeZ -> basisSizeY -> basisSizeX -> numberOfVariables(+numberOfParameters)
-      idx4 idx_u(basisSize, basisSize, basisSize, numberOfVariables);
-
-      std::memset(gradQ, 0, basisSize3 * DIMENSIONS * numberOfVariables * sizeof(double));
-
-
-          // x direction (independent from the y and z derivatives)
-          for (int j = 0; j < basisSize; j++) { // z
-            for (int k = 0; k < basisSize; k++) { // y
-              // Matrix operation
-              for (int l = 0; l < basisSize; l++) { // x
-                for (int m = 0; m < numberOfVariables; m++) {
-                  for (int n = 0; n < basisSize; n++) { // matmul x
-                    gradQ[idx_gradQ(j, k, l, x0, m)] += 1.0 / dx[0] *
-                            u[idx_u(j, k, n, m)] * kernels::dudx[order][l][n];
-                  }
-                }
-              }
-            }
-          }
-          // y direction (independent from the x and z derivatives)
-          for (int j = 0; j < basisSize; j++) { // z
-            for (int k = 0; k < basisSize; k++) { // x
-              // Matrix operation
-              for (int l = 0; l < basisSize; l++) { // y
-                for (int m = 0; m < numberOfVariables; m++) {
-                  for (int n = 0; n < basisSize; n++) { // matmul y
-                    gradQ[idx_gradQ(j, l, k, y1, m)] += 1.0 / dx[1] *
-                            u[idx_u(j, n, k, m)] * kernels::dudx[order][l][n];
-                  }
-                }
-              }
-            }
-          }
-          // z direction (independent from the x and y derivatives)
-          for (int j = 0; j < basisSize; j++) { // y
-            for (int k = 0; k < basisSize; k++) { // x
-              // Matrix operation
-              for (int l = 0; l < basisSize; l++) { // z
-                for (int m = 0; m < numberOfVariables; m++) {
-                  for (int n = 0; n < basisSize; n++) { // matmul z
-                    gradQ[idx_gradQ(l, j, k, z2, m)] += 1.0 / dx[2] *
-                            u[idx_u(n, j, k, m)] * kernels::dudx[order][l][n];
-                  }
-                }
-              }
-            }
-          }
-*/
-    // We determine the derivative
-    for (int unknown=0; unknown < _solverUnknowns; unknown++) {
-      for (int m = 0; m < numberOfVariables; m++) {
-          gradQ[idx_gradQ(j, k, l, /*x*/0, m)] += 1.0 / dx[0] *
-                  u[idx_u(j, k, n, m)] * kernels::dudx[order][l][n];
-      }
-    }
-
     // This is inefficient but works. We could look it up directly from the arrays
     tarch::la::Vector<DIMENSIONS, double> p;
     for (int d=0; d<DIMENSIONS; d++) {
       p(d) = offsetOfPatch(d) + kernels::gaussLegendreNodes[_order][i(d)] * sizeOfPatch(d);
     }
-
-
-   // @todo Invalid
     for (int unknown=0; unknown < _solverUnknowns; unknown++) {
       interpoland[unknown] = kernels::interpolate(
         offsetOfPatch.data(),

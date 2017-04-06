@@ -9,8 +9,9 @@
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
+ *
+ * @authors: Dominic E. Charrier, Sven Koeppel, Fabian Guera, Tobias Weinzierl, Michael Dumbser
  **/
-
 #include <cassert>
 #include <cmath>
 #include <limits>
@@ -21,400 +22,9 @@
 #include "tarch/la/Vector.h"
 #include "kernels/KernelUtils.h"
 
+#include "kernels/finitevolumes/riemannsolvers/c/riemannsolvers.h"
+
 #if DIMENSIONS == 3
-
-namespace kernels {
-namespace finitevolumes {
-namespace godunov {
-namespace c {
-
-/**
- * A simple Rusanov flux considering pointwise
- * left and right values.
- */ 
-//template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-//                              double* lambda),
-//          void PDEFlux(const double* const Q, double** F)>
-template <typename SolverType>
-double riemannSolver(SolverType& solver, double* fL, double *fR, const double* qL, const double* qR,
-                     int normalNonZero,double** tempStateSizedVectors) { // TODO(Dominic): I need four of those
-  constexpr int numberOfVariables = SolverType::NumberOfVariables;
-  constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  
-  //double* sL = tempStateSizedVectors[0]; 
-  //double* sR = tempStateSizedVectors[1];
-  double sL[numberOfVariables + numberOfParameters];
-  double sR[numberOfVariables + numberOfParameters];
-  
-
-  solver.eigenvalues(qL, normalNonZero, sL);
-  solver.eigenvalues(qR, normalNonZero, sR);
-
-  double s_max = -1.0;
-  for (int i = 0; i < numberOfVariables; i++) {
-    const double abs_sL_i = std::abs(sL[i]);
-    s_max = std::max( abs_sL_i, s_max );
-  }
-  for (int i = 0; i < numberOfVariables; i++) {
-    const double abs_sR_i = std::abs(sR[i]);
-    s_max = std::max( abs_sR_i, s_max );
-  }
-
-  double FL3a[numberOfVariables + numberOfParameters];
-  double FL3b[numberOfVariables + numberOfParameters];
-  double FL3c[numberOfVariables + numberOfParameters];
-  double FR3a[numberOfVariables + numberOfParameters];
-  double FR3b[numberOfVariables + numberOfParameters];
-  double FR3c[numberOfVariables + numberOfParameters];
-
-  //double* FL3[3] = {tempStateSizedVectors[0],tempStateSizedVectors[1],tempStateSizedVectors[2]}; // dim a numberOfVariables
-  //double* FR3[3] = {tempStateSizedVectors[3],tempStateSizedVectors[4],tempStateSizedVectors[5]}; // dim a numberOfVariables
-  double* FL3[3] = {FL3a,FL3b,FL3c}; // dim a numberOfVariables
-  double* FR3[3] = {FR3a,FR3b,FR3c}; // dim a numberOfVariables
-
-  solver.flux(qL, FL3);
-  solver.flux(qR, FR3);
-  
-  double Qavg[numberOfVariables+numberOfParameters];
-  for(int k=0; k < numberOfVariables+numberOfParameters; k++) {
-     Qavg[k] = (qL[k] + qR[k]) / 2;
-  }
-  
-  for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
-    fL[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
-              0.5 * s_max * (qL[i] - qR[i]);
-    fR[i] = 0.5 * (FL3[normalNonZero][i] + FR3[normalNonZero][i]) +
-              0.5 * s_max * (qL[i] - qR[i]);
-  }
-  
-  if (solver.useNonConservativeProduct()) {
-    double Bn[ (numberOfVariables + numberOfParameters) * (numberOfVariables + numberOfParameters)];
-    double ncp[numberOfVariables + numberOfParameters];
-    idx2 idx_Bn(numberOfVariables + numberOfParameters, numberOfVariables + numberOfParameters);
-    solver.coefficientMatrix(Qavg, normalNonZero, Bn);
-  
-    for(int l=0; l < numberOfVariables + numberOfParameters; l++) {
-      ncp[l] = 0;
-      for(int m=0; m < numberOfVariables+ numberOfParameters; m++) {
-        ncp[l] += Bn[idx_Bn(m, l)] * (qR[m] - qL[m]);
-      }
-    }
-    
-    for (int i = 0; i < numberOfVariables + numberOfParameters; i++) {
-      fR[i] = fR[i] - 0.5 * ncp[i];
-      fL[i] = fL[i] + 0.5 * ncp[i];
-    }
-  }
-
-
-  return s_max;  // TODO(guera): Use to check if dt was okay in surfaceIntegral
-}
-
-/** 
- * Extract the boundary layer of the patch \p luh and
- * store it in the array \p luhbnd.
- * 
- * \param[in] neighbourPosition A 2-d array which must be one of the
- * triples (-1,0,0), (+1,0,0), (0,-1,0), (0,+1,0), (0,0,-1), or (0,0,+1).
- */
-template <typename SolverType>
-void boundaryLayerExtraction(
-    SolverType& solver,
-    double* luhbnd,const double* luh,
-    const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
-  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
-  constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int patchSize          = SolverType::PatchSize;
-  
-  constexpr int patchBegin=1;
-  constexpr int patchEnd=patchSize;
-  idx4 idx(patchSize+2,patchSize+2,patchSize+2,numberOfVariables+numberOfParameters);
-  idx3 idx_bnd(patchSize,patchSize,numberOfVariables);
-  
-  // TODO: Depending on the memory layout, we can remove the loops
-  // and use larger strides for one of the coordinate directions. 
-  
-  // x-axis: strides: Mz>My
-  if (boundaryPosition[0] == -1) {
-    // assertion: boundaryPosition[1] == 0;
-    // assertion: boundaryPosition[2] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luh+idx(j,i,patchBegin,0),
-          luh+idx(j,i,patchBegin,0)+numberOfVariables, // past-the-end element
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0));
-    }
-    }
-  }
-  if (boundaryPosition[0] == +1) {
-    // assertion: boundaryPosition[1] == 0;
-    // assertion: boundaryPosition[2] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luh+idx(j,i,patchEnd,0),
-          luh+idx(j,i,patchEnd,0)+numberOfVariables, // past-the-end element
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0));
-    }
-    }
-  }
-
-  // y-axis: strides: Mz>Mx
-  if (boundaryPosition[1] == -1) {
-    // assertion: boundaryPosition[0] == 0;
-    // assertion: boundaryPosition[2] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luh+idx(j,patchBegin,i,0),
-          luh+idx(j,patchBegin,i,0)+numberOfVariables, // past-the-end element
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0));
-    }
-    }
-  }
-  if (boundaryPosition[1] == +1) {
-    // assertion: boundaryPosition[0] == 0;
-    // assertion: boundaryPosition[2] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luh+idx(j,patchEnd,i,0),
-          luh+idx(j,patchEnd,i,0)+numberOfVariables, // past-the-end element
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0));
-    }
-    }
-  }
- 
-  // z-axis: strides: My>Mx
-  if (boundaryPosition[2] == -1) {
-    // assertion: boundaryPosition[0] == 0;
-    // assertion: boundaryPosition[1] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luh+idx(patchBegin,j,i,0),
-          luh+idx(patchBegin,j,i,0)+numberOfVariables, // past-the-end element
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0));
-    }
-    }
-  }
-  if (boundaryPosition[2] == +1) {
-    // assertion: boundaryPosition[0] == 0;
-    // assertion: boundaryPosition[1] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luh+idx(patchEnd,j,i,0),
-          luh+idx(patchEnd,j,i,0)+numberOfVariables, // past-the-end element
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0));
-    }
-    }
-  }
-}
-
-/** 
- * Fill a part of the ghost layer of a patch with
- * values from an array. This function is used 
- * for the MPI and domain treatment.
- * 
- \param[in] neighbourPosition A 3-d array which must be one of the
- * triples (-1,0,0), (+1,0,0), (0,-1,0), (0,+1,0), (0,0,-1), or (0,0,+1).
- * 
- * \see boundaryLayerExtraction
- */
-template <typename SolverType>
-void ghostLayerFillingAtBoundary(
-    SolverType& solver,
-    double* luh,const double* luhbnd,
-    const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
-  constexpr int numberOfVariables = SolverType::NumberOfVariables;
-  constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int patchSize = SolverType::PatchSize;
-  
-  constexpr int patchBegin=1;
-  constexpr int patchEnd=patchSize;
-  
-  idx4 idx(patchSize+2,patchSize+2,patchSize+2,numberOfVariables+numberOfParameters);
-  idx3 idx_bnd(patchSize,patchSize,numberOfVariables);
-
-  // TODO: Depending on the memory layout, we can remove the loop,
-  // and use larger strides for one of the coordinate directions. 
-
-  // x-axis
-  if (boundaryPosition[0] == -1) {
-    // assertion: boundaryPosition[1] == 0;
-    // assertion: boundaryPosition[2] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0),
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0)+numberOfVariables, // past-the-end element
-          luh+idx(j,i,0,0));
-    }
-    }
-  }
-  if (boundaryPosition[0] == +1) {
-    // assertion: boundaryPosition[1] == 0;
-    // assertion: boundaryPosition[2] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0),
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0)+numberOfVariables, // past-the-end element 
-          luh+idx(j,i,patchEnd+1,0));
-    }
-    }
-  }
-
-  // y-axis
-  if (boundaryPosition[1] == -1) {
-    // assertion: boundaryPosition[0] == 0;
-    // assertion: boundaryPosition[2] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0),
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0)+numberOfVariables, // past-the-end element
-          luh+idx(j,0,i,0));
-    }
-    }
-  }
-  if (boundaryPosition[1] == +1) {
-    // assertion: boundaryPosition[0] == 0;
-    // assertion: boundaryPosition[2] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0),
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0)+numberOfVariables, // past-the-end element
-          luh+idx(j,patchEnd+1,i,0));
-    }
-    }
-  }
-  
-  // z-axis
-  if (boundaryPosition[2] == -1) {
-    // assertion: boundaryPosition[0] == 0;
-    // assertion: boundaryPosition[1] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0),
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0)+numberOfVariables, // past-the-end element
-          luh+idx(0,j,i,0));
-    }
-    }
-  }
-  if (boundaryPosition[2] == +1) {
-    // assertion: boundaryPosition[0] == 0;
-    // assertion: boundaryPosition[1] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0),
-          luhbnd+idx_bnd(j-patchBegin,i-patchBegin,0)+numberOfVariables, // past-the-end element
-          luh+idx(patchEnd+1,j,i,0));
-    }
-    }
-  }
-}
-
-
-template <typename SolverType>
-void ghostLayerFilling(
-      SolverType& solver,
-      double* luh,const double* luhNeighbour,
-      const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
-  constexpr int numberOfVariables = SolverType::NumberOfVariables;
-  constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int patchSize = SolverType::PatchSize;
-  
-  constexpr int patchBegin=1;
-  constexpr int patchEnd=patchSize;
-  idx4 idx(patchSize+2,patchSize+2,patchSize+2,numberOfVariables+numberOfParameters);
-
-  // TODO: Depending on the memory layout, we can remove the loop,
-  // and use larger strides for one of the coordinate directions. 
-  
-  // x-axis
-  if (neighbourPosition[0] == -1) {
-    // assertion: neighbourPosition[1] == 0;
-    // assertion: neighbourPosition[2] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luhNeighbour+idx(j,i,patchEnd,0),
-          luhNeighbour+idx(j,i,patchEnd,0)+numberOfVariables+numberOfParameters, // past-the-end element
-          luh+idx(j,i,0,0));
-    }
-    }
-  }
-  if (neighbourPosition[0] == +1) {
-    // assertion: neighbourPosition[1] == 0;
-    // assertion: neighbourPosition[2] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luhNeighbour+idx(j,i,patchBegin,0),
-          luhNeighbour+idx(j,i,patchBegin,0)+numberOfVariables+numberOfParameters, // past-the-end element
-          luh+idx(j,i,patchEnd+1,0));
-    }
-    }
-  }
-
-  // y-axis
-  if (neighbourPosition[1] == -1) {
-    // assertion: neighbourPosition[0] == 0;
-    // assertion: neighbourPosition[2] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luhNeighbour+idx(j,patchEnd,i,0),
-          luhNeighbour+idx(j,patchEnd,i,0)+numberOfVariables+numberOfParameters, // past-the-end element
-          luh+idx(j,0,i,0));
-    }
-    }
-  }
-  if (neighbourPosition[1] == +1) {
-    // assertion: neighbourPosition[0] == 0;
-    // assertion: neighbourPosition[2] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luhNeighbour+idx(j,patchBegin,i,0),
-          luhNeighbour+idx(j,patchBegin,i,0)+numberOfVariables+numberOfParameters, // past-the-end element
-          luh+idx(j,patchEnd+1,i,0));
-    }
-    }
-  }
-  
-  // z-axis
-  if (neighbourPosition[2] == -1) {
-    // assertion: neighbourPosition[0] == 0;
-    // assertion: neighbourPosition[1] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luhNeighbour+idx(patchEnd,j,i,0),
-          luhNeighbour+idx(patchEnd,j,i,0)+numberOfVariables+numberOfParameters, // past-the-end element
-          luh+idx(0,j,i,0));
-    }
-    }
-  }
-  if (neighbourPosition[2] == +1) {
-    // assertion: neighbourPosition[0] == 0;
-    // assertion: neighbourPosition[1] == 0;
-    for (int j=patchBegin; j<patchEnd+1; ++j) {
-    for (int i=patchBegin; i<patchEnd+1; ++i) {
-      std::copy(
-          luhNeighbour+idx(patchBegin,j,i,0),
-          luhNeighbour+idx(patchBegin,j,i,0)+numberOfVariables+numberOfParameters, // past-the-end element
-          luh+idx(patchEnd+1,j,i,0));
-    }
-    }
-  }
-}
 
 /**
  * Solves all the Riemann problems that do only require
@@ -423,38 +33,40 @@ void ghostLayerFilling(
  * Finally add the source terms.
  */
 template <typename SolverType>
-double solutionUpdate(
+double kernels::finitevolumes::godunov::c::solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,
     double** tempStateSizedVectors,double** tempUnknowns,
     const tarch::la::Vector<DIMENSIONS, double>& dx,double dt) {
-  constexpr int numberOfVariables = SolverType::NumberOfVariables;
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int patchSize = SolverType::PatchSize;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
+  constexpr int patchSize          = SolverType::PatchSize;
+  constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
+  constexpr int patchBegin         = ghostLayerWidth;
+  constexpr int patchEnd           = patchBegin+patchSize;
+  constexpr double cflFactor       = SolverType::CFL;
   
-  constexpr int patchBegin=1;
-  constexpr int patchEnd=patchSize;
-  idx4 idx(patchSize+2,patchSize+2,patchSize+2,numberOfVariables+numberOfParameters);
+  idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfVariables+numberOfParameters);
   
   const double cellSize[3] = {dx[0]/patchSize, dx[1]/patchSize, dx[2]/patchSize};
   
   // Solve Riemann problems
-  constexpr double cflFactor = 0.99; // We use a factor closer to 1 here.
   double dt_max_allowed = std::numeric_limits<double>::max();
   
   // x edges 
-  double *fL = tempStateSizedVectors[0];
-  double  fR[numberOfVariables];
-  for (int i = patchBegin; i < patchEnd+1; i++) {
-  for (int j = patchBegin; j < patchEnd+1; j++) {
-  for (int k = patchBegin-1; k < patchEnd+1; k++) {  // We have patchSize+1 faces in each coordinate direction
+  double fL[numberOfVariables];
+  double fR[numberOfVariables];
+  for (int i = patchBegin; i < patchEnd; i++) {
+  for (int j = patchBegin; j < patchEnd; j++) {
+  for (int k = patchBegin-1; k < patchEnd; k++) {  // We have patchSize+1 faces in each coordinate direction
     const double s_max_x = 
-        riemannSolver<SolverType>(
+        riemannsolvers::c::rusanov<SolverType>(
             solver,
             fL, fR,
             luh + idx(i,j, k, 0),
             luh + idx(i,j, k+1, 0), 
-            0/*x-axis*/, tempStateSizedVectors + 1);
+            0/*x-axis*/);
     // TODO(guera): Improve. I'm quite sure this is not the correct/best
     // formula. TODO(Dominic): The division by DIMENSIONS might make sure that C_x+C_y < 1
     dt_max_allowed = std::min(
@@ -469,16 +81,16 @@ double solutionUpdate(
   }
 
   // y edges
-  for (int i = patchBegin; i < patchEnd+1; i++) {
-  for (int j = patchBegin-1; j < patchEnd+1; j++) {
-  for (int k = patchBegin; k < patchEnd+1; k++) {
+  for (int i = patchBegin; i < patchEnd; i++) {
+  for (int j = patchBegin-1; j < patchEnd; j++) {
+  for (int k = patchBegin; k < patchEnd; k++) {
     const double s_max_y =
-      riemannSolver<SolverType>(
+      riemannsolvers::c::rusanov<SolverType>(
         solver,
         fL, fR,
         luh + idx(i, j, k,0),
         luh + idx(i, j+1, k,0), 
-        1/*y-axis*/, tempStateSizedVectors + 1);
+        1/*y-axis*/);
     dt_max_allowed = std::min(
         dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
     
@@ -491,16 +103,16 @@ double solutionUpdate(
   }
   
   // z edges
-  for (int i = patchBegin-1; i < patchEnd+1; i++) {
-  for (int j = patchBegin; j < patchEnd+1; j++) {
-  for (int k = patchBegin; k < patchEnd+1; k++) {
+  for (int i = patchBegin-1; i < patchEnd; i++) {
+  for (int j = patchBegin; j < patchEnd; j++) {
+  for (int k = patchBegin; k < patchEnd; k++) {
     const double s_max_z =
-      riemannSolver<SolverType>(
+      riemannsolvers::c::rusanov<SolverType>(
         solver,
         fL, fR,
         luh + idx(i, j,k,0),
         luh + idx(i+1, j,k,0), 
-        2/*z-axis*/, tempStateSizedVectors + 1);
+        2/*z-axis*/);
     dt_max_allowed = std::min(
         dt_max_allowed, cflFactor / DIMENSIONS * cellSize[2] / s_max_z);
     
@@ -515,10 +127,10 @@ double solutionUpdate(
   // 5. Add the source terms 
   if (solver.useSource()) {
     double* source = tempStateSizedVectors[0]; // temp var; state sized vector
-    for (int i = patchBegin; i < patchEnd+1; i++) {
-    for (int j = patchBegin; j < patchEnd+1; j++) {
-    for (int k = patchBegin; k < patchEnd+1; k++) {
-      solver.source(&luh[idx(i,j,k,0)], source);
+    for (int i = patchBegin; i < patchEnd; i++) {
+    for (int j = patchBegin; j < patchEnd; j++) {
+    for (int k = patchBegin; k < patchEnd; k++) {
+      solver.algebraicSource(&luh[idx(i,j,k,0)], source);
       for (int l = 0; l < numberOfVariables; l++) {
         // No BgradQ contribution as this is first order, cf. 2D godunov.
         luh_new[idx(i,j,k,l)] += dt * source[l];
@@ -530,150 +142,5 @@ double solutionUpdate(
   
   return dt_max_allowed;
 }
-  
-template <typename SolverType>
-double stableTimeStepSize(SolverType& solver,
-                          const double* const luh,
-                          double* tempEigenvalues,
-                          const tarch::la::Vector<DIMENSIONS, double>& dx) {  
-  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
-  constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int patchSize          = SolverType::PatchSize;
 
-  double dt_max_stable = std::numeric_limits<double>::max();
-  constexpr double EXAHYPE_CFL_FACTOR = 0.9; // TODO externalize
-  
-  constexpr int patchBegin = 1;
-  constexpr int patchEnd   = patchSize;
-  idx4 idx_luh(patchSize+2,patchSize+2,patchSize+2,numberOfVariables+numberOfParameters);
-  
-  double* lambda = tempEigenvalues;
-  
-  for (int i = patchBegin; i < patchEnd+1; i++) {
-  for (int j = patchBegin; j < patchEnd+1; j++) {
-  for (int k = patchBegin; k < patchEnd+1; k++) {
-    // x
-    solver.eigenvalues(luh + idx_luh(i,j,k,0), 0/*x-axis*/, lambda);
-    std::transform(lambda, lambda + numberOfVariables, lambda,
-                   std::abs<double>);
-    double s_max_x = *std::max_element(lambda, lambda + numberOfVariables);
-    dt_max_stable = std::min(
-        dt_max_stable, EXAHYPE_CFL_FACTOR / DIMENSIONS * (dx[0]/patchSize) / s_max_x);
-
-    // y
-    solver.eigenvalues(luh + idx_luh(i,j,k,0), 1/*y-axis*/, lambda);
-    std::transform(lambda, lambda + numberOfVariables, lambda,
-                   std::abs<double>);
-    double s_max_y = *std::max_element(lambda, lambda + numberOfVariables);
-    dt_max_stable = std::min(
-        dt_max_stable, EXAHYPE_CFL_FACTOR / DIMENSIONS * (dx[1]/patchSize) / s_max_y);
-    
-    // z
-    solver.eigenvalues(luh + idx_luh(i,j,k,0), 2/*z-axis*/, lambda);
-    std::transform(lambda, lambda + numberOfVariables, lambda,
-        std::abs<double>);
-    double s_max_z = *std::max_element(lambda, lambda + numberOfVariables);
-    dt_max_stable = std::min(
-        dt_max_stable, EXAHYPE_CFL_FACTOR / DIMENSIONS * (dx[2]/patchSize) / s_max_z);
-  }
-  }
-  }
-
-  return dt_max_stable;
-}
-
-template <typename SolverType>
-void solutionAdjustment(
-    SolverType& solver,
-    double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
-    const tarch::la::Vector<DIMENSIONS, double>& dx, const double t,const double dt) {
-  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
-  constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int patchSize          = SolverType::PatchSize;
-  
-  double x[DIMENSIONS];
-  
-  constexpr int patchBegin = 1;
-  constexpr int patchEnd   = patchSize;
-  idx4 idx_luh(patchSize+2,patchSize+2,patchSize+2,numberOfVariables+numberOfParameters);
-
-  for (int k = patchBegin; k < patchEnd+1; k++) {  
-    const double qt = (2.0*(k-patchBegin)+1.0)/(2.0*patchSize); //linspace; 
-    x[2] = center[2] + dx[2] * (qt - 0.5);
-    
-    for (int j = patchBegin; j < patchEnd+1; j++) {  
-      const double qs = (2.0*(j-patchBegin)+1.0)/(2.0*patchSize); //linspace; 
-      x[1] = center[1] + dx[1] * (qs - 0.5);
-      
-      for (int i = patchBegin; i < patchEnd+1; i++) {
-        const double qr = (2.0*(i-patchBegin)+1.0)/(2.0*patchSize); //linspace; 
-        x[0] = center[0] + dx[0] * (qr - 0.5);
-        // read initial condition
-        solver.adjustSolution(x, 0, t, dt, luh+idx_luh(k,j,i,0));
-      }
-    }
-  }
-}
-
-template <typename SolverType>
-void boundaryConditions(
-    SolverType& solver,
-    double* stateOut,
-    const double* const stateIn,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS,double>& cellSize,
-    const double t,const double dt,
-    const int faceIndex,
-    const int normalNonZero) {
-  constexpr int numberOfVariables = SolverType::NumberOfVariables;
-  constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int patchSize         = SolverType::PatchSize;
-  // Determine if face is "left" (=0 for faceIndex=0,2,4) or "right" face (=1 for faceIndex=1,2,3).
-  const int f = faceIndex-2*normalNonZero;
-
-  idx3 idx(patchSize,patchSize,numberOfVariables + numberOfParameters);
-  // Determine the free direction from the non-zero normal entry.
-  int d1=0;
-  int d2=0;
-  switch(normalNonZero) {
-    case 0:
-      d2=2; // direction with larger stride; see boundaryLayerExtraction
-      d1=1;
-      break;
-    case 1:
-      d2=2;
-      d1=0;
-      break;
-    case 2:
-      d2=1;
-      d1=0;
-      break;
-    default:
-      assertionMsg(false,"normalNonZero must be either 0, 1, or 2.");
-      break;
-  }
-
- 
-  double x[DIMENSIONS];
-  x[normalNonZero] = cellCentre[normalNonZero] + 
-      (-0.5 + (double) f) * cellSize[normalNonZero] * ( 1.0 + 1.0/(2.0*patchSize) ); // cell center of the outside cell (not the patch center). TODO(Dominic): Verify!
-  for (int i2 = 0; i2 < patchSize; i2++) {  // loop over dof
-    const double q2 = (2.0*i2+1.0)/(2.0*patchSize); //linspace
-    x[d2] = cellCentre[d2] + cellSize[d2] * (q2 - 0.5);
-  
-    for (int i1 = 0; i1 < patchSize; i1++) {  // loop over dof
-      const double q1 = (2.0*i1+1.0)/(2.0*patchSize); //linspace
-      x[d1] = cellCentre[d1] + cellSize[d1] * (q1 - 0.5);
-    
-      solver.boundaryValues(x,t,dt,faceIndex,normalNonZero,
-          stateIn + idx(i2,i1,0),stateOut + idx(i2,i1,0));
-    }
-  }
-}
-
-}  // namespace c
-}  // namespace godunov
-}  // namespace finitevolumes
-}  // namespace kernels
-
-#endif  // DIMENSIONS == 2
+#endif  // DIMENSIONS == 3

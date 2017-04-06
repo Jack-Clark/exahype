@@ -415,7 +415,7 @@ void exahype::mappings::SolutionRecomputation::mergeNeighourData(
       int element = solver->tryGetElement(destCellDescriptionIndex,solverNumber);
 
       if (element!=exahype::solvers::Solver::NotFound
-          && receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
+          && receivedMetadata[solverNumber].getU()!=exahype::InvalidMetadataEntry) {
         auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
 
         logDebug("mergeWithNeighbourData(...)", "receive data for solver " << solverNumber << " from rank " <<

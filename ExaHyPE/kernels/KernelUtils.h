@@ -20,11 +20,6 @@
 
 namespace kernels {
 
-// If you have a C++11-enabled compiler, use this:
-//#define C11CONSTEXPR constexpr
-// else this:
-#define C11CONSTEXPR
-
 /**
  * This is a single successor class for the idx2, idx3, idx4, idx5, idx6 classes.
  * It works basically like idx6. If you work with less than 6 dimensions, nothing
@@ -52,7 +47,7 @@ struct index {
 	/**
 	 * Compute a single index ("superindex", global index, ...) from the tuples.
 	 **/
-	C11CONSTEXPR int get(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+	int get(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
 		assertion2(j0 < i0, j1, i1);
 		assertion2(j1 < i1, j2, i2);
 		assertion2(j2 < i2, j3, i3);
@@ -95,7 +90,7 @@ struct index {
 	}
 	
 	// syntactic sugar:
-	C11CONSTEXPR int operator()(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+	int operator()(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
 		return get(j0, j1, j2, j3, j4, j5);
 	}
 	
@@ -103,7 +98,7 @@ struct index {
 	 * Checks if the given indices are in the valid range. Works also if assertions are
 	 * not enabled. Can be handy to check access to variables.
 	 **/
-	C11CONSTEXPR bool check(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+	bool check(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
 		// assertion way
 		assertion2(j0 < i0, j1, i1);
 		assertion2(j1 < i1, j2, i2);
@@ -131,17 +126,17 @@ struct index {
 	}
 	
 	/// Some index to string
-	C11CONSTEXPR std::string getStr(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
+	std::string getStr(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
 		return strIndex(/*min*/ -1, j0,j1,j2,j3,j4,j5);
 	}
-	C11CONSTEXPR std::string revStr(int pos) const {
+	std::string revStr(int pos) const {
 		int j0,j1,j2,j3,j4,j5;
 		rev(pos, j0,j1,j2,j3,j4,j5);
 		return strIndex(/*min*/ -1, j0,j1,j2,j3,j4,j5);
 	}
 
 	/// Object to string
-	C11CONSTEXPR std::string toString() const {
+	std::string toString() const {
 		return strIndex(/*min*/ +1, i0,i1,i2,i3,i4,i5);
 	}
 };
@@ -157,6 +152,10 @@ struct index {
  *	double val = L(1,2);
  * 
  **/
+// In order to have a compile time sized class, we should have
+//   template<typename T, std::size_t size> here or even better,
+//   template<typename T, std::size j0, std::size j1, ...>
+// However, this will blow up the compile time/resulting binary, not that great.
 template<typename T>
 struct array {
 	index idx;
@@ -202,7 +201,7 @@ typedef shadow<double> dshadow;
 struct idx2 {
   idx2(int I, int J, int line = -1) : I_(I), J_(J), size(I*J), line_(line) {}
 
-  int operator()(int i, int j) {
+  int operator()(int i, int j) const {
     assertion3(i < I_, i, I_, line_);
     assertion3(j < J_, j, J_, line_);
     return i * J_ + j;
@@ -220,7 +219,7 @@ struct idx2 {
 struct idx3 {
   idx3(int I, int J, int K, int line = -1) : I_(I), J_(J), K_(K), size(I*J*K), line_(line) {}
 
-  int operator()(int i, int j, int k) {
+  int operator()(int i, int j, int k)  const {
     assertion3(i < I_, i, I_, line_);
     assertion3(j < J_, j, J_, line_);
     assertion3(k < K_, k, K_, line_);
@@ -234,7 +233,7 @@ struct idx4 {
   idx4(int I, int J, int K, int L, int line = -1)
       : I_(I), J_(J), K_(K), L_(L), size(I*J*K*L), line_(line) {}
 
-  int operator()(int i, int j, int k, int l) {
+  int operator()(int i, int j, int k, int l) const {
     assertion3(i < I_, i, I_, line_);
     assertion3(j < J_, j, J_, line_);
     assertion3(k < K_, k, K_, line_);
@@ -249,7 +248,7 @@ struct idx5 {
   idx5(int I, int J, int K, int L, int M, int line = -1)
       : I_(I), J_(J), K_(K), L_(L), M_(M), size(I*J*K*L*M), line_(line) {}
 
-  int operator()(int i, int j, int k, int l, int m) {
+  int operator()(int i, int j, int k, int l, int m) const {
     assertion3(i < I_, i, I_, line_);
     assertion3(j < J_, j, J_, line_);
     assertion3(k < K_, k, K_, line_);
@@ -266,7 +265,7 @@ struct idx6 {
   idx6(int I, int J, int K, int L, int M, int N, int line = -1)
       : I_(I), J_(J), K_(K), L_(L), M_(M), N_(N), size(I*J*K*L*M*N), line_(line) {}
 
-  int operator()(int i, int j, int k, int l, int m, int n) {
+  int operator()(int i, int j, int k, int l, int m, int n) const  {
     assertion3(i < I_, i, I_, line_);
     assertion3(j < J_, j, J_, line_);
     assertion3(k < K_, k, K_, line_);

@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   04/03/2017 10:45
+    * @date   05/04/2017 22:59
     */
    class exahype::records::State { 
       
@@ -335,709 +335,706 @@ namespace exahype {
             
             
          };
-         
-      private: 
-         PersistentRecords _persistentRecords;
-         
+         private: 
+            PersistentRecords _persistentRecords;
+            
+         public:
+            /**
+             * Generated
+             */
+            State();
+            
+            /**
+             * Generated
+             */
+            State(const PersistentRecords& persistentRecords);
+            
+            /**
+             * Generated
+             */
+            State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            
+            /**
+             * Generated
+             */
+            virtual ~State();
+            
+            
+            inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._maxRefinementLevelAllowed;
+            }
+            
+            
+            
+            inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+            }
+            
+            
+            
+            inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._mergeMode;
+            }
+            
+            
+            
+            inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._mergeMode = mergeMode;
+            }
+            
+            
+            
+            inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._sendMode;
+            }
+            
+            
+            
+            inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._sendMode = sendMode;
+            }
+            
+            
+            
+            inline bool getReinitTimeStepData() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._reinitTimeStepData;
+            }
+            
+            
+            
+            inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._reinitTimeStepData = reinitTimeStepData;
+            }
+            
+            
+            
+            inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+            }
+            
+            
+            
+            inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+            }
+            
+            
+            
+            inline double getTimeStepSizeWeightForPredictionRerun() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._timeStepSizeWeightForPredictionRerun;
+            }
+            
+            
+            
+            inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+            }
+            
+            
+            
+            inline bool getHasRefined() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._hasRefined;
+            }
+            
+            
+            
+            inline void setHasRefined(const bool& hasRefined) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._hasRefined = hasRefined;
+            }
+            
+            
+            
+            inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._hasTriggeredRefinementForNextIteration;
+            }
+            
+            
+            
+            inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._hasTriggeredRefinementForNextIteration = hasTriggeredRefinementForNextIteration;
+            }
+            
+            
+            
+            inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._hasErased;
+            }
+            
+            
+            
+            inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._hasErased = hasErased;
+            }
+            
+            
+            
+            inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._hasTriggeredEraseForNextIteration;
+            }
+            
+            
+            
+            inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._hasTriggeredEraseForNextIteration = hasTriggeredEraseForNextIteration;
+            }
+            
+            
+            
+            inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._hasChangedVertexOrCellState;
+            }
+            
+            
+            
+            inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._hasChangedVertexOrCellState = hasChangedVertexOrCellState;
+            }
+            
+            
+            
+            inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._hasModifiedGridInPreviousIteration;
+            }
+            
+            
+            
+            inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._hasModifiedGridInPreviousIteration = hasModifiedGridInPreviousIteration;
+            }
+            
+            
+            
+            inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._isTraversalInverted;
+            }
+            
+            
+            
+            inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._isTraversalInverted = isTraversalInverted;
+            }
+            
+            
+            /**
+             * Generated
+             */
+            static std::string toString(const MergeMode& param);
+            
+            /**
+             * Generated
+             */
+            static std::string getMergeModeMapping();
+            
+            /**
+             * Generated
+             */
+            static std::string toString(const SendMode& param);
+            
+            /**
+             * Generated
+             */
+            static std::string getSendModeMapping();
+            
+            /**
+             * Generated
+             */
+            std::string toString() const;
+            
+            /**
+             * Generated
+             */
+            void toString(std::ostream& out) const;
+            
+            
+            PersistentRecords getPersistentRecords() const;
+            /**
+             * Generated
+             */
+            StatePacked convert() const;
+            
+            
+         #ifdef Parallel
+            protected:
+               static tarch::logging::Log _log;
+               
+               int _senderDestinationRank;
+               
+            public:
+               
+               /**
+                * Global that represents the mpi datatype.
+                * There are two variants: Datatype identifies only those attributes marked with
+                * parallelise. FullDatatype instead identifies the whole record with all fields.
+                */
+               static MPI_Datatype Datatype;
+               static MPI_Datatype FullDatatype;
+               
+               /**
+                * Initializes the data type for the mpi operations. Has to be called
+                * before the very first send or receive operation is called.
+                */
+               static void initDatatype();
+               
+               static void shutdownDatatype();
+               
+               /**
+                * @param communicateSleep -1 Data exchange through blocking mpi
+                * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
+                * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
+                */
+               void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+               
+               void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+               
+               static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
+               
+               int getSenderRank() const;
+               #endif
+      
+   };
+   
+   #ifndef DaStGenPackedPadding
+     #define DaStGenPackedPadding 1      // 32 bit version
+     // #define DaStGenPackedPadding 2   // 64 bit version
+   #endif
+   
+   
+   #ifdef PackedRecords
+      #pragma pack (push, DaStGenPackedPadding)
+   #endif
+   
+   /**
+    * @author This class is generated by DaStGen
+    * 		   DataStructureGenerator (DaStGen)
+    * 		   2007-2009 Wolfgang Eckhardt
+    * 		   2012      Tobias Weinzierl
+    *
+    * 		   build date: 09-02-2014 14:40
+    *
+    * @date   05/04/2017 22:59
+    */
+   class exahype::records::StatePacked { 
+      
       public:
-         /**
-          * Generated
-          */
-         State();
          
-         /**
-          * Generated
-          */
-         State(const PersistentRecords& persistentRecords);
-         
-         /**
-          * Generated
-          */
-         State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
-         
-         /**
-          * Generated
-          */
-         virtual ~State();
-         
-         
-         inline int getMaxRefinementLevelAllowed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._maxRefinementLevelAllowed;
-         }
-         
-         
-         
-         inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-         }
-         
-         
-         
-         inline MergeMode getMergeMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._mergeMode;
-         }
-         
-         
-         
-         inline void setMergeMode(const MergeMode& mergeMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._mergeMode = mergeMode;
-         }
-         
-         
-         
-         inline SendMode getSendMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._sendMode;
-         }
-         
-         
-         
-         inline void setSendMode(const SendMode& sendMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._sendMode = sendMode;
-         }
-         
-         
-         
-         inline bool getReinitTimeStepData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._reinitTimeStepData;
-         }
-         
-         
-         
-         inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-         }
-         
-         
-         
-         inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-         }
-         
-         
-         
-         inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-         }
-         
-         
-         
-         inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-         }
-         
-         
-         
-         inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-         }
-         
-         
-         
-         inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._hasRefined;
-         }
-         
-         
-         
-         inline void setHasRefined(const bool& hasRefined) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._hasRefined = hasRefined;
-         }
-         
-         
-         
-         inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._hasTriggeredRefinementForNextIteration;
-         }
-         
-         
-         
-         inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._hasTriggeredRefinementForNextIteration = hasTriggeredRefinementForNextIteration;
-         }
-         
-         
-         
-         inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._hasErased;
-         }
-         
-         
-         
-         inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._hasErased = hasErased;
-         }
-         
-         
-         
-         inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._hasTriggeredEraseForNextIteration;
-         }
-         
-         
-         
-         inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._hasTriggeredEraseForNextIteration = hasTriggeredEraseForNextIteration;
-         }
-         
-         
-         
-         inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._hasChangedVertexOrCellState;
-         }
-         
-         
-         
-         inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._hasChangedVertexOrCellState = hasChangedVertexOrCellState;
-         }
-         
-         
-         
-         inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._hasModifiedGridInPreviousIteration;
-         }
-         
-         
-         
-         inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._hasModifiedGridInPreviousIteration = hasModifiedGridInPreviousIteration;
-         }
-         
-         
-         
-         inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._isTraversalInverted;
-         }
-         
-         
-         
-         inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._isTraversalInverted = isTraversalInverted;
-         }
-         
-         
-         /**
-          * Generated
-          */
-         static std::string toString(const MergeMode& param);
-         
-         /**
-          * Generated
-          */
-         static std::string getMergeModeMapping();
-         
-         /**
-          * Generated
-          */
-         static std::string toString(const SendMode& param);
-         
-         /**
-          * Generated
-          */
-         static std::string getSendModeMapping();
-         
-         /**
-          * Generated
-          */
-         std::string toString() const;
-         
-         /**
-          * Generated
-          */
-         void toString(std::ostream& out) const;
-         
-         
-         PersistentRecords getPersistentRecords() const;
-         /**
-          * Generated
-          */
-         StatePacked convert() const;
-         
-         
-      #ifdef Parallel
-         protected:
-            static tarch::logging::Log _log;
+         typedef exahype::records::State::MergeMode MergeMode;
+         
+         typedef exahype::records::State::SendMode SendMode;
+         
+         struct PersistentRecords {
+            int _maxRefinementLevelAllowed;
+            MergeMode _mergeMode;
+            SendMode _sendMode;
+            bool _reinitTimeStepData;
+            bool _stabilityConditionOfOneSolverWasViolated;
+            double _timeStepSizeWeightForPredictionRerun;
+            bool _isTraversalInverted;
             
-            int _senderDestinationRank;
-            
-         public:
+            /** mapping of records:
+            || Member 	|| startbit 	|| length
+             |  hasRefined	| startbit 0	| #bits 1
+             |  hasTriggeredRefinementForNextIteration	| startbit 1	| #bits 1
+             |  hasErased	| startbit 2	| #bits 1
+             |  hasTriggeredEraseForNextIteration	| startbit 3	| #bits 1
+             |  hasChangedVertexOrCellState	| startbit 4	| #bits 1
+             |  hasModifiedGridInPreviousIteration	| startbit 5	| #bits 1
+             */
+            short int _packedRecords0;
             
             /**
-             * Global that represents the mpi datatype.
-             * There are two variants: Datatype identifies only those attributes marked with
-             * parallelise. FullDatatype instead identifies the whole record with all fields.
+             * Generated
              */
-            static MPI_Datatype Datatype;
-            static MPI_Datatype FullDatatype;
+            PersistentRecords();
             
             /**
-             * Initializes the data type for the mpi operations. Has to be called
-             * before the very first send or receive operation is called.
+             * Generated
              */
-            static void initDatatype();
+            PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
-            static void shutdownDatatype();
             
-            /**
-             * @param communicateSleep -1 Data exchange through blocking mpi
-             * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
-             * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
-             */
-            void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+            inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _maxRefinementLevelAllowed;
+            }
             
-            void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
             
-            static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
             
-            int getSenderRank() const;
+            inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+            }
             
-      #endif
-         
-      };
-      
-      #ifndef DaStGenPackedPadding
-        #define DaStGenPackedPadding 1      // 32 bit version
-        // #define DaStGenPackedPadding 2   // 64 bit version
-      #endif
-      
-      
-      #ifdef PackedRecords
-         #pragma pack (push, DaStGenPackedPadding)
-      #endif
-      
-      /**
-       * @author This class is generated by DaStGen
-       * 		   DataStructureGenerator (DaStGen)
-       * 		   2007-2009 Wolfgang Eckhardt
-       * 		   2012      Tobias Weinzierl
-       *
-       * 		   build date: 09-02-2014 14:40
-       *
-       * @date   04/03/2017 10:45
-       */
-      class exahype::records::StatePacked { 
-         
-         public:
             
-            typedef exahype::records::State::MergeMode MergeMode;
             
-            typedef exahype::records::State::SendMode SendMode;
+            inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _mergeMode;
+            }
             
-            struct PersistentRecords {
-               int _maxRefinementLevelAllowed;
-               MergeMode _mergeMode;
-               SendMode _sendMode;
-               bool _reinitTimeStepData;
-               bool _stabilityConditionOfOneSolverWasViolated;
-               double _timeStepSizeWeightForPredictionRerun;
-               bool _isTraversalInverted;
-               
-               /** mapping of records:
-               || Member 	|| startbit 	|| length
-                |  hasRefined	| startbit 0	| #bits 1
-                |  hasTriggeredRefinementForNextIteration	| startbit 1	| #bits 1
-                |  hasErased	| startbit 2	| #bits 1
-                |  hasTriggeredEraseForNextIteration	| startbit 3	| #bits 1
-                |  hasChangedVertexOrCellState	| startbit 4	| #bits 1
-                |  hasModifiedGridInPreviousIteration	| startbit 5	| #bits 1
-                */
-               short int _packedRecords0;
-               
-               /**
-                * Generated
-                */
-               PersistentRecords();
-               
-               /**
-                * Generated
-                */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
-               
-               
-               inline int getMaxRefinementLevelAllowed() const 
+            
+            
+            inline void setMergeMode(const MergeMode& mergeMode) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _maxRefinementLevelAllowed;
-               }
-               
-               
-               
-               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+               _mergeMode = mergeMode;
+            }
+            
+            
+            
+            inline SendMode getSendMode() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-               }
-               
-               
-               
-               inline MergeMode getMergeMode() const 
+               return _sendMode;
+            }
+            
+            
+            
+            inline void setSendMode(const SendMode& sendMode) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _mergeMode;
-               }
-               
-               
-               
-               inline void setMergeMode(const MergeMode& mergeMode) 
+               _sendMode = sendMode;
+            }
+            
+            
+            
+            inline bool getReinitTimeStepData() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _mergeMode = mergeMode;
-               }
-               
-               
-               
-               inline SendMode getSendMode() const 
+               return _reinitTimeStepData;
+            }
+            
+            
+            
+            inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _sendMode;
-               }
-               
-               
-               
-               inline void setSendMode(const SendMode& sendMode) 
+               _reinitTimeStepData = reinitTimeStepData;
+            }
+            
+            
+            
+            inline bool getStabilityConditionOfOneSolverWasViolated() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _sendMode = sendMode;
-               }
-               
-               
-               
-               inline bool getReinitTimeStepData() const 
+               return _stabilityConditionOfOneSolverWasViolated;
+            }
+            
+            
+            
+            inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _reinitTimeStepData;
-               }
-               
-               
-               
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+            }
+            
+            
+            
+            inline double getTimeStepSizeWeightForPredictionRerun() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+               return _timeStepSizeWeightForPredictionRerun;
+            }
+            
+            
+            
+            inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+               _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+            }
+            
+            
+            
+            inline bool getHasRefined() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  short int mask = 1 << (0);
+               short int mask = 1 << (0);
    short int tmp = static_cast<short int>(_packedRecords0 & mask);
    return (tmp != 0);
-               }
-               
-               
-               
-               inline void setHasRefined(const bool& hasRefined) 
+            }
+            
+            
+            
+            inline void setHasRefined(const bool& hasRefined) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  short int mask = 1 << (0);
+               short int mask = 1 << (0);
    _packedRecords0 = static_cast<short int>( hasRefined ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-               }
-               
-               
-               
-               inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  short int mask = 1 << (1);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-               }
-               
-               
-               
-               inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  short int mask = 1 << (1);
-   _packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-               }
-               
-               
-               
-               inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  short int mask = 1 << (2);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-               }
-               
-               
-               
-               inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  short int mask = 1 << (2);
-   _packedRecords0 = static_cast<short int>( hasErased ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-               }
-               
-               
-               
-               inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  short int mask = 1 << (3);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-               }
-               
-               
-               
-               inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  short int mask = 1 << (3);
-   _packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-               }
-               
-               
-               
-               inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  short int mask = 1 << (4);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-               }
-               
-               
-               
-               inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  short int mask = 1 << (4);
-   _packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-               }
-               
-               
-               
-               inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  short int mask = 1 << (5);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-               }
-               
-               
-               
-               inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  short int mask = 1 << (5);
-   _packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-               }
-               
-               
-               
-               inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _isTraversalInverted;
-               }
-               
-               
-               
-               inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _isTraversalInverted = isTraversalInverted;
-               }
-               
-               
-               
-            };
+            }
             
+            
+            
+            inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               short int mask = 1 << (1);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+            }
+            
+            
+            
+            inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               short int mask = 1 << (1);
+   _packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+            }
+            
+            
+            
+            inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               short int mask = 1 << (2);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+            }
+            
+            
+            
+            inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               short int mask = 1 << (2);
+   _packedRecords0 = static_cast<short int>( hasErased ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+            }
+            
+            
+            
+            inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               short int mask = 1 << (3);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+            }
+            
+            
+            
+            inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               short int mask = 1 << (3);
+   _packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+            }
+            
+            
+            
+            inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               short int mask = 1 << (4);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+            }
+            
+            
+            
+            inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               short int mask = 1 << (4);
+   _packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+            }
+            
+            
+            
+            inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               short int mask = 1 << (5);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+            }
+            
+            
+            
+            inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               short int mask = 1 << (5);
+   _packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+            }
+            
+            
+            
+            inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _isTraversalInverted;
+            }
+            
+            
+            
+            inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _isTraversalInverted = isTraversalInverted;
+            }
+            
+            
+            
+         };
          private: 
             PersistentRecords _persistentRecords;
             
@@ -1414,770 +1411,746 @@ namespace exahype {
                static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
                
                int getSenderRank() const;
-               
-         #endif
+               #endif
+      
+   };
+   
+   #ifdef PackedRecords
+   #pragma pack (pop)
+   #endif
+   
+   
+   #elif defined(TrackGridStatistics) && defined(Parallel)
+      /**
+       * @author This class is generated by DaStGen
+       * 		   DataStructureGenerator (DaStGen)
+       * 		   2007-2009 Wolfgang Eckhardt
+       * 		   2012      Tobias Weinzierl
+       *
+       * 		   build date: 09-02-2014 14:40
+       *
+       * @date   05/04/2017 22:59
+       */
+      class exahype::records::State { 
+         
+         public:
             
-         };
-         
-         #ifdef PackedRecords
-         #pragma pack (pop)
-         #endif
-         
-         
-         
-      #elif defined(TrackGridStatistics) && defined(Parallel)
-         /**
-          * @author This class is generated by DaStGen
-          * 		   DataStructureGenerator (DaStGen)
-          * 		   2007-2009 Wolfgang Eckhardt
-          * 		   2012      Tobias Weinzierl
-          *
-          * 		   build date: 09-02-2014 14:40
-          *
-          * @date   04/03/2017 10:45
-          */
-         class exahype::records::State { 
+            typedef exahype::records::StatePacked Packed;
             
-            public:
+            enum MergeMode {
+               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
+            };
+            
+            enum SendMode {
+               SendNothing = 0, ReduceAndMergeTimeStepData = 1, SendFaceData = 2, ReduceAndMergeTimeStepDataAndSendFaceData = 3
+            };
+            
+            struct PersistentRecords {
+               int _maxRefinementLevelAllowed;
+               MergeMode _mergeMode;
+               SendMode _sendMode;
+               bool _reinitTimeStepData;
+               bool _stabilityConditionOfOneSolverWasViolated;
+               double _timeStepSizeWeightForPredictionRerun;
+               #ifdef UseManualAlignment
+               tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
+               #else
+               tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
+               #endif
+               #ifdef UseManualAlignment
+               tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth __attribute__((aligned(VectorisationAlignment)));
+               #else
+               tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
+               #endif
+               double _numberOfInnerVertices;
+               double _numberOfBoundaryVertices;
+               double _numberOfOuterVertices;
+               double _numberOfInnerCells;
+               double _numberOfOuterCells;
+               double _numberOfInnerLeafVertices;
+               double _numberOfBoundaryLeafVertices;
+               double _numberOfOuterLeafVertices;
+               double _numberOfInnerLeafCells;
+               double _numberOfOuterLeafCells;
+               int _maxLevel;
+               bool _hasRefined;
+               bool _hasTriggeredRefinementForNextIteration;
+               bool _hasErased;
+               bool _hasTriggeredEraseForNextIteration;
+               bool _hasChangedVertexOrCellState;
+               bool _hasModifiedGridInPreviousIteration;
+               bool _isTraversalInverted;
+               bool _reduceStateAndCell;
+               bool _couldNotEraseDueToDecompositionFlag;
+               bool _subWorkerIsInvolvedInJoinOrFork;
+               /**
+                * Generated
+                */
+               PersistentRecords();
                
-               typedef exahype::records::StatePacked Packed;
+               /**
+                * Generated
+                */
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
-               enum MergeMode {
-                  MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
-               };
                
-               enum SendMode {
-                  SendNothing = 0, ReduceAndMergeTimeStepData = 1, SendFaceData = 2, ReduceAndMergeTimeStepDataAndSendFaceData = 3
-               };
+               inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxRefinementLevelAllowed;
+               }
                
-               struct PersistentRecords {
-                  int _maxRefinementLevelAllowed;
-                  bool _firstGridSetupIteration;
-                  MergeMode _mergeMode;
-                  SendMode _sendMode;
-                  bool _reinitTimeStepData;
-                  bool _stabilityConditionOfOneSolverWasViolated;
-                  double _timeStepSizeWeightForPredictionRerun;
-                  #ifdef UseManualAlignment
-                  tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
-                  #else
-                  tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
-                  #endif
-                  #ifdef UseManualAlignment
-                  tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth __attribute__((aligned(VectorisationAlignment)));
-                  #else
-                  tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
-                  #endif
-                  double _numberOfInnerVertices;
-                  double _numberOfBoundaryVertices;
-                  double _numberOfOuterVertices;
-                  double _numberOfInnerCells;
-                  double _numberOfOuterCells;
-                  double _numberOfInnerLeafVertices;
-                  double _numberOfBoundaryLeafVertices;
-                  double _numberOfOuterLeafVertices;
-                  double _numberOfInnerLeafCells;
-                  double _numberOfOuterLeafCells;
-                  int _maxLevel;
-                  bool _hasRefined;
-                  bool _hasTriggeredRefinementForNextIteration;
-                  bool _hasErased;
-                  bool _hasTriggeredEraseForNextIteration;
-                  bool _hasChangedVertexOrCellState;
-                  bool _hasModifiedGridInPreviousIteration;
-                  bool _isTraversalInverted;
-                  bool _reduceStateAndCell;
-                  bool _couldNotEraseDueToDecompositionFlag;
-                  bool _subWorkerIsInvolvedInJoinOrFork;
-                  /**
-                   * Generated
-                   */
-                  PersistentRecords();
-                  
-                  /**
-                   * Generated
-                   */
-                  PersistentRecords(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
-                  
-                  
-                  inline int getMaxRefinementLevelAllowed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _maxRefinementLevelAllowed;
-                  }
-                  
-                  
-                  
-                  inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-                  }
-                  
-                  
-                  
-                  inline bool getFirstGridSetupIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _firstGridSetupIteration;
-                  }
-                  
-                  
-                  
-                  inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _firstGridSetupIteration = firstGridSetupIteration;
-                  }
-                  
-                  
-                  
-                  inline MergeMode getMergeMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _mergeMode;
-                  }
-                  
-                  
-                  
-                  inline void setMergeMode(const MergeMode& mergeMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _mergeMode = mergeMode;
-                  }
-                  
-                  
-                  
-                  inline SendMode getSendMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _sendMode;
-                  }
-                  
-                  
-                  
-                  inline void setSendMode(const SendMode& sendMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _sendMode = sendMode;
-                  }
-                  
-                  
-                  
-                  inline bool getReinitTimeStepData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _reinitTimeStepData;
-                  }
-                  
-                  
-                  
-                  inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _reinitTimeStepData = reinitTimeStepData;
-                  }
-                  
-                  
-                  
-                  inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _stabilityConditionOfOneSolverWasViolated;
-                  }
-                  
-                  
-                  
-                  inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-                  }
-                  
-                  
-                  
-                  inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _timeStepSizeWeightForPredictionRerun;
-                  }
-                  
-                  
-                  
-                  inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _minMeshWidth;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _minMeshWidth = (minMeshWidth);
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _maxMeshWidth;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _maxMeshWidth = (maxMeshWidth);
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfInnerVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _numberOfInnerVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _numberOfInnerVertices = numberOfInnerVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfBoundaryVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _numberOfBoundaryVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _numberOfBoundaryVertices = numberOfBoundaryVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfOuterVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _numberOfOuterVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _numberOfOuterVertices = numberOfOuterVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfInnerCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _numberOfInnerCells;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _numberOfInnerCells = numberOfInnerCells;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfOuterCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _numberOfOuterCells;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _numberOfOuterCells = numberOfOuterCells;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfInnerLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _numberOfInnerLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _numberOfInnerLeafVertices = numberOfInnerLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfBoundaryLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _numberOfBoundaryLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfOuterLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _numberOfOuterLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _numberOfOuterLeafVertices = numberOfOuterLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfInnerLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _numberOfInnerLeafCells;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _numberOfInnerLeafCells = numberOfInnerLeafCells;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfOuterLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _numberOfOuterLeafCells;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _numberOfOuterLeafCells = numberOfOuterLeafCells;
-                  }
-                  
-                  
-                  
-                  inline int getMaxLevel() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _maxLevel;
-                  }
-                  
-                  
-                  
-                  inline void setMaxLevel(const int& maxLevel) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _maxLevel = maxLevel;
-                  }
-                  
-                  
-                  
-                  inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _hasRefined;
-                  }
-                  
-                  
-                  
-                  inline void setHasRefined(const bool& hasRefined) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _hasRefined = hasRefined;
-                  }
-                  
-                  
-                  
-                  inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _hasTriggeredRefinementForNextIteration;
-                  }
-                  
-                  
-                  
-                  inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _hasTriggeredRefinementForNextIteration = hasTriggeredRefinementForNextIteration;
-                  }
-                  
-                  
-                  
-                  inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _hasErased;
-                  }
-                  
-                  
-                  
-                  inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _hasErased = hasErased;
-                  }
-                  
-                  
-                  
-                  inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _hasTriggeredEraseForNextIteration;
-                  }
-                  
-                  
-                  
-                  inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _hasTriggeredEraseForNextIteration = hasTriggeredEraseForNextIteration;
-                  }
-                  
-                  
-                  
-                  inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _hasChangedVertexOrCellState;
-                  }
-                  
-                  
-                  
-                  inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _hasChangedVertexOrCellState = hasChangedVertexOrCellState;
-                  }
-                  
-                  
-                  
-                  inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _hasModifiedGridInPreviousIteration;
-                  }
-                  
-                  
-                  
-                  inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _hasModifiedGridInPreviousIteration = hasModifiedGridInPreviousIteration;
-                  }
-                  
-                  
-                  
-                  inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _isTraversalInverted;
-                  }
-                  
-                  
-                  
-                  inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _isTraversalInverted = isTraversalInverted;
-                  }
-                  
-                  
-                  
-                  inline bool getReduceStateAndCell() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _reduceStateAndCell;
-                  }
-                  
-                  
-                  
-                  inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _reduceStateAndCell = reduceStateAndCell;
-                  }
-                  
-                  
-                  
-                  inline bool getCouldNotEraseDueToDecompositionFlag() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _couldNotEraseDueToDecompositionFlag;
-                  }
-                  
-                  
-                  
-                  inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _couldNotEraseDueToDecompositionFlag = couldNotEraseDueToDecompositionFlag;
-                  }
-                  
-                  
-                  
-                  inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _subWorkerIsInvolvedInJoinOrFork;
-                  }
-                  
-                  
-                  
-                  inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _subWorkerIsInvolvedInJoinOrFork = subWorkerIsInvolvedInJoinOrFork;
-                  }
-                  
-                  
-                  
-               };
                
+               
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _sendMode = sendMode;
+               }
+               
+               
+               
+               inline bool getReinitTimeStepData() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _reinitTimeStepData;
+               }
+               
+               
+               
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _reinitTimeStepData = reinitTimeStepData;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline double getTimeStepSizeWeightForPredictionRerun() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _minMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _minMeshWidth = (minMeshWidth);
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxMeshWidth = (maxMeshWidth);
+               }
+               
+               
+               
+               inline double getNumberOfInnerVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerVertices = numberOfInnerVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfBoundaryVertices = numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterVertices = numberOfOuterVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerCells = numberOfInnerCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterCells = numberOfOuterCells;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerLeafVertices = numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterLeafVertices = numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerLeafCells = numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterLeafCells = numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline int getMaxLevel() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxLevel;
+               }
+               
+               
+               
+               inline void setMaxLevel(const int& maxLevel) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxLevel = maxLevel;
+               }
+               
+               
+               
+               inline bool getHasRefined() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasRefined;
+               }
+               
+               
+               
+               inline void setHasRefined(const bool& hasRefined) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasRefined = hasRefined;
+               }
+               
+               
+               
+               inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasTriggeredRefinementForNextIteration;
+               }
+               
+               
+               
+               inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasTriggeredRefinementForNextIteration = hasTriggeredRefinementForNextIteration;
+               }
+               
+               
+               
+               inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasErased;
+               }
+               
+               
+               
+               inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasErased = hasErased;
+               }
+               
+               
+               
+               inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasTriggeredEraseForNextIteration;
+               }
+               
+               
+               
+               inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasTriggeredEraseForNextIteration = hasTriggeredEraseForNextIteration;
+               }
+               
+               
+               
+               inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasChangedVertexOrCellState;
+               }
+               
+               
+               
+               inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasChangedVertexOrCellState = hasChangedVertexOrCellState;
+               }
+               
+               
+               
+               inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasModifiedGridInPreviousIteration;
+               }
+               
+               
+               
+               inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasModifiedGridInPreviousIteration = hasModifiedGridInPreviousIteration;
+               }
+               
+               
+               
+               inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _isTraversalInverted;
+               }
+               
+               
+               
+               inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _isTraversalInverted = isTraversalInverted;
+               }
+               
+               
+               
+               inline bool getReduceStateAndCell() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _reduceStateAndCell;
+               }
+               
+               
+               
+               inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _reduceStateAndCell = reduceStateAndCell;
+               }
+               
+               
+               
+               inline bool getCouldNotEraseDueToDecompositionFlag() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _couldNotEraseDueToDecompositionFlag;
+               }
+               
+               
+               
+               inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _couldNotEraseDueToDecompositionFlag = couldNotEraseDueToDecompositionFlag;
+               }
+               
+               
+               
+               inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _subWorkerIsInvolvedInJoinOrFork;
+               }
+               
+               
+               
+               inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _subWorkerIsInvolvedInJoinOrFork = subWorkerIsInvolvedInJoinOrFork;
+               }
+               
+               
+               
+            };
             private: 
                PersistentRecords _persistentRecords;
                
@@ -2195,7 +2168,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -2219,26 +2192,6 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-               }
-               
-               
-               
-               inline bool getFirstGridSetupIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._firstGridSetupIteration;
-               }
-               
-               
-               
-               inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._firstGridSetupIteration = firstGridSetupIteration;
                }
                
                
@@ -3004,6290 +2957,6154 @@ namespace exahype {
                   static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
                   
                   int getSenderRank() const;
-                  
-            #endif
+                  #endif
+         
+      };
+      
+      #ifndef DaStGenPackedPadding
+        #define DaStGenPackedPadding 1      // 32 bit version
+        // #define DaStGenPackedPadding 2   // 64 bit version
+      #endif
+      
+      
+      #ifdef PackedRecords
+         #pragma pack (push, DaStGenPackedPadding)
+      #endif
+      
+      /**
+       * @author This class is generated by DaStGen
+       * 		   DataStructureGenerator (DaStGen)
+       * 		   2007-2009 Wolfgang Eckhardt
+       * 		   2012      Tobias Weinzierl
+       *
+       * 		   build date: 09-02-2014 14:40
+       *
+       * @date   05/04/2017 22:59
+       */
+      class exahype::records::StatePacked { 
+         
+         public:
+            
+            typedef exahype::records::State::MergeMode MergeMode;
+            
+            typedef exahype::records::State::SendMode SendMode;
+            
+            struct PersistentRecords {
+               int _maxRefinementLevelAllowed;
+               MergeMode _mergeMode;
+               SendMode _sendMode;
+               bool _reinitTimeStepData;
+               bool _stabilityConditionOfOneSolverWasViolated;
+               double _timeStepSizeWeightForPredictionRerun;
+               tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
+               tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
+               double _numberOfInnerVertices;
+               double _numberOfBoundaryVertices;
+               double _numberOfOuterVertices;
+               double _numberOfInnerCells;
+               double _numberOfOuterCells;
+               double _numberOfInnerLeafVertices;
+               double _numberOfBoundaryLeafVertices;
+               double _numberOfOuterLeafVertices;
+               double _numberOfInnerLeafCells;
+               double _numberOfOuterLeafCells;
+               int _maxLevel;
+               bool _isTraversalInverted;
+               
+               /** mapping of records:
+               || Member 	|| startbit 	|| length
+                |  hasRefined	| startbit 0	| #bits 1
+                |  hasTriggeredRefinementForNextIteration	| startbit 1	| #bits 1
+                |  hasErased	| startbit 2	| #bits 1
+                |  hasTriggeredEraseForNextIteration	| startbit 3	| #bits 1
+                |  hasChangedVertexOrCellState	| startbit 4	| #bits 1
+                |  hasModifiedGridInPreviousIteration	| startbit 5	| #bits 1
+                |  reduceStateAndCell	| startbit 6	| #bits 1
+                |  couldNotEraseDueToDecompositionFlag	| startbit 7	| #bits 1
+                |  subWorkerIsInvolvedInJoinOrFork	| startbit 8	| #bits 1
+                */
+               short int _packedRecords0;
+               
+               /**
+                * Generated
+                */
+               PersistentRecords();
+               
+               /**
+                * Generated
+                */
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               
+               
+               inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _sendMode = sendMode;
+               }
+               
+               
+               
+               inline bool getReinitTimeStepData() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _reinitTimeStepData;
+               }
+               
+               
+               
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _reinitTimeStepData = reinitTimeStepData;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline double getTimeStepSizeWeightForPredictionRerun() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _minMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _minMeshWidth = (minMeshWidth);
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxMeshWidth = (maxMeshWidth);
+               }
+               
+               
+               
+               inline double getNumberOfInnerVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerVertices = numberOfInnerVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfBoundaryVertices = numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterVertices = numberOfOuterVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerCells = numberOfInnerCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterCells = numberOfOuterCells;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerLeafVertices = numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterLeafVertices = numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerLeafCells = numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterLeafCells = numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline int getMaxLevel() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxLevel;
+               }
+               
+               
+               
+               inline void setMaxLevel(const int& maxLevel) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxLevel = maxLevel;
+               }
+               
+               
+               
+               inline bool getHasRefined() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (0);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasRefined(const bool& hasRefined) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (0);
+   _packedRecords0 = static_cast<short int>( hasRefined ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (1);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (1);
+   _packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (2);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (2);
+   _packedRecords0 = static_cast<short int>( hasErased ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (3);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (3);
+   _packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (4);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (4);
+   _packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (5);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (5);
+   _packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _isTraversalInverted;
+               }
+               
+               
+               
+               inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _isTraversalInverted = isTraversalInverted;
+               }
+               
+               
+               
+               inline bool getReduceStateAndCell() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (6);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (6);
+   _packedRecords0 = static_cast<short int>( reduceStateAndCell ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getCouldNotEraseDueToDecompositionFlag() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (7);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (7);
+   _packedRecords0 = static_cast<short int>( couldNotEraseDueToDecompositionFlag ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (8);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (8);
+   _packedRecords0 = static_cast<short int>( subWorkerIsInvolvedInJoinOrFork ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
                
             };
-            
-            #ifndef DaStGenPackedPadding
-              #define DaStGenPackedPadding 1      // 32 bit version
-              // #define DaStGenPackedPadding 2   // 64 bit version
-            #endif
-            
-            
-            #ifdef PackedRecords
-               #pragma pack (push, DaStGenPackedPadding)
-            #endif
-            
-            /**
-             * @author This class is generated by DaStGen
-             * 		   DataStructureGenerator (DaStGen)
-             * 		   2007-2009 Wolfgang Eckhardt
-             * 		   2012      Tobias Weinzierl
-             *
-             * 		   build date: 09-02-2014 14:40
-             *
-             * @date   04/03/2017 10:45
-             */
-            class exahype::records::StatePacked { 
+            private: 
+               PersistentRecords _persistentRecords;
                
-               public:
-                  
-                  typedef exahype::records::State::MergeMode MergeMode;
-                  
-                  typedef exahype::records::State::SendMode SendMode;
-                  
-                  struct PersistentRecords {
-                     int _maxRefinementLevelAllowed;
-                     bool _firstGridSetupIteration;
-                     MergeMode _mergeMode;
-                     SendMode _sendMode;
-                     bool _reinitTimeStepData;
-                     bool _stabilityConditionOfOneSolverWasViolated;
-                     double _timeStepSizeWeightForPredictionRerun;
-                     tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
-                     tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
-                     double _numberOfInnerVertices;
-                     double _numberOfBoundaryVertices;
-                     double _numberOfOuterVertices;
-                     double _numberOfInnerCells;
-                     double _numberOfOuterCells;
-                     double _numberOfInnerLeafVertices;
-                     double _numberOfBoundaryLeafVertices;
-                     double _numberOfOuterLeafVertices;
-                     double _numberOfInnerLeafCells;
-                     double _numberOfOuterLeafCells;
-                     int _maxLevel;
-                     bool _isTraversalInverted;
-                     
-                     /** mapping of records:
-                     || Member 	|| startbit 	|| length
-                      |  hasRefined	| startbit 0	| #bits 1
-                      |  hasTriggeredRefinementForNextIteration	| startbit 1	| #bits 1
-                      |  hasErased	| startbit 2	| #bits 1
-                      |  hasTriggeredEraseForNextIteration	| startbit 3	| #bits 1
-                      |  hasChangedVertexOrCellState	| startbit 4	| #bits 1
-                      |  hasModifiedGridInPreviousIteration	| startbit 5	| #bits 1
-                      |  reduceStateAndCell	| startbit 6	| #bits 1
-                      |  couldNotEraseDueToDecompositionFlag	| startbit 7	| #bits 1
-                      |  subWorkerIsInvolvedInJoinOrFork	| startbit 8	| #bits 1
-                      */
-                     short int _packedRecords0;
-                     
-                     /**
-                      * Generated
-                      */
-                     PersistentRecords();
-                     
-                     /**
-                      * Generated
-                      */
-                     PersistentRecords(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
-                     
-                     
-                     inline int getMaxRefinementLevelAllowed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _maxRefinementLevelAllowed;
-                     }
-                     
-                     
-                     
-                     inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-                     }
-                     
-                     
-                     
-                     inline bool getFirstGridSetupIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _firstGridSetupIteration;
-                     }
-                     
-                     
-                     
-                     inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _firstGridSetupIteration = firstGridSetupIteration;
-                     }
-                     
-                     
-                     
-                     inline MergeMode getMergeMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _mergeMode;
-                     }
-                     
-                     
-                     
-                     inline void setMergeMode(const MergeMode& mergeMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _mergeMode = mergeMode;
-                     }
-                     
-                     
-                     
-                     inline SendMode getSendMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _sendMode;
-                     }
-                     
-                     
-                     
-                     inline void setSendMode(const SendMode& sendMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _sendMode = sendMode;
-                     }
-                     
-                     
-                     
-                     inline bool getReinitTimeStepData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _reinitTimeStepData;
-                     }
-                     
-                     
-                     
-                     inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _reinitTimeStepData = reinitTimeStepData;
-                     }
-                     
-                     
-                     
-                     inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _stabilityConditionOfOneSolverWasViolated;
-                     }
-                     
-                     
-                     
-                     inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-                     }
-                     
-                     
-                     
-                     inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _timeStepSizeWeightForPredictionRerun;
-                     }
-                     
-                     
-                     
-                     inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _minMeshWidth;
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _minMeshWidth = (minMeshWidth);
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _maxMeshWidth;
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _maxMeshWidth = (maxMeshWidth);
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfInnerVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfInnerVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfInnerVertices = numberOfInnerVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfBoundaryVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfBoundaryVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfBoundaryVertices = numberOfBoundaryVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfOuterVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfOuterVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfOuterVertices = numberOfOuterVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfInnerCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfInnerCells;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfInnerCells = numberOfInnerCells;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfOuterCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfOuterCells;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfOuterCells = numberOfOuterCells;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfInnerLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfInnerLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfInnerLeafVertices = numberOfInnerLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfBoundaryLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfBoundaryLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfOuterLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfOuterLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfOuterLeafVertices = numberOfOuterLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfInnerLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfInnerLeafCells;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfInnerLeafCells = numberOfInnerLeafCells;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfOuterLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfOuterLeafCells;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfOuterLeafCells = numberOfOuterLeafCells;
-                     }
-                     
-                     
-                     
-                     inline int getMaxLevel() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _maxLevel;
-                     }
-                     
-                     
-                     
-                     inline void setMaxLevel(const int& maxLevel) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _maxLevel = maxLevel;
-                     }
-                     
-                     
-                     
-                     inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (0);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setHasRefined(const bool& hasRefined) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (0);
-   _packedRecords0 = static_cast<short int>( hasRefined ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (1);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (1);
-   _packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (2);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (2);
-   _packedRecords0 = static_cast<short int>( hasErased ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (3);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (3);
-   _packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (4);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (4);
-   _packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (5);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (5);
-   _packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _isTraversalInverted;
-                     }
-                     
-                     
-                     
-                     inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _isTraversalInverted = isTraversalInverted;
-                     }
-                     
-                     
-                     
-                     inline bool getReduceStateAndCell() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (6);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (6);
-   _packedRecords0 = static_cast<short int>( reduceStateAndCell ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getCouldNotEraseDueToDecompositionFlag() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (7);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (7);
-   _packedRecords0 = static_cast<short int>( couldNotEraseDueToDecompositionFlag ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (8);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (8);
-   _packedRecords0 = static_cast<short int>( subWorkerIsInvolvedInJoinOrFork ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                  };
-                  
-               private: 
-                  PersistentRecords _persistentRecords;
-                  
-               public:
-                  /**
-                   * Generated
-                   */
-                  StatePacked();
-                  
-                  /**
-                   * Generated
-                   */
-                  StatePacked(const PersistentRecords& persistentRecords);
-                  
-                  /**
-                   * Generated
-                   */
-                  StatePacked(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
-                  
-                  /**
-                   * Generated
-                   */
-                  virtual ~StatePacked();
-                  
-                  
-                  inline int getMaxRefinementLevelAllowed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._maxRefinementLevelAllowed;
-                  }
-                  
-                  
-                  
-                  inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-                  }
-                  
-                  
-                  
-                  inline bool getFirstGridSetupIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._firstGridSetupIteration;
-                  }
-                  
-                  
-                  
-                  inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._firstGridSetupIteration = firstGridSetupIteration;
-                  }
-                  
-                  
-                  
-                  inline MergeMode getMergeMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._mergeMode;
-                  }
-                  
-                  
-                  
-                  inline void setMergeMode(const MergeMode& mergeMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._mergeMode = mergeMode;
-                  }
-                  
-                  
-                  
-                  inline SendMode getSendMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._sendMode;
-                  }
-                  
-                  
-                  
-                  inline void setSendMode(const SendMode& sendMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._sendMode = sendMode;
-                  }
-                  
-                  
-                  
-                  inline bool getReinitTimeStepData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._reinitTimeStepData;
-                  }
-                  
-                  
-                  
-                  inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-                  }
-                  
-                  
-                  
-                  inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-                  }
-                  
-                  
-                  
-                  inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-                  }
-                  
-                  
-                  
-                  inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-                  }
-                  
-                  
-                  
-                  inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._minMeshWidth;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._minMeshWidth = (minMeshWidth);
-                  }
-                  
-                  
-                  
-                  inline double getMinMeshWidth(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS);
-                     return _persistentRecords._minMeshWidth[elementIndex];
-                     
-                  }
-                  
-                  
-                  
-                  inline void setMinMeshWidth(int elementIndex, const double& minMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS);
-                     _persistentRecords._minMeshWidth[elementIndex]= minMeshWidth;
-                     
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._maxMeshWidth;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._maxMeshWidth = (maxMeshWidth);
-                  }
-                  
-                  
-                  
-                  inline double getMaxMeshWidth(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS);
-                     return _persistentRecords._maxMeshWidth[elementIndex];
-                     
-                  }
-                  
-                  
-                  
-                  inline void setMaxMeshWidth(int elementIndex, const double& maxMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS);
-                     _persistentRecords._maxMeshWidth[elementIndex]= maxMeshWidth;
-                     
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfInnerVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfInnerVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfInnerVertices = numberOfInnerVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfBoundaryVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfBoundaryVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfBoundaryVertices = numberOfBoundaryVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfOuterVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfOuterVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfOuterVertices = numberOfOuterVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfInnerCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfInnerCells;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfInnerCells = numberOfInnerCells;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfOuterCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfOuterCells;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfOuterCells = numberOfOuterCells;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfInnerLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfInnerLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfInnerLeafVertices = numberOfInnerLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfBoundaryLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfBoundaryLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfOuterLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfOuterLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfOuterLeafVertices = numberOfOuterLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfInnerLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfInnerLeafCells;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfInnerLeafCells = numberOfInnerLeafCells;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfOuterLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfOuterLeafCells;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfOuterLeafCells = numberOfOuterLeafCells;
-                  }
-                  
-                  
-                  
-                  inline int getMaxLevel() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._maxLevel;
-                  }
-                  
-                  
-                  
-                  inline void setMaxLevel(const int& maxLevel) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._maxLevel = maxLevel;
-                  }
-                  
-                  
-                  
-                  inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (0);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                  }
-                  
-                  
-                  
-                  inline void setHasRefined(const bool& hasRefined) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (0);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasRefined ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                  }
-                  
-                  
-                  
-                  inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (1);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                  }
-                  
-                  
-                  
-                  inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (1);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                  }
-                  
-                  
-                  
-                  inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (2);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                  }
-                  
-                  
-                  
-                  inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (2);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasErased ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                  }
-                  
-                  
-                  
-                  inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (3);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                  }
-                  
-                  
-                  
-                  inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (3);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                  }
-                  
-                  
-                  
-                  inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (4);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                  }
-                  
-                  
-                  
-                  inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (4);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                  }
-                  
-                  
-                  
-                  inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (5);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                  }
-                  
-                  
-                  
-                  inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (5);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                  }
-                  
-                  
-                  
-                  inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._isTraversalInverted;
-                  }
-                  
-                  
-                  
-                  inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._isTraversalInverted = isTraversalInverted;
-                  }
-                  
-                  
-                  
-                  inline bool getReduceStateAndCell() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (6);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                  }
-                  
-                  
-                  
-                  inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (6);
-   _persistentRecords._packedRecords0 = static_cast<short int>( reduceStateAndCell ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                  }
-                  
-                  
-                  
-                  inline bool getCouldNotEraseDueToDecompositionFlag() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (7);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                  }
-                  
-                  
-                  
-                  inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (7);
-   _persistentRecords._packedRecords0 = static_cast<short int>( couldNotEraseDueToDecompositionFlag ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                  }
-                  
-                  
-                  
-                  inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (8);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                  }
-                  
-                  
-                  
-                  inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     short int mask = 1 << (8);
-   _persistentRecords._packedRecords0 = static_cast<short int>( subWorkerIsInvolvedInJoinOrFork ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                  }
-                  
-                  
-                  /**
-                   * Generated
-                   */
-                  static std::string toString(const MergeMode& param);
-                  
-                  /**
-                   * Generated
-                   */
-                  static std::string getMergeModeMapping();
-                  
-                  /**
-                   * Generated
-                   */
-                  static std::string toString(const SendMode& param);
-                  
-                  /**
-                   * Generated
-                   */
-                  static std::string getSendModeMapping();
-                  
-                  /**
-                   * Generated
-                   */
-                  std::string toString() const;
-                  
-                  /**
-                   * Generated
-                   */
-                  void toString(std::ostream& out) const;
-                  
-                  
-                  PersistentRecords getPersistentRecords() const;
-                  /**
-                   * Generated
-                   */
-                  State convert() const;
-                  
-                  
-               #ifdef Parallel
-                  protected:
-                     static tarch::logging::Log _log;
-                     
-                     int _senderDestinationRank;
-                     
-                  public:
-                     
-                     /**
-                      * Global that represents the mpi datatype.
-                      * There are two variants: Datatype identifies only those attributes marked with
-                      * parallelise. FullDatatype instead identifies the whole record with all fields.
-                      */
-                     static MPI_Datatype Datatype;
-                     static MPI_Datatype FullDatatype;
-                     
-                     /**
-                      * Initializes the data type for the mpi operations. Has to be called
-                      * before the very first send or receive operation is called.
-                      */
-                     static void initDatatype();
-                     
-                     static void shutdownDatatype();
-                     
-                     /**
-                      * @param communicateSleep -1 Data exchange through blocking mpi
-                      * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
-                      * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
-                      */
-                     void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                     
-                     void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                     
-                     static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
-                     
-                     int getSenderRank() const;
-                     
-               #endif
-                  
-               };
-               
-               #ifdef PackedRecords
-               #pragma pack (pop)
-               #endif
-               
-               
-               
-            
-         #elif defined(TrackGridStatistics) && !defined(Parallel)
-            /**
-             * @author This class is generated by DaStGen
-             * 		   DataStructureGenerator (DaStGen)
-             * 		   2007-2009 Wolfgang Eckhardt
-             * 		   2012      Tobias Weinzierl
-             *
-             * 		   build date: 09-02-2014 14:40
-             *
-             * @date   04/03/2017 10:45
-             */
-            class exahype::records::State { 
-               
-               public:
-                  
-                  typedef exahype::records::StatePacked Packed;
-                  
-                  enum MergeMode {
-                     MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
-                  };
-                  
-                  enum SendMode {
-                     SendNothing = 0, ReduceAndMergeTimeStepData = 1, SendFaceData = 2, ReduceAndMergeTimeStepDataAndSendFaceData = 3
-                  };
-                  
-                  struct PersistentRecords {
-                     int _maxRefinementLevelAllowed;
-                     MergeMode _mergeMode;
-                     SendMode _sendMode;
-                     bool _reinitTimeStepData;
-                     bool _stabilityConditionOfOneSolverWasViolated;
-                     double _timeStepSizeWeightForPredictionRerun;
-                     #ifdef UseManualAlignment
-                     tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
-                     #else
-                     tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
-                     #endif
-                     #ifdef UseManualAlignment
-                     tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth __attribute__((aligned(VectorisationAlignment)));
-                     #else
-                     tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
-                     #endif
-                     double _numberOfInnerVertices;
-                     double _numberOfBoundaryVertices;
-                     double _numberOfOuterVertices;
-                     double _numberOfInnerCells;
-                     double _numberOfOuterCells;
-                     double _numberOfInnerLeafVertices;
-                     double _numberOfBoundaryLeafVertices;
-                     double _numberOfOuterLeafVertices;
-                     double _numberOfInnerLeafCells;
-                     double _numberOfOuterLeafCells;
-                     int _maxLevel;
-                     bool _hasRefined;
-                     bool _hasTriggeredRefinementForNextIteration;
-                     bool _hasErased;
-                     bool _hasTriggeredEraseForNextIteration;
-                     bool _hasChangedVertexOrCellState;
-                     bool _hasModifiedGridInPreviousIteration;
-                     bool _isTraversalInverted;
-                     /**
-                      * Generated
-                      */
-                     PersistentRecords();
-                     
-                     /**
-                      * Generated
-                      */
-                     PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
-                     
-                     
-                     inline int getMaxRefinementLevelAllowed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _maxRefinementLevelAllowed;
-                     }
-                     
-                     
-                     
-                     inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-                     }
-                     
-                     
-                     
-                     inline MergeMode getMergeMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _mergeMode;
-                     }
-                     
-                     
-                     
-                     inline void setMergeMode(const MergeMode& mergeMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _mergeMode = mergeMode;
-                     }
-                     
-                     
-                     
-                     inline SendMode getSendMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _sendMode;
-                     }
-                     
-                     
-                     
-                     inline void setSendMode(const SendMode& sendMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _sendMode = sendMode;
-                     }
-                     
-                     
-                     
-                     inline bool getReinitTimeStepData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _reinitTimeStepData;
-                     }
-                     
-                     
-                     
-                     inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _reinitTimeStepData = reinitTimeStepData;
-                     }
-                     
-                     
-                     
-                     inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _stabilityConditionOfOneSolverWasViolated;
-                     }
-                     
-                     
-                     
-                     inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-                     }
-                     
-                     
-                     
-                     inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _timeStepSizeWeightForPredictionRerun;
-                     }
-                     
-                     
-                     
-                     inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _minMeshWidth;
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _minMeshWidth = (minMeshWidth);
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _maxMeshWidth;
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _maxMeshWidth = (maxMeshWidth);
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfInnerVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfInnerVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfInnerVertices = numberOfInnerVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfBoundaryVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfBoundaryVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfBoundaryVertices = numberOfBoundaryVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfOuterVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfOuterVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfOuterVertices = numberOfOuterVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfInnerCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfInnerCells;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfInnerCells = numberOfInnerCells;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfOuterCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfOuterCells;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfOuterCells = numberOfOuterCells;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfInnerLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfInnerLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfInnerLeafVertices = numberOfInnerLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfBoundaryLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfBoundaryLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfOuterLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfOuterLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfOuterLeafVertices = numberOfOuterLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfInnerLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfInnerLeafCells;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfInnerLeafCells = numberOfInnerLeafCells;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfOuterLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _numberOfOuterLeafCells;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _numberOfOuterLeafCells = numberOfOuterLeafCells;
-                     }
-                     
-                     
-                     
-                     inline int getMaxLevel() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _maxLevel;
-                     }
-                     
-                     
-                     
-                     inline void setMaxLevel(const int& maxLevel) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _maxLevel = maxLevel;
-                     }
-                     
-                     
-                     
-                     inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _hasRefined;
-                     }
-                     
-                     
-                     
-                     inline void setHasRefined(const bool& hasRefined) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _hasRefined = hasRefined;
-                     }
-                     
-                     
-                     
-                     inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _hasTriggeredRefinementForNextIteration;
-                     }
-                     
-                     
-                     
-                     inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _hasTriggeredRefinementForNextIteration = hasTriggeredRefinementForNextIteration;
-                     }
-                     
-                     
-                     
-                     inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _hasErased;
-                     }
-                     
-                     
-                     
-                     inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _hasErased = hasErased;
-                     }
-                     
-                     
-                     
-                     inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _hasTriggeredEraseForNextIteration;
-                     }
-                     
-                     
-                     
-                     inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _hasTriggeredEraseForNextIteration = hasTriggeredEraseForNextIteration;
-                     }
-                     
-                     
-                     
-                     inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _hasChangedVertexOrCellState;
-                     }
-                     
-                     
-                     
-                     inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _hasChangedVertexOrCellState = hasChangedVertexOrCellState;
-                     }
-                     
-                     
-                     
-                     inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _hasModifiedGridInPreviousIteration;
-                     }
-                     
-                     
-                     
-                     inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _hasModifiedGridInPreviousIteration = hasModifiedGridInPreviousIteration;
-                     }
-                     
-                     
-                     
-                     inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _isTraversalInverted;
-                     }
-                     
-                     
-                     
-                     inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _isTraversalInverted = isTraversalInverted;
-                     }
-                     
-                     
-                     
-                  };
-                  
-               private: 
-                  PersistentRecords _persistentRecords;
-                  
-               public:
-                  /**
-                   * Generated
-                   */
-                  State();
-                  
-                  /**
-                   * Generated
-                   */
-                  State(const PersistentRecords& persistentRecords);
-                  
-                  /**
-                   * Generated
-                   */
-                  State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
-                  
-                  /**
-                   * Generated
-                   */
-                  virtual ~State();
-                  
-                  
-                  inline int getMaxRefinementLevelAllowed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._maxRefinementLevelAllowed;
-                  }
-                  
-                  
-                  
-                  inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-                  }
-                  
-                  
-                  
-                  inline MergeMode getMergeMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._mergeMode;
-                  }
-                  
-                  
-                  
-                  inline void setMergeMode(const MergeMode& mergeMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._mergeMode = mergeMode;
-                  }
-                  
-                  
-                  
-                  inline SendMode getSendMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._sendMode;
-                  }
-                  
-                  
-                  
-                  inline void setSendMode(const SendMode& sendMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._sendMode = sendMode;
-                  }
-                  
-                  
-                  
-                  inline bool getReinitTimeStepData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._reinitTimeStepData;
-                  }
-                  
-                  
-                  
-                  inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-                  }
-                  
-                  
-                  
-                  inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-                  }
-                  
-                  
-                  
-                  inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-                  }
-                  
-                  
-                  
-                  inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-                  }
-                  
-                  
-                  
-                  inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._minMeshWidth;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._minMeshWidth = (minMeshWidth);
-                  }
-                  
-                  
-                  
-                  inline double getMinMeshWidth(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS);
-                     return _persistentRecords._minMeshWidth[elementIndex];
-                     
-                  }
-                  
-                  
-                  
-                  inline void setMinMeshWidth(int elementIndex, const double& minMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS);
-                     _persistentRecords._minMeshWidth[elementIndex]= minMeshWidth;
-                     
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._maxMeshWidth;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._maxMeshWidth = (maxMeshWidth);
-                  }
-                  
-                  
-                  
-                  inline double getMaxMeshWidth(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS);
-                     return _persistentRecords._maxMeshWidth[elementIndex];
-                     
-                  }
-                  
-                  
-                  
-                  inline void setMaxMeshWidth(int elementIndex, const double& maxMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS);
-                     _persistentRecords._maxMeshWidth[elementIndex]= maxMeshWidth;
-                     
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfInnerVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfInnerVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfInnerVertices = numberOfInnerVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfBoundaryVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfBoundaryVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfBoundaryVertices = numberOfBoundaryVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfOuterVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfOuterVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfOuterVertices = numberOfOuterVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfInnerCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfInnerCells;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfInnerCells = numberOfInnerCells;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfOuterCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfOuterCells;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfOuterCells = numberOfOuterCells;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfInnerLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfInnerLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfInnerLeafVertices = numberOfInnerLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfBoundaryLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfBoundaryLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfOuterLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfOuterLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfOuterLeafVertices = numberOfOuterLeafVertices;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfInnerLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfInnerLeafCells;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfInnerLeafCells = numberOfInnerLeafCells;
-                  }
-                  
-                  
-                  
-                  inline double getNumberOfOuterLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._numberOfOuterLeafCells;
-                  }
-                  
-                  
-                  
-                  inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._numberOfOuterLeafCells = numberOfOuterLeafCells;
-                  }
-                  
-                  
-                  
-                  inline int getMaxLevel() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._maxLevel;
-                  }
-                  
-                  
-                  
-                  inline void setMaxLevel(const int& maxLevel) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._maxLevel = maxLevel;
-                  }
-                  
-                  
-                  
-                  inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._hasRefined;
-                  }
-                  
-                  
-                  
-                  inline void setHasRefined(const bool& hasRefined) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._hasRefined = hasRefined;
-                  }
-                  
-                  
-                  
-                  inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._hasTriggeredRefinementForNextIteration;
-                  }
-                  
-                  
-                  
-                  inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._hasTriggeredRefinementForNextIteration = hasTriggeredRefinementForNextIteration;
-                  }
-                  
-                  
-                  
-                  inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._hasErased;
-                  }
-                  
-                  
-                  
-                  inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._hasErased = hasErased;
-                  }
-                  
-                  
-                  
-                  inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._hasTriggeredEraseForNextIteration;
-                  }
-                  
-                  
-                  
-                  inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._hasTriggeredEraseForNextIteration = hasTriggeredEraseForNextIteration;
-                  }
-                  
-                  
-                  
-                  inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._hasChangedVertexOrCellState;
-                  }
-                  
-                  
-                  
-                  inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._hasChangedVertexOrCellState = hasChangedVertexOrCellState;
-                  }
-                  
-                  
-                  
-                  inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._hasModifiedGridInPreviousIteration;
-                  }
-                  
-                  
-                  
-                  inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._hasModifiedGridInPreviousIteration = hasModifiedGridInPreviousIteration;
-                  }
-                  
-                  
-                  
-                  inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._isTraversalInverted;
-                  }
-                  
-                  
-                  
-                  inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._isTraversalInverted = isTraversalInverted;
-                  }
-                  
-                  
-                  /**
-                   * Generated
-                   */
-                  static std::string toString(const MergeMode& param);
-                  
-                  /**
-                   * Generated
-                   */
-                  static std::string getMergeModeMapping();
-                  
-                  /**
-                   * Generated
-                   */
-                  static std::string toString(const SendMode& param);
-                  
-                  /**
-                   * Generated
-                   */
-                  static std::string getSendModeMapping();
-                  
-                  /**
-                   * Generated
-                   */
-                  std::string toString() const;
-                  
-                  /**
-                   * Generated
-                   */
-                  void toString(std::ostream& out) const;
-                  
-                  
-                  PersistentRecords getPersistentRecords() const;
-                  /**
-                   * Generated
-                   */
-                  StatePacked convert() const;
-                  
-                  
-               #ifdef Parallel
-                  protected:
-                     static tarch::logging::Log _log;
-                     
-                     int _senderDestinationRank;
-                     
-                  public:
-                     
-                     /**
-                      * Global that represents the mpi datatype.
-                      * There are two variants: Datatype identifies only those attributes marked with
-                      * parallelise. FullDatatype instead identifies the whole record with all fields.
-                      */
-                     static MPI_Datatype Datatype;
-                     static MPI_Datatype FullDatatype;
-                     
-                     /**
-                      * Initializes the data type for the mpi operations. Has to be called
-                      * before the very first send or receive operation is called.
-                      */
-                     static void initDatatype();
-                     
-                     static void shutdownDatatype();
-                     
-                     /**
-                      * @param communicateSleep -1 Data exchange through blocking mpi
-                      * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
-                      * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
-                      */
-                     void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                     
-                     void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                     
-                     static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
-                     
-                     int getSenderRank() const;
-                     
-               #endif
-                  
-               };
-               
-               #ifndef DaStGenPackedPadding
-                 #define DaStGenPackedPadding 1      // 32 bit version
-                 // #define DaStGenPackedPadding 2   // 64 bit version
-               #endif
-               
-               
-               #ifdef PackedRecords
-                  #pragma pack (push, DaStGenPackedPadding)
-               #endif
+            public:
+               /**
+                * Generated
+                */
+               StatePacked();
                
                /**
-                * @author This class is generated by DaStGen
-                * 		   DataStructureGenerator (DaStGen)
-                * 		   2007-2009 Wolfgang Eckhardt
-                * 		   2012      Tobias Weinzierl
-                *
-                * 		   build date: 09-02-2014 14:40
-                *
-                * @date   04/03/2017 10:45
+                * Generated
                 */
-               class exahype::records::StatePacked { 
-                  
-                  public:
-                     
-                     typedef exahype::records::State::MergeMode MergeMode;
-                     
-                     typedef exahype::records::State::SendMode SendMode;
-                     
-                     struct PersistentRecords {
-                        int _maxRefinementLevelAllowed;
-                        MergeMode _mergeMode;
-                        SendMode _sendMode;
-                        bool _reinitTimeStepData;
-                        bool _stabilityConditionOfOneSolverWasViolated;
-                        double _timeStepSizeWeightForPredictionRerun;
-                        tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
-                        tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
-                        double _numberOfInnerVertices;
-                        double _numberOfBoundaryVertices;
-                        double _numberOfOuterVertices;
-                        double _numberOfInnerCells;
-                        double _numberOfOuterCells;
-                        double _numberOfInnerLeafVertices;
-                        double _numberOfBoundaryLeafVertices;
-                        double _numberOfOuterLeafVertices;
-                        double _numberOfInnerLeafCells;
-                        double _numberOfOuterLeafCells;
-                        int _maxLevel;
-                        bool _isTraversalInverted;
-                        
-                        /** mapping of records:
-                        || Member 	|| startbit 	|| length
-                         |  hasRefined	| startbit 0	| #bits 1
-                         |  hasTriggeredRefinementForNextIteration	| startbit 1	| #bits 1
-                         |  hasErased	| startbit 2	| #bits 1
-                         |  hasTriggeredEraseForNextIteration	| startbit 3	| #bits 1
-                         |  hasChangedVertexOrCellState	| startbit 4	| #bits 1
-                         |  hasModifiedGridInPreviousIteration	| startbit 5	| #bits 1
-                         */
-                        short int _packedRecords0;
-                        
-                        /**
-                         * Generated
-                         */
-                        PersistentRecords();
-                        
-                        /**
-                         * Generated
-                         */
-                        PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
-                        
-                        
-                        inline int getMaxRefinementLevelAllowed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _maxRefinementLevelAllowed;
-                        }
-                        
-                        
-                        
-                        inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-                        }
-                        
-                        
-                        
-                        inline MergeMode getMergeMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _mergeMode;
-                        }
-                        
-                        
-                        
-                        inline void setMergeMode(const MergeMode& mergeMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _mergeMode = mergeMode;
-                        }
-                        
-                        
-                        
-                        inline SendMode getSendMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _sendMode;
-                        }
-                        
-                        
-                        
-                        inline void setSendMode(const SendMode& sendMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _sendMode = sendMode;
-                        }
-                        
-                        
-                        
-                        inline bool getReinitTimeStepData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _reinitTimeStepData;
-                        }
-                        
-                        
-                        
-                        inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _reinitTimeStepData = reinitTimeStepData;
-                        }
-                        
-                        
-                        
-                        inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _stabilityConditionOfOneSolverWasViolated;
-                        }
-                        
-                        
-                        
-                        inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-                        }
-                        
-                        
-                        
-                        inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _timeStepSizeWeightForPredictionRerun;
-                        }
-                        
-                        
-                        
-                        inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-                        }
-                        
-                        
-                        
-                        /**
-                         * Generated and optimized
-                         * 
-                         * If you realise a for loop using exclusively arrays (vectors) and compile 
-                         * with -DUseManualAlignment you may add 
-                         * \code
-                         #pragma vector aligned
-                         #pragma simd
-                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                         * 
-                         * The alignment is tied to the unpacked records, i.e. for packed class
-                         * variants the machine's natural alignment is switched off to recude the  
-                         * memory footprint. Do not use any SSE/AVX operations or 
-                         * vectorisation on the result for the packed variants, as the data is misaligned. 
-                         * If you rely on vectorisation, convert the underlying record 
-                         * into the unpacked version first. 
-                         * 
-                         * @see convert()
-                         */
-                        inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _minMeshWidth;
-                        }
-                        
-                        
-                        
-                        /**
-                         * Generated and optimized
-                         * 
-                         * If you realise a for loop using exclusively arrays (vectors) and compile 
-                         * with -DUseManualAlignment you may add 
-                         * \code
-                         #pragma vector aligned
-                         #pragma simd
-                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                         * 
-                         * The alignment is tied to the unpacked records, i.e. for packed class
-                         * variants the machine's natural alignment is switched off to recude the  
-                         * memory footprint. Do not use any SSE/AVX operations or 
-                         * vectorisation on the result for the packed variants, as the data is misaligned. 
-                         * If you rely on vectorisation, convert the underlying record 
-                         * into the unpacked version first. 
-                         * 
-                         * @see convert()
-                         */
-                        inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _minMeshWidth = (minMeshWidth);
-                        }
-                        
-                        
-                        
-                        /**
-                         * Generated and optimized
-                         * 
-                         * If you realise a for loop using exclusively arrays (vectors) and compile 
-                         * with -DUseManualAlignment you may add 
-                         * \code
-                         #pragma vector aligned
-                         #pragma simd
-                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                         * 
-                         * The alignment is tied to the unpacked records, i.e. for packed class
-                         * variants the machine's natural alignment is switched off to recude the  
-                         * memory footprint. Do not use any SSE/AVX operations or 
-                         * vectorisation on the result for the packed variants, as the data is misaligned. 
-                         * If you rely on vectorisation, convert the underlying record 
-                         * into the unpacked version first. 
-                         * 
-                         * @see convert()
-                         */
-                        inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _maxMeshWidth;
-                        }
-                        
-                        
-                        
-                        /**
-                         * Generated and optimized
-                         * 
-                         * If you realise a for loop using exclusively arrays (vectors) and compile 
-                         * with -DUseManualAlignment you may add 
-                         * \code
-                         #pragma vector aligned
-                         #pragma simd
-                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                         * 
-                         * The alignment is tied to the unpacked records, i.e. for packed class
-                         * variants the machine's natural alignment is switched off to recude the  
-                         * memory footprint. Do not use any SSE/AVX operations or 
-                         * vectorisation on the result for the packed variants, as the data is misaligned. 
-                         * If you rely on vectorisation, convert the underlying record 
-                         * into the unpacked version first. 
-                         * 
-                         * @see convert()
-                         */
-                        inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _maxMeshWidth = (maxMeshWidth);
-                        }
-                        
-                        
-                        
-                        inline double getNumberOfInnerVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _numberOfInnerVertices;
-                        }
-                        
-                        
-                        
-                        inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _numberOfInnerVertices = numberOfInnerVertices;
-                        }
-                        
-                        
-                        
-                        inline double getNumberOfBoundaryVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _numberOfBoundaryVertices;
-                        }
-                        
-                        
-                        
-                        inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _numberOfBoundaryVertices = numberOfBoundaryVertices;
-                        }
-                        
-                        
-                        
-                        inline double getNumberOfOuterVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _numberOfOuterVertices;
-                        }
-                        
-                        
-                        
-                        inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _numberOfOuterVertices = numberOfOuterVertices;
-                        }
-                        
-                        
-                        
-                        inline double getNumberOfInnerCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _numberOfInnerCells;
-                        }
-                        
-                        
-                        
-                        inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _numberOfInnerCells = numberOfInnerCells;
-                        }
-                        
-                        
-                        
-                        inline double getNumberOfOuterCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _numberOfOuterCells;
-                        }
-                        
-                        
-                        
-                        inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _numberOfOuterCells = numberOfOuterCells;
-                        }
-                        
-                        
-                        
-                        inline double getNumberOfInnerLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _numberOfInnerLeafVertices;
-                        }
-                        
-                        
-                        
-                        inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _numberOfInnerLeafVertices = numberOfInnerLeafVertices;
-                        }
-                        
-                        
-                        
-                        inline double getNumberOfBoundaryLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _numberOfBoundaryLeafVertices;
-                        }
-                        
-                        
-                        
-                        inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
-                        }
-                        
-                        
-                        
-                        inline double getNumberOfOuterLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _numberOfOuterLeafVertices;
-                        }
-                        
-                        
-                        
-                        inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _numberOfOuterLeafVertices = numberOfOuterLeafVertices;
-                        }
-                        
-                        
-                        
-                        inline double getNumberOfInnerLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _numberOfInnerLeafCells;
-                        }
-                        
-                        
-                        
-                        inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _numberOfInnerLeafCells = numberOfInnerLeafCells;
-                        }
-                        
-                        
-                        
-                        inline double getNumberOfOuterLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _numberOfOuterLeafCells;
-                        }
-                        
-                        
-                        
-                        inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _numberOfOuterLeafCells = numberOfOuterLeafCells;
-                        }
-                        
-                        
-                        
-                        inline int getMaxLevel() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _maxLevel;
-                        }
-                        
-                        
-                        
-                        inline void setMaxLevel(const int& maxLevel) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _maxLevel = maxLevel;
-                        }
-                        
-                        
-                        
-                        inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (0);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setHasRefined(const bool& hasRefined) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (0);
-   _packedRecords0 = static_cast<short int>( hasRefined ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (1);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (1);
-   _packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (2);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (2);
-   _packedRecords0 = static_cast<short int>( hasErased ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (3);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (3);
-   _packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (4);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (4);
-   _packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (5);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (5);
-   _packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _isTraversalInverted;
-                        }
-                        
-                        
-                        
-                        inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _isTraversalInverted = isTraversalInverted;
-                        }
-                        
-                        
-                        
-                     };
-                     
-                  private: 
-                     PersistentRecords _persistentRecords;
-                     
-                  public:
-                     /**
-                      * Generated
-                      */
-                     StatePacked();
-                     
-                     /**
-                      * Generated
-                      */
-                     StatePacked(const PersistentRecords& persistentRecords);
-                     
-                     /**
-                      * Generated
-                      */
-                     StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
-                     
-                     /**
-                      * Generated
-                      */
-                     virtual ~StatePacked();
-                     
-                     
-                     inline int getMaxRefinementLevelAllowed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._maxRefinementLevelAllowed;
-                     }
-                     
-                     
-                     
-                     inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-                     }
-                     
-                     
-                     
-                     inline MergeMode getMergeMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._mergeMode;
-                     }
-                     
-                     
-                     
-                     inline void setMergeMode(const MergeMode& mergeMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._mergeMode = mergeMode;
-                     }
-                     
-                     
-                     
-                     inline SendMode getSendMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._sendMode;
-                     }
-                     
-                     
-                     
-                     inline void setSendMode(const SendMode& sendMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._sendMode = sendMode;
-                     }
-                     
-                     
-                     
-                     inline bool getReinitTimeStepData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._reinitTimeStepData;
-                     }
-                     
-                     
-                     
-                     inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-                     }
-                     
-                     
-                     
-                     inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-                     }
-                     
-                     
-                     
-                     inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-                     }
-                     
-                     
-                     
-                     inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-                     }
-                     
-                     
-                     
-                     inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._minMeshWidth;
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._minMeshWidth = (minMeshWidth);
-                     }
-                     
-                     
-                     
-                     inline double getMinMeshWidth(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        assertion(elementIndex>=0);
-                        assertion(elementIndex<DIMENSIONS);
-                        return _persistentRecords._minMeshWidth[elementIndex];
-                        
-                     }
-                     
-                     
-                     
-                     inline void setMinMeshWidth(int elementIndex, const double& minMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        assertion(elementIndex>=0);
-                        assertion(elementIndex<DIMENSIONS);
-                        _persistentRecords._minMeshWidth[elementIndex]= minMeshWidth;
-                        
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._maxMeshWidth;
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._maxMeshWidth = (maxMeshWidth);
-                     }
-                     
-                     
-                     
-                     inline double getMaxMeshWidth(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        assertion(elementIndex>=0);
-                        assertion(elementIndex<DIMENSIONS);
-                        return _persistentRecords._maxMeshWidth[elementIndex];
-                        
-                     }
-                     
-                     
-                     
-                     inline void setMaxMeshWidth(int elementIndex, const double& maxMeshWidth) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        assertion(elementIndex>=0);
-                        assertion(elementIndex<DIMENSIONS);
-                        _persistentRecords._maxMeshWidth[elementIndex]= maxMeshWidth;
-                        
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfInnerVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._numberOfInnerVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._numberOfInnerVertices = numberOfInnerVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfBoundaryVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._numberOfBoundaryVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._numberOfBoundaryVertices = numberOfBoundaryVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfOuterVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._numberOfOuterVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._numberOfOuterVertices = numberOfOuterVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfInnerCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._numberOfInnerCells;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._numberOfInnerCells = numberOfInnerCells;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfOuterCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._numberOfOuterCells;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._numberOfOuterCells = numberOfOuterCells;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfInnerLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._numberOfInnerLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._numberOfInnerLeafVertices = numberOfInnerLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfBoundaryLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._numberOfBoundaryLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfOuterLeafVertices() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._numberOfOuterLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._numberOfOuterLeafVertices = numberOfOuterLeafVertices;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfInnerLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._numberOfInnerLeafCells;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._numberOfInnerLeafCells = numberOfInnerLeafCells;
-                     }
-                     
-                     
-                     
-                     inline double getNumberOfOuterLeafCells() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._numberOfOuterLeafCells;
-                     }
-                     
-                     
-                     
-                     inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._numberOfOuterLeafCells = numberOfOuterLeafCells;
-                     }
-                     
-                     
-                     
-                     inline int getMaxLevel() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._maxLevel;
-                     }
-                     
-                     
-                     
-                     inline void setMaxLevel(const int& maxLevel) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._maxLevel = maxLevel;
-                     }
-                     
-                     
-                     
-                     inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (0);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setHasRefined(const bool& hasRefined) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (0);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasRefined ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (1);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (1);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (2);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (2);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasErased ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (3);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (3);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (4);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (4);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (5);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        short int mask = 1 << (5);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
-                     inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._isTraversalInverted;
-                     }
-                     
-                     
-                     
-                     inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._isTraversalInverted = isTraversalInverted;
-                     }
-                     
-                     
-                     /**
-                      * Generated
-                      */
-                     static std::string toString(const MergeMode& param);
-                     
-                     /**
-                      * Generated
-                      */
-                     static std::string getMergeModeMapping();
-                     
-                     /**
-                      * Generated
-                      */
-                     static std::string toString(const SendMode& param);
-                     
-                     /**
-                      * Generated
-                      */
-                     static std::string getSendModeMapping();
-                     
-                     /**
-                      * Generated
-                      */
-                     std::string toString() const;
-                     
-                     /**
-                      * Generated
-                      */
-                     void toString(std::ostream& out) const;
-                     
-                     
-                     PersistentRecords getPersistentRecords() const;
-                     /**
-                      * Generated
-                      */
-                     State convert() const;
-                     
-                     
-                  #ifdef Parallel
-                     protected:
-                        static tarch::logging::Log _log;
-                        
-                        int _senderDestinationRank;
-                        
-                     public:
-                        
-                        /**
-                         * Global that represents the mpi datatype.
-                         * There are two variants: Datatype identifies only those attributes marked with
-                         * parallelise. FullDatatype instead identifies the whole record with all fields.
-                         */
-                        static MPI_Datatype Datatype;
-                        static MPI_Datatype FullDatatype;
-                        
-                        /**
-                         * Initializes the data type for the mpi operations. Has to be called
-                         * before the very first send or receive operation is called.
-                         */
-                        static void initDatatype();
-                        
-                        static void shutdownDatatype();
-                        
-                        /**
-                         * @param communicateSleep -1 Data exchange through blocking mpi
-                         * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
-                         * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
-                         */
-                        void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                        
-                        void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                        
-                        static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
-                        
-                        int getSenderRank() const;
-                        
-                  #endif
-                     
-                  };
-                  
-                  #ifdef PackedRecords
-                  #pragma pack (pop)
-                  #endif
-                  
-                  
-                  
+               StatePacked(const PersistentRecords& persistentRecords);
                
-            #elif !defined(TrackGridStatistics) && defined(Parallel)
                /**
-                * @author This class is generated by DaStGen
-                * 		   DataStructureGenerator (DaStGen)
-                * 		   2007-2009 Wolfgang Eckhardt
-                * 		   2012      Tobias Weinzierl
-                *
-                * 		   build date: 09-02-2014 14:40
-                *
-                * @date   04/03/2017 10:45
+                * Generated
                 */
-               class exahype::records::State { 
+               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               
+               /**
+                * Generated
+                */
+               virtual ~StatePacked();
+               
+               
+               inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._sendMode = sendMode;
+               }
+               
+               
+               
+               inline bool getReinitTimeStepData() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._reinitTimeStepData;
+               }
+               
+               
+               
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._reinitTimeStepData = reinitTimeStepData;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline double getTimeStepSizeWeightForPredictionRerun() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._minMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._minMeshWidth = (minMeshWidth);
+               }
+               
+               
+               
+               inline double getMinMeshWidth(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS);
+                  return _persistentRecords._minMeshWidth[elementIndex];
                   
-                  public:
-                     
-                     typedef exahype::records::StatePacked Packed;
-                     
-                     enum MergeMode {
-                        MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
-                     };
-                     
-                     enum SendMode {
-                        SendNothing = 0, ReduceAndMergeTimeStepData = 1, SendFaceData = 2, ReduceAndMergeTimeStepDataAndSendFaceData = 3
-                     };
-                     
-                     struct PersistentRecords {
-                        int _maxRefinementLevelAllowed;
-                        bool _firstGridSetupIteration;
-                        MergeMode _mergeMode;
-                        SendMode _sendMode;
-                        bool _reinitTimeStepData;
-                        bool _stabilityConditionOfOneSolverWasViolated;
-                        double _timeStepSizeWeightForPredictionRerun;
-                        bool _hasRefined;
-                        bool _hasTriggeredRefinementForNextIteration;
-                        bool _hasErased;
-                        bool _hasTriggeredEraseForNextIteration;
-                        bool _hasChangedVertexOrCellState;
-                        bool _hasModifiedGridInPreviousIteration;
-                        bool _isTraversalInverted;
-                        bool _reduceStateAndCell;
-                        bool _couldNotEraseDueToDecompositionFlag;
-                        bool _subWorkerIsInvolvedInJoinOrFork;
-                        /**
-                         * Generated
-                         */
-                        PersistentRecords();
-                        
-                        /**
-                         * Generated
-                         */
-                        PersistentRecords(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
-                        
-                        
-                        inline int getMaxRefinementLevelAllowed() const 
+               }
+               
+               
+               
+               inline void setMinMeshWidth(int elementIndex, const double& minMeshWidth) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _maxRefinementLevelAllowed;
-                        }
-                        
-                        
-                        
-                        inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-                        }
-                        
-                        
-                        
-                        inline bool getFirstGridSetupIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _firstGridSetupIteration;
-                        }
-                        
-                        
-                        
-                        inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _firstGridSetupIteration = firstGridSetupIteration;
-                        }
-                        
-                        
-                        
-                        inline MergeMode getMergeMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _mergeMode;
-                        }
-                        
-                        
-                        
-                        inline void setMergeMode(const MergeMode& mergeMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _mergeMode = mergeMode;
-                        }
-                        
-                        
-                        
-                        inline SendMode getSendMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _sendMode;
-                        }
-                        
-                        
-                        
-                        inline void setSendMode(const SendMode& sendMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _sendMode = sendMode;
-                        }
-                        
-                        
-                        
-                        inline bool getReinitTimeStepData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _reinitTimeStepData;
-                        }
-                        
-                        
-                        
-                        inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _reinitTimeStepData = reinitTimeStepData;
-                        }
-                        
-                        
-                        
-                        inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _stabilityConditionOfOneSolverWasViolated;
-                        }
-                        
-                        
-                        
-                        inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-                        }
-                        
-                        
-                        
-                        inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _timeStepSizeWeightForPredictionRerun;
-                        }
-                        
-                        
-                        
-                        inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-                        }
-                        
-                        
-                        
-                        inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _hasRefined;
-                        }
-                        
-                        
-                        
-                        inline void setHasRefined(const bool& hasRefined) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _hasRefined = hasRefined;
-                        }
-                        
-                        
-                        
-                        inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _hasTriggeredRefinementForNextIteration;
-                        }
-                        
-                        
-                        
-                        inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _hasTriggeredRefinementForNextIteration = hasTriggeredRefinementForNextIteration;
-                        }
-                        
-                        
-                        
-                        inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _hasErased;
-                        }
-                        
-                        
-                        
-                        inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _hasErased = hasErased;
-                        }
-                        
-                        
-                        
-                        inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _hasTriggeredEraseForNextIteration;
-                        }
-                        
-                        
-                        
-                        inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _hasTriggeredEraseForNextIteration = hasTriggeredEraseForNextIteration;
-                        }
-                        
-                        
-                        
-                        inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _hasChangedVertexOrCellState;
-                        }
-                        
-                        
-                        
-                        inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _hasChangedVertexOrCellState = hasChangedVertexOrCellState;
-                        }
-                        
-                        
-                        
-                        inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _hasModifiedGridInPreviousIteration;
-                        }
-                        
-                        
-                        
-                        inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _hasModifiedGridInPreviousIteration = hasModifiedGridInPreviousIteration;
-                        }
-                        
-                        
-                        
-                        inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _isTraversalInverted;
-                        }
-                        
-                        
-                        
-                        inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _isTraversalInverted = isTraversalInverted;
-                        }
-                        
-                        
-                        
-                        inline bool getReduceStateAndCell() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _reduceStateAndCell;
-                        }
-                        
-                        
-                        
-                        inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _reduceStateAndCell = reduceStateAndCell;
-                        }
-                        
-                        
-                        
-                        inline bool getCouldNotEraseDueToDecompositionFlag() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _couldNotEraseDueToDecompositionFlag;
-                        }
-                        
-                        
-                        
-                        inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _couldNotEraseDueToDecompositionFlag = couldNotEraseDueToDecompositionFlag;
-                        }
-                        
-                        
-                        
-                        inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _subWorkerIsInvolvedInJoinOrFork;
-                        }
-                        
-                        
-                        
-                        inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _subWorkerIsInvolvedInJoinOrFork = subWorkerIsInvolvedInJoinOrFork;
-                        }
-                        
-                        
-                        
-                     };
-                     
-                  private: 
-                     PersistentRecords _persistentRecords;
-                     
-                  public:
-                     /**
-                      * Generated
-                      */
-                     State();
-                     
-                     /**
-                      * Generated
-                      */
-                     State(const PersistentRecords& persistentRecords);
-                     
-                     /**
-                      * Generated
-                      */
-                     State(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
-                     
-                     /**
-                      * Generated
-                      */
-                     virtual ~State();
-                     
-                     
-                     inline int getMaxRefinementLevelAllowed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._maxRefinementLevelAllowed;
-                     }
-                     
-                     
-                     
-                     inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-                     }
-                     
-                     
-                     
-                     inline bool getFirstGridSetupIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._firstGridSetupIteration;
-                     }
-                     
-                     
-                     
-                     inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._firstGridSetupIteration = firstGridSetupIteration;
-                     }
-                     
-                     
-                     
-                     inline MergeMode getMergeMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._mergeMode;
-                     }
-                     
-                     
-                     
-                     inline void setMergeMode(const MergeMode& mergeMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._mergeMode = mergeMode;
-                     }
-                     
-                     
-                     
-                     inline SendMode getSendMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._sendMode;
-                     }
-                     
-                     
-                     
-                     inline void setSendMode(const SendMode& sendMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._sendMode = sendMode;
-                     }
-                     
-                     
-                     
-                     inline bool getReinitTimeStepData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._reinitTimeStepData;
-                     }
-                     
-                     
-                     
-                     inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-                     }
-                     
-                     
-                     
-                     inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-                     }
-                     
-                     
-                     
-                     inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-                     }
-                     
-                     
-                     
-                     inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-                     }
-                     
-                     
-                     
-                     inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-                     }
-                     
-                     
-                     
-                     inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._hasRefined;
-                     }
-                     
-                     
-                     
-                     inline void setHasRefined(const bool& hasRefined) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._hasRefined = hasRefined;
-                     }
-                     
-                     
-                     
-                     inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._hasTriggeredRefinementForNextIteration;
-                     }
-                     
-                     
-                     
-                     inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._hasTriggeredRefinementForNextIteration = hasTriggeredRefinementForNextIteration;
-                     }
-                     
-                     
-                     
-                     inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._hasErased;
-                     }
-                     
-                     
-                     
-                     inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._hasErased = hasErased;
-                     }
-                     
-                     
-                     
-                     inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._hasTriggeredEraseForNextIteration;
-                     }
-                     
-                     
-                     
-                     inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._hasTriggeredEraseForNextIteration = hasTriggeredEraseForNextIteration;
-                     }
-                     
-                     
-                     
-                     inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._hasChangedVertexOrCellState;
-                     }
-                     
-                     
-                     
-                     inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._hasChangedVertexOrCellState = hasChangedVertexOrCellState;
-                     }
-                     
-                     
-                     
-                     inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._hasModifiedGridInPreviousIteration;
-                     }
-                     
-                     
-                     
-                     inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._hasModifiedGridInPreviousIteration = hasModifiedGridInPreviousIteration;
-                     }
-                     
-                     
-                     
-                     inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._isTraversalInverted;
-                     }
-                     
-                     
-                     
-                     inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._isTraversalInverted = isTraversalInverted;
-                     }
-                     
-                     
-                     
-                     inline bool getReduceStateAndCell() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._reduceStateAndCell;
-                     }
-                     
-                     
-                     
-                     inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._reduceStateAndCell = reduceStateAndCell;
-                     }
-                     
-                     
-                     
-                     inline bool getCouldNotEraseDueToDecompositionFlag() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._couldNotEraseDueToDecompositionFlag;
-                     }
-                     
-                     
-                     
-                     inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._couldNotEraseDueToDecompositionFlag = couldNotEraseDueToDecompositionFlag;
-                     }
-                     
-                     
-                     
-                     inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._subWorkerIsInvolvedInJoinOrFork;
-                     }
-                     
-                     
-                     
-                     inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._subWorkerIsInvolvedInJoinOrFork = subWorkerIsInvolvedInJoinOrFork;
-                     }
-                     
-                     
-                     /**
-                      * Generated
-                      */
-                     static std::string toString(const MergeMode& param);
-                     
-                     /**
-                      * Generated
-                      */
-                     static std::string getMergeModeMapping();
-                     
-                     /**
-                      * Generated
-                      */
-                     static std::string toString(const SendMode& param);
-                     
-                     /**
-                      * Generated
-                      */
-                     static std::string getSendModeMapping();
-                     
-                     /**
-                      * Generated
-                      */
-                     std::string toString() const;
-                     
-                     /**
-                      * Generated
-                      */
-                     void toString(std::ostream& out) const;
-                     
-                     
-                     PersistentRecords getPersistentRecords() const;
-                     /**
-                      * Generated
-                      */
-                     StatePacked convert() const;
-                     
-                     
-                  #ifdef Parallel
-                     protected:
-                        static tarch::logging::Log _log;
-                        
-                        int _senderDestinationRank;
-                        
-                     public:
-                        
-                        /**
-                         * Global that represents the mpi datatype.
-                         * There are two variants: Datatype identifies only those attributes marked with
-                         * parallelise. FullDatatype instead identifies the whole record with all fields.
-                         */
-                        static MPI_Datatype Datatype;
-                        static MPI_Datatype FullDatatype;
-                        
-                        /**
-                         * Initializes the data type for the mpi operations. Has to be called
-                         * before the very first send or receive operation is called.
-                         */
-                        static void initDatatype();
-                        
-                        static void shutdownDatatype();
-                        
-                        /**
-                         * @param communicateSleep -1 Data exchange through blocking mpi
-                         * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
-                         * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
-                         */
-                        void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                        
-                        void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                        
-                        static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
-                        
-                        int getSenderRank() const;
-                        
-                  #endif
-                     
-                  };
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS);
+                  _persistentRecords._minMeshWidth[elementIndex]= minMeshWidth;
                   
-                  #ifndef DaStGenPackedPadding
-                    #define DaStGenPackedPadding 1      // 32 bit version
-                    // #define DaStGenPackedPadding 2   // 64 bit version
-                  #endif
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._maxMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._maxMeshWidth = (maxMeshWidth);
+               }
+               
+               
+               
+               inline double getMaxMeshWidth(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS);
+                  return _persistentRecords._maxMeshWidth[elementIndex];
                   
+               }
+               
+               
+               
+               inline void setMaxMeshWidth(int elementIndex, const double& maxMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS);
+                  _persistentRecords._maxMeshWidth[elementIndex]= maxMeshWidth;
                   
-                  #ifdef PackedRecords
-                     #pragma pack (push, DaStGenPackedPadding)
-                  #endif
+               }
+               
+               
+               
+               inline double getNumberOfInnerVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfInnerVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfInnerVertices = numberOfInnerVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfBoundaryVertices = numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfOuterVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfOuterVertices = numberOfOuterVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfInnerCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfInnerCells = numberOfInnerCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfOuterCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfOuterCells = numberOfOuterCells;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfInnerLeafVertices = numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfOuterLeafVertices = numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfInnerLeafCells = numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfOuterLeafCells = numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline int getMaxLevel() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._maxLevel;
+               }
+               
+               
+               
+               inline void setMaxLevel(const int& maxLevel) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._maxLevel = maxLevel;
+               }
+               
+               
+               
+               inline bool getHasRefined() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (0);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasRefined(const bool& hasRefined) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (0);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasRefined ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (1);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (1);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (2);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (2);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasErased ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (3);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (3);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (4);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (4);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (5);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (5);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._isTraversalInverted;
+               }
+               
+               
+               
+               inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._isTraversalInverted = isTraversalInverted;
+               }
+               
+               
+               
+               inline bool getReduceStateAndCell() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (6);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (6);
+   _persistentRecords._packedRecords0 = static_cast<short int>( reduceStateAndCell ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getCouldNotEraseDueToDecompositionFlag() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (7);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (7);
+   _persistentRecords._packedRecords0 = static_cast<short int>( couldNotEraseDueToDecompositionFlag ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (8);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (8);
+   _persistentRecords._packedRecords0 = static_cast<short int>( subWorkerIsInvolvedInJoinOrFork ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const MergeMode& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getMergeModeMapping();
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const SendMode& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getSendModeMapping();
+               
+               /**
+                * Generated
+                */
+               std::string toString() const;
+               
+               /**
+                * Generated
+                */
+               void toString(std::ostream& out) const;
+               
+               
+               PersistentRecords getPersistentRecords() const;
+               /**
+                * Generated
+                */
+               State convert() const;
+               
+               
+            #ifdef Parallel
+               protected:
+                  static tarch::logging::Log _log;
+                  
+                  int _senderDestinationRank;
+                  
+               public:
                   
                   /**
-                   * @author This class is generated by DaStGen
-                   * 		   DataStructureGenerator (DaStGen)
-                   * 		   2007-2009 Wolfgang Eckhardt
-                   * 		   2012      Tobias Weinzierl
-                   *
-                   * 		   build date: 09-02-2014 14:40
-                   *
-                   * @date   04/03/2017 10:45
+                   * Global that represents the mpi datatype.
+                   * There are two variants: Datatype identifies only those attributes marked with
+                   * parallelise. FullDatatype instead identifies the whole record with all fields.
                    */
-                  class exahype::records::StatePacked { 
-                     
-                     public:
-                        
-                        typedef exahype::records::State::MergeMode MergeMode;
-                        
-                        typedef exahype::records::State::SendMode SendMode;
-                        
-                        struct PersistentRecords {
-                           int _maxRefinementLevelAllowed;
-                           bool _firstGridSetupIteration;
-                           MergeMode _mergeMode;
-                           SendMode _sendMode;
-                           bool _reinitTimeStepData;
-                           bool _stabilityConditionOfOneSolverWasViolated;
-                           double _timeStepSizeWeightForPredictionRerun;
-                           bool _isTraversalInverted;
-                           
-                           /** mapping of records:
-                           || Member 	|| startbit 	|| length
-                            |  hasRefined	| startbit 0	| #bits 1
-                            |  hasTriggeredRefinementForNextIteration	| startbit 1	| #bits 1
-                            |  hasErased	| startbit 2	| #bits 1
-                            |  hasTriggeredEraseForNextIteration	| startbit 3	| #bits 1
-                            |  hasChangedVertexOrCellState	| startbit 4	| #bits 1
-                            |  hasModifiedGridInPreviousIteration	| startbit 5	| #bits 1
-                            |  reduceStateAndCell	| startbit 6	| #bits 1
-                            |  couldNotEraseDueToDecompositionFlag	| startbit 7	| #bits 1
-                            |  subWorkerIsInvolvedInJoinOrFork	| startbit 8	| #bits 1
-                            */
-                           short int _packedRecords0;
-                           
-                           /**
-                            * Generated
-                            */
-                           PersistentRecords();
-                           
-                           /**
-                            * Generated
-                            */
-                           PersistentRecords(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
-                           
-                           
-                           inline int getMaxRefinementLevelAllowed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _maxRefinementLevelAllowed;
-                           }
-                           
-                           
-                           
-                           inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-                           }
-                           
-                           
-                           
-                           inline bool getFirstGridSetupIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _firstGridSetupIteration;
-                           }
-                           
-                           
-                           
-                           inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _firstGridSetupIteration = firstGridSetupIteration;
-                           }
-                           
-                           
-                           
-                           inline MergeMode getMergeMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _mergeMode;
-                           }
-                           
-                           
-                           
-                           inline void setMergeMode(const MergeMode& mergeMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _mergeMode = mergeMode;
-                           }
-                           
-                           
-                           
-                           inline SendMode getSendMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _sendMode;
-                           }
-                           
-                           
-                           
-                           inline void setSendMode(const SendMode& sendMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _sendMode = sendMode;
-                           }
-                           
-                           
-                           
-                           inline bool getReinitTimeStepData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _reinitTimeStepData;
-                           }
-                           
-                           
-                           
-                           inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _reinitTimeStepData = reinitTimeStepData;
-                           }
-                           
-                           
-                           
-                           inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _stabilityConditionOfOneSolverWasViolated;
-                           }
-                           
-                           
-                           
-                           inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-                           }
-                           
-                           
-                           
-                           inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _timeStepSizeWeightForPredictionRerun;
-                           }
-                           
-                           
-                           
-                           inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-                           }
-                           
-                           
-                           
-                           inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (0);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                           }
-                           
-                           
-                           
-                           inline void setHasRefined(const bool& hasRefined) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (0);
-   _packedRecords0 = static_cast<short int>( hasRefined ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                           }
-                           
-                           
-                           
-                           inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (1);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                           }
-                           
-                           
-                           
-                           inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (1);
-   _packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                           }
-                           
-                           
-                           
-                           inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (2);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                           }
-                           
-                           
-                           
-                           inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (2);
-   _packedRecords0 = static_cast<short int>( hasErased ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                           }
-                           
-                           
-                           
-                           inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (3);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                           }
-                           
-                           
-                           
-                           inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (3);
-   _packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                           }
-                           
-                           
-                           
-                           inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (4);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                           }
-                           
-                           
-                           
-                           inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (4);
-   _packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                           }
-                           
-                           
-                           
-                           inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (5);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                           }
-                           
-                           
-                           
-                           inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (5);
-   _packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                           }
-                           
-                           
-                           
-                           inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _isTraversalInverted;
-                           }
-                           
-                           
-                           
-                           inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _isTraversalInverted = isTraversalInverted;
-                           }
-                           
-                           
-                           
-                           inline bool getReduceStateAndCell() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (6);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                           }
-                           
-                           
-                           
-                           inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (6);
-   _packedRecords0 = static_cast<short int>( reduceStateAndCell ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                           }
-                           
-                           
-                           
-                           inline bool getCouldNotEraseDueToDecompositionFlag() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (7);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                           }
-                           
-                           
-                           
-                           inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (7);
-   _packedRecords0 = static_cast<short int>( couldNotEraseDueToDecompositionFlag ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                           }
-                           
-                           
-                           
-                           inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (8);
-   short int tmp = static_cast<short int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                           }
-                           
-                           
-                           
-                           inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              short int mask = 1 << (8);
-   _packedRecords0 = static_cast<short int>( subWorkerIsInvolvedInJoinOrFork ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                           }
-                           
-                           
-                           
-                        };
-                        
-                     private: 
-                        PersistentRecords _persistentRecords;
-                        
-                     public:
-                        /**
-                         * Generated
-                         */
-                        StatePacked();
-                        
-                        /**
-                         * Generated
-                         */
-                        StatePacked(const PersistentRecords& persistentRecords);
-                        
-                        /**
-                         * Generated
-                         */
-                        StatePacked(const int& maxRefinementLevelAllowed, const bool& firstGridSetupIteration, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
-                        
-                        /**
-                         * Generated
-                         */
-                        virtual ~StatePacked();
-                        
-                        
-                        inline int getMaxRefinementLevelAllowed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._maxRefinementLevelAllowed;
-                        }
-                        
-                        
-                        
-                        inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
-                        }
-                        
-                        
-                        
-                        inline bool getFirstGridSetupIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._firstGridSetupIteration;
-                        }
-                        
-                        
-                        
-                        inline void setFirstGridSetupIteration(const bool& firstGridSetupIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._firstGridSetupIteration = firstGridSetupIteration;
-                        }
-                        
-                        
-                        
-                        inline MergeMode getMergeMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._mergeMode;
-                        }
-                        
-                        
-                        
-                        inline void setMergeMode(const MergeMode& mergeMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._mergeMode = mergeMode;
-                        }
-                        
-                        
-                        
-                        inline SendMode getSendMode() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._sendMode;
-                        }
-                        
-                        
-                        
-                        inline void setSendMode(const SendMode& sendMode) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._sendMode = sendMode;
-                        }
-                        
-                        
-                        
-                        inline bool getReinitTimeStepData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._reinitTimeStepData;
-                        }
-                        
-                        
-                        
-                        inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-                        }
-                        
-                        
-                        
-                        inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-                        }
-                        
-                        
-                        
-                        inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-                        }
-                        
-                        
-                        
-                        inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-                        }
-                        
-                        
-                        
-                        inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
-                        }
-                        
-                        
-                        
-                        inline bool getHasRefined() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (0);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setHasRefined(const bool& hasRefined) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (0);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasRefined ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getHasTriggeredRefinementForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (1);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (1);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getHasErased() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (2);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setHasErased(const bool& hasErased) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (2);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasErased ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getHasTriggeredEraseForNextIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (3);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (3);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getHasChangedVertexOrCellState() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (4);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (4);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getHasModifiedGridInPreviousIteration() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (5);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (5);
-   _persistentRecords._packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getIsTraversalInverted() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._isTraversalInverted;
-                        }
-                        
-                        
-                        
-                        inline void setIsTraversalInverted(const bool& isTraversalInverted) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._isTraversalInverted = isTraversalInverted;
-                        }
-                        
-                        
-                        
-                        inline bool getReduceStateAndCell() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (6);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (6);
-   _persistentRecords._packedRecords0 = static_cast<short int>( reduceStateAndCell ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getCouldNotEraseDueToDecompositionFlag() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (7);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (7);
-   _persistentRecords._packedRecords0 = static_cast<short int>( couldNotEraseDueToDecompositionFlag ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        
-                        inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (8);
-   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                        }
-                        
-                        
-                        
-                        inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           short int mask = 1 << (8);
-   _persistentRecords._packedRecords0 = static_cast<short int>( subWorkerIsInvolvedInJoinOrFork ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                        }
-                        
-                        
-                        /**
-                         * Generated
-                         */
-                        static std::string toString(const MergeMode& param);
-                        
-                        /**
-                         * Generated
-                         */
-                        static std::string getMergeModeMapping();
-                        
-                        /**
-                         * Generated
-                         */
-                        static std::string toString(const SendMode& param);
-                        
-                        /**
-                         * Generated
-                         */
-                        static std::string getSendModeMapping();
-                        
-                        /**
-                         * Generated
-                         */
-                        std::string toString() const;
-                        
-                        /**
-                         * Generated
-                         */
-                        void toString(std::ostream& out) const;
-                        
-                        
-                        PersistentRecords getPersistentRecords() const;
-                        /**
-                         * Generated
-                         */
-                        State convert() const;
-                        
-                        
-                     #ifdef Parallel
-                        protected:
-                           static tarch::logging::Log _log;
-                           
-                           int _senderDestinationRank;
-                           
-                        public:
-                           
-                           /**
-                            * Global that represents the mpi datatype.
-                            * There are two variants: Datatype identifies only those attributes marked with
-                            * parallelise. FullDatatype instead identifies the whole record with all fields.
-                            */
-                           static MPI_Datatype Datatype;
-                           static MPI_Datatype FullDatatype;
-                           
-                           /**
-                            * Initializes the data type for the mpi operations. Has to be called
-                            * before the very first send or receive operation is called.
-                            */
-                           static void initDatatype();
-                           
-                           static void shutdownDatatype();
-                           
-                           /**
-                            * @param communicateSleep -1 Data exchange through blocking mpi
-                            * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
-                            * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
-                            */
-                           void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                           
-                           void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
-                           
-                           static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
-                           
-                           int getSenderRank() const;
-                           
-                     #endif
-                        
-                     };
-                     
-                     #ifdef PackedRecords
-                     #pragma pack (pop)
-                     #endif
-                     
-                     
-                     
+                  static MPI_Datatype Datatype;
+                  static MPI_Datatype FullDatatype;
                   
+                  /**
+                   * Initializes the data type for the mpi operations. Has to be called
+                   * before the very first send or receive operation is called.
+                   */
+                  static void initDatatype();
+                  
+                  static void shutdownDatatype();
+                  
+                  /**
+                   * @param communicateSleep -1 Data exchange through blocking mpi
+                   * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
+                   * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
+                   */
+                  void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+                  
+                  void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+                  
+                  static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
+                  
+                  int getSenderRank() const;
+                  #endif
+         
+      };
+      
+      #ifdef PackedRecords
+      #pragma pack (pop)
+      #endif
+      
+      
+      
+   #elif defined(TrackGridStatistics) && !defined(Parallel)
+      /**
+       * @author This class is generated by DaStGen
+       * 		   DataStructureGenerator (DaStGen)
+       * 		   2007-2009 Wolfgang Eckhardt
+       * 		   2012      Tobias Weinzierl
+       *
+       * 		   build date: 09-02-2014 14:40
+       *
+       * @date   05/04/2017 22:59
+       */
+      class exahype::records::State { 
+         
+         public:
+            
+            typedef exahype::records::StatePacked Packed;
+            
+            enum MergeMode {
+               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
+            };
+            
+            enum SendMode {
+               SendNothing = 0, ReduceAndMergeTimeStepData = 1, SendFaceData = 2, ReduceAndMergeTimeStepDataAndSendFaceData = 3
+            };
+            
+            struct PersistentRecords {
+               int _maxRefinementLevelAllowed;
+               MergeMode _mergeMode;
+               SendMode _sendMode;
+               bool _reinitTimeStepData;
+               bool _stabilityConditionOfOneSolverWasViolated;
+               double _timeStepSizeWeightForPredictionRerun;
+               #ifdef UseManualAlignment
+               tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
+               #else
+               tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                #endif
-               
+               #ifdef UseManualAlignment
+               tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth __attribute__((aligned(VectorisationAlignment)));
+               #else
+               tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
                #endif
+               double _numberOfInnerVertices;
+               double _numberOfBoundaryVertices;
+               double _numberOfOuterVertices;
+               double _numberOfInnerCells;
+               double _numberOfOuterCells;
+               double _numberOfInnerLeafVertices;
+               double _numberOfBoundaryLeafVertices;
+               double _numberOfOuterLeafVertices;
+               double _numberOfInnerLeafCells;
+               double _numberOfOuterLeafCells;
+               int _maxLevel;
+               bool _hasRefined;
+               bool _hasTriggeredRefinementForNextIteration;
+               bool _hasErased;
+               bool _hasTriggeredEraseForNextIteration;
+               bool _hasChangedVertexOrCellState;
+               bool _hasModifiedGridInPreviousIteration;
+               bool _isTraversalInverted;
+               /**
+                * Generated
+                */
+               PersistentRecords();
                
+               /**
+                * Generated
+                */
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               
+               
+               inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _sendMode = sendMode;
+               }
+               
+               
+               
+               inline bool getReinitTimeStepData() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _reinitTimeStepData;
+               }
+               
+               
+               
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _reinitTimeStepData = reinitTimeStepData;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline double getTimeStepSizeWeightForPredictionRerun() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _minMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _minMeshWidth = (minMeshWidth);
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxMeshWidth = (maxMeshWidth);
+               }
+               
+               
+               
+               inline double getNumberOfInnerVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerVertices = numberOfInnerVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfBoundaryVertices = numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterVertices = numberOfOuterVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerCells = numberOfInnerCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterCells = numberOfOuterCells;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerLeafVertices = numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterLeafVertices = numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerLeafCells = numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterLeafCells = numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline int getMaxLevel() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxLevel;
+               }
+               
+               
+               
+               inline void setMaxLevel(const int& maxLevel) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxLevel = maxLevel;
+               }
+               
+               
+               
+               inline bool getHasRefined() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasRefined;
+               }
+               
+               
+               
+               inline void setHasRefined(const bool& hasRefined) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasRefined = hasRefined;
+               }
+               
+               
+               
+               inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasTriggeredRefinementForNextIteration;
+               }
+               
+               
+               
+               inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasTriggeredRefinementForNextIteration = hasTriggeredRefinementForNextIteration;
+               }
+               
+               
+               
+               inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasErased;
+               }
+               
+               
+               
+               inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasErased = hasErased;
+               }
+               
+               
+               
+               inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasTriggeredEraseForNextIteration;
+               }
+               
+               
+               
+               inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasTriggeredEraseForNextIteration = hasTriggeredEraseForNextIteration;
+               }
+               
+               
+               
+               inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasChangedVertexOrCellState;
+               }
+               
+               
+               
+               inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasChangedVertexOrCellState = hasChangedVertexOrCellState;
+               }
+               
+               
+               
+               inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasModifiedGridInPreviousIteration;
+               }
+               
+               
+               
+               inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasModifiedGridInPreviousIteration = hasModifiedGridInPreviousIteration;
+               }
+               
+               
+               
+               inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _isTraversalInverted;
+               }
+               
+               
+               
+               inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _isTraversalInverted = isTraversalInverted;
+               }
+               
+               
+               
+            };
+            private: 
+               PersistentRecords _persistentRecords;
+               
+            public:
+               /**
+                * Generated
+                */
+               State();
+               
+               /**
+                * Generated
+                */
+               State(const PersistentRecords& persistentRecords);
+               
+               /**
+                * Generated
+                */
+               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               
+               /**
+                * Generated
+                */
+               virtual ~State();
+               
+               
+               inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._sendMode = sendMode;
+               }
+               
+               
+               
+               inline bool getReinitTimeStepData() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._reinitTimeStepData;
+               }
+               
+               
+               
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._reinitTimeStepData = reinitTimeStepData;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline double getTimeStepSizeWeightForPredictionRerun() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._minMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._minMeshWidth = (minMeshWidth);
+               }
+               
+               
+               
+               inline double getMinMeshWidth(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS);
+                  return _persistentRecords._minMeshWidth[elementIndex];
+                  
+               }
+               
+               
+               
+               inline void setMinMeshWidth(int elementIndex, const double& minMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS);
+                  _persistentRecords._minMeshWidth[elementIndex]= minMeshWidth;
+                  
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._maxMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._maxMeshWidth = (maxMeshWidth);
+               }
+               
+               
+               
+               inline double getMaxMeshWidth(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS);
+                  return _persistentRecords._maxMeshWidth[elementIndex];
+                  
+               }
+               
+               
+               
+               inline void setMaxMeshWidth(int elementIndex, const double& maxMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS);
+                  _persistentRecords._maxMeshWidth[elementIndex]= maxMeshWidth;
+                  
+               }
+               
+               
+               
+               inline double getNumberOfInnerVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfInnerVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfInnerVertices = numberOfInnerVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfBoundaryVertices = numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfOuterVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfOuterVertices = numberOfOuterVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfInnerCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfInnerCells = numberOfInnerCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfOuterCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfOuterCells = numberOfOuterCells;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfInnerLeafVertices = numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfOuterLeafVertices = numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfInnerLeafCells = numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfOuterLeafCells = numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline int getMaxLevel() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._maxLevel;
+               }
+               
+               
+               
+               inline void setMaxLevel(const int& maxLevel) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._maxLevel = maxLevel;
+               }
+               
+               
+               
+               inline bool getHasRefined() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._hasRefined;
+               }
+               
+               
+               
+               inline void setHasRefined(const bool& hasRefined) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._hasRefined = hasRefined;
+               }
+               
+               
+               
+               inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._hasTriggeredRefinementForNextIteration;
+               }
+               
+               
+               
+               inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._hasTriggeredRefinementForNextIteration = hasTriggeredRefinementForNextIteration;
+               }
+               
+               
+               
+               inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._hasErased;
+               }
+               
+               
+               
+               inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._hasErased = hasErased;
+               }
+               
+               
+               
+               inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._hasTriggeredEraseForNextIteration;
+               }
+               
+               
+               
+               inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._hasTriggeredEraseForNextIteration = hasTriggeredEraseForNextIteration;
+               }
+               
+               
+               
+               inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._hasChangedVertexOrCellState;
+               }
+               
+               
+               
+               inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._hasChangedVertexOrCellState = hasChangedVertexOrCellState;
+               }
+               
+               
+               
+               inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._hasModifiedGridInPreviousIteration;
+               }
+               
+               
+               
+               inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._hasModifiedGridInPreviousIteration = hasModifiedGridInPreviousIteration;
+               }
+               
+               
+               
+               inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._isTraversalInverted;
+               }
+               
+               
+               
+               inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._isTraversalInverted = isTraversalInverted;
+               }
+               
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const MergeMode& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getMergeModeMapping();
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const SendMode& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getSendModeMapping();
+               
+               /**
+                * Generated
+                */
+               std::string toString() const;
+               
+               /**
+                * Generated
+                */
+               void toString(std::ostream& out) const;
+               
+               
+               PersistentRecords getPersistentRecords() const;
+               /**
+                * Generated
+                */
+               StatePacked convert() const;
+               
+               
+            #ifdef Parallel
+               protected:
+                  static tarch::logging::Log _log;
+                  
+                  int _senderDestinationRank;
+                  
+               public:
+                  
+                  /**
+                   * Global that represents the mpi datatype.
+                   * There are two variants: Datatype identifies only those attributes marked with
+                   * parallelise. FullDatatype instead identifies the whole record with all fields.
+                   */
+                  static MPI_Datatype Datatype;
+                  static MPI_Datatype FullDatatype;
+                  
+                  /**
+                   * Initializes the data type for the mpi operations. Has to be called
+                   * before the very first send or receive operation is called.
+                   */
+                  static void initDatatype();
+                  
+                  static void shutdownDatatype();
+                  
+                  /**
+                   * @param communicateSleep -1 Data exchange through blocking mpi
+                   * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
+                   * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
+                   */
+                  void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+                  
+                  void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+                  
+                  static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
+                  
+                  int getSenderRank() const;
+                  #endif
+         
+      };
+      
+      #ifndef DaStGenPackedPadding
+        #define DaStGenPackedPadding 1      // 32 bit version
+        // #define DaStGenPackedPadding 2   // 64 bit version
+      #endif
+      
+      
+      #ifdef PackedRecords
+         #pragma pack (push, DaStGenPackedPadding)
+      #endif
+      
+      /**
+       * @author This class is generated by DaStGen
+       * 		   DataStructureGenerator (DaStGen)
+       * 		   2007-2009 Wolfgang Eckhardt
+       * 		   2012      Tobias Weinzierl
+       *
+       * 		   build date: 09-02-2014 14:40
+       *
+       * @date   05/04/2017 22:59
+       */
+      class exahype::records::StatePacked { 
+         
+         public:
+            
+            typedef exahype::records::State::MergeMode MergeMode;
+            
+            typedef exahype::records::State::SendMode SendMode;
+            
+            struct PersistentRecords {
+               int _maxRefinementLevelAllowed;
+               MergeMode _mergeMode;
+               SendMode _sendMode;
+               bool _reinitTimeStepData;
+               bool _stabilityConditionOfOneSolverWasViolated;
+               double _timeStepSizeWeightForPredictionRerun;
+               tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
+               tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
+               double _numberOfInnerVertices;
+               double _numberOfBoundaryVertices;
+               double _numberOfOuterVertices;
+               double _numberOfInnerCells;
+               double _numberOfOuterCells;
+               double _numberOfInnerLeafVertices;
+               double _numberOfBoundaryLeafVertices;
+               double _numberOfOuterLeafVertices;
+               double _numberOfInnerLeafCells;
+               double _numberOfOuterLeafCells;
+               int _maxLevel;
+               bool _isTraversalInverted;
+               
+               /** mapping of records:
+               || Member 	|| startbit 	|| length
+                |  hasRefined	| startbit 0	| #bits 1
+                |  hasTriggeredRefinementForNextIteration	| startbit 1	| #bits 1
+                |  hasErased	| startbit 2	| #bits 1
+                |  hasTriggeredEraseForNextIteration	| startbit 3	| #bits 1
+                |  hasChangedVertexOrCellState	| startbit 4	| #bits 1
+                |  hasModifiedGridInPreviousIteration	| startbit 5	| #bits 1
+                */
+               short int _packedRecords0;
+               
+               /**
+                * Generated
+                */
+               PersistentRecords();
+               
+               /**
+                * Generated
+                */
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               
+               
+               inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _sendMode = sendMode;
+               }
+               
+               
+               
+               inline bool getReinitTimeStepData() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _reinitTimeStepData;
+               }
+               
+               
+               
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _reinitTimeStepData = reinitTimeStepData;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline double getTimeStepSizeWeightForPredictionRerun() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _minMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _minMeshWidth = (minMeshWidth);
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxMeshWidth = (maxMeshWidth);
+               }
+               
+               
+               
+               inline double getNumberOfInnerVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerVertices = numberOfInnerVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfBoundaryVertices = numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterVertices = numberOfOuterVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerCells = numberOfInnerCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterCells = numberOfOuterCells;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerLeafVertices = numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterLeafVertices = numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfInnerLeafCells = numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _numberOfOuterLeafCells = numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline int getMaxLevel() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxLevel;
+               }
+               
+               
+               
+               inline void setMaxLevel(const int& maxLevel) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxLevel = maxLevel;
+               }
+               
+               
+               
+               inline bool getHasRefined() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (0);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasRefined(const bool& hasRefined) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (0);
+   _packedRecords0 = static_cast<short int>( hasRefined ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (1);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (1);
+   _packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (2);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (2);
+   _packedRecords0 = static_cast<short int>( hasErased ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (3);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (3);
+   _packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (4);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (4);
+   _packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (5);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (5);
+   _packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _isTraversalInverted;
+               }
+               
+               
+               
+               inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _isTraversalInverted = isTraversalInverted;
+               }
+               
+               
+               
+            };
+            private: 
+               PersistentRecords _persistentRecords;
+               
+            public:
+               /**
+                * Generated
+                */
+               StatePacked();
+               
+               /**
+                * Generated
+                */
+               StatePacked(const PersistentRecords& persistentRecords);
+               
+               /**
+                * Generated
+                */
+               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               
+               /**
+                * Generated
+                */
+               virtual ~StatePacked();
+               
+               
+               inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._sendMode = sendMode;
+               }
+               
+               
+               
+               inline bool getReinitTimeStepData() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._reinitTimeStepData;
+               }
+               
+               
+               
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._reinitTimeStepData = reinitTimeStepData;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline double getTimeStepSizeWeightForPredictionRerun() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMinMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._minMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMinMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._minMeshWidth = (minMeshWidth);
+               }
+               
+               
+               
+               inline double getMinMeshWidth(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS);
+                  return _persistentRecords._minMeshWidth[elementIndex];
+                  
+               }
+               
+               
+               
+               inline void setMinMeshWidth(int elementIndex, const double& minMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS);
+                  _persistentRecords._minMeshWidth[elementIndex]= minMeshWidth;
+                  
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS,double> getMaxMeshWidth() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._maxMeshWidth;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setMaxMeshWidth(const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._maxMeshWidth = (maxMeshWidth);
+               }
+               
+               
+               
+               inline double getMaxMeshWidth(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS);
+                  return _persistentRecords._maxMeshWidth[elementIndex];
+                  
+               }
+               
+               
+               
+               inline void setMaxMeshWidth(int elementIndex, const double& maxMeshWidth) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS);
+                  _persistentRecords._maxMeshWidth[elementIndex]= maxMeshWidth;
+                  
+               }
+               
+               
+               
+               inline double getNumberOfInnerVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfInnerVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerVertices(const double& numberOfInnerVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfInnerVertices = numberOfInnerVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryVertices(const double& numberOfBoundaryVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfBoundaryVertices = numberOfBoundaryVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfOuterVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterVertices(const double& numberOfOuterVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfOuterVertices = numberOfOuterVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfInnerCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerCells(const double& numberOfInnerCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfInnerCells = numberOfInnerCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfOuterCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterCells(const double& numberOfOuterCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfOuterCells = numberOfOuterCells;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafVertices(const double& numberOfInnerLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfInnerLeafVertices = numberOfInnerLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfBoundaryLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfBoundaryLeafVertices(const double& numberOfBoundaryLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfBoundaryLeafVertices = numberOfBoundaryLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafVertices() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafVertices(const double& numberOfOuterLeafVertices) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfOuterLeafVertices = numberOfOuterLeafVertices;
+               }
+               
+               
+               
+               inline double getNumberOfInnerLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfInnerLeafCells(const double& numberOfInnerLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfInnerLeafCells = numberOfInnerLeafCells;
+               }
+               
+               
+               
+               inline double getNumberOfOuterLeafCells() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline void setNumberOfOuterLeafCells(const double& numberOfOuterLeafCells) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._numberOfOuterLeafCells = numberOfOuterLeafCells;
+               }
+               
+               
+               
+               inline int getMaxLevel() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._maxLevel;
+               }
+               
+               
+               
+               inline void setMaxLevel(const int& maxLevel) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._maxLevel = maxLevel;
+               }
+               
+               
+               
+               inline bool getHasRefined() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (0);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasRefined(const bool& hasRefined) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (0);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasRefined ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (1);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (1);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (2);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (2);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasErased ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (3);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (3);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (4);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (4);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (5);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (5);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._isTraversalInverted;
+               }
+               
+               
+               
+               inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._isTraversalInverted = isTraversalInverted;
+               }
+               
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const MergeMode& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getMergeModeMapping();
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const SendMode& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getSendModeMapping();
+               
+               /**
+                * Generated
+                */
+               std::string toString() const;
+               
+               /**
+                * Generated
+                */
+               void toString(std::ostream& out) const;
+               
+               
+               PersistentRecords getPersistentRecords() const;
+               /**
+                * Generated
+                */
+               State convert() const;
+               
+               
+            #ifdef Parallel
+               protected:
+                  static tarch::logging::Log _log;
+                  
+                  int _senderDestinationRank;
+                  
+               public:
+                  
+                  /**
+                   * Global that represents the mpi datatype.
+                   * There are two variants: Datatype identifies only those attributes marked with
+                   * parallelise. FullDatatype instead identifies the whole record with all fields.
+                   */
+                  static MPI_Datatype Datatype;
+                  static MPI_Datatype FullDatatype;
+                  
+                  /**
+                   * Initializes the data type for the mpi operations. Has to be called
+                   * before the very first send or receive operation is called.
+                   */
+                  static void initDatatype();
+                  
+                  static void shutdownDatatype();
+                  
+                  /**
+                   * @param communicateSleep -1 Data exchange through blocking mpi
+                   * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
+                   * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
+                   */
+                  void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+                  
+                  void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+                  
+                  static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
+                  
+                  int getSenderRank() const;
+                  #endif
+         
+      };
+      
+      #ifdef PackedRecords
+      #pragma pack (pop)
+      #endif
+      
+      
+      
+   #elif !defined(TrackGridStatistics) && defined(Parallel)
+      /**
+       * @author This class is generated by DaStGen
+       * 		   DataStructureGenerator (DaStGen)
+       * 		   2007-2009 Wolfgang Eckhardt
+       * 		   2012      Tobias Weinzierl
+       *
+       * 		   build date: 09-02-2014 14:40
+       *
+       * @date   05/04/2017 22:59
+       */
+      class exahype::records::State { 
+         
+         public:
+            
+            typedef exahype::records::StatePacked Packed;
+            
+            enum MergeMode {
+               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
+            };
+            
+            enum SendMode {
+               SendNothing = 0, ReduceAndMergeTimeStepData = 1, SendFaceData = 2, ReduceAndMergeTimeStepDataAndSendFaceData = 3
+            };
+            
+            struct PersistentRecords {
+               int _maxRefinementLevelAllowed;
+               MergeMode _mergeMode;
+               SendMode _sendMode;
+               bool _reinitTimeStepData;
+               bool _stabilityConditionOfOneSolverWasViolated;
+               double _timeStepSizeWeightForPredictionRerun;
+               bool _hasRefined;
+               bool _hasTriggeredRefinementForNextIteration;
+               bool _hasErased;
+               bool _hasTriggeredEraseForNextIteration;
+               bool _hasChangedVertexOrCellState;
+               bool _hasModifiedGridInPreviousIteration;
+               bool _isTraversalInverted;
+               bool _reduceStateAndCell;
+               bool _couldNotEraseDueToDecompositionFlag;
+               bool _subWorkerIsInvolvedInJoinOrFork;
+               /**
+                * Generated
+                */
+               PersistentRecords();
+               
+               /**
+                * Generated
+                */
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               
+               
+               inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _sendMode = sendMode;
+               }
+               
+               
+               
+               inline bool getReinitTimeStepData() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _reinitTimeStepData;
+               }
+               
+               
+               
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _reinitTimeStepData = reinitTimeStepData;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline double getTimeStepSizeWeightForPredictionRerun() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline bool getHasRefined() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasRefined;
+               }
+               
+               
+               
+               inline void setHasRefined(const bool& hasRefined) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasRefined = hasRefined;
+               }
+               
+               
+               
+               inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasTriggeredRefinementForNextIteration;
+               }
+               
+               
+               
+               inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasTriggeredRefinementForNextIteration = hasTriggeredRefinementForNextIteration;
+               }
+               
+               
+               
+               inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasErased;
+               }
+               
+               
+               
+               inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasErased = hasErased;
+               }
+               
+               
+               
+               inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasTriggeredEraseForNextIteration;
+               }
+               
+               
+               
+               inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasTriggeredEraseForNextIteration = hasTriggeredEraseForNextIteration;
+               }
+               
+               
+               
+               inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasChangedVertexOrCellState;
+               }
+               
+               
+               
+               inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasChangedVertexOrCellState = hasChangedVertexOrCellState;
+               }
+               
+               
+               
+               inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _hasModifiedGridInPreviousIteration;
+               }
+               
+               
+               
+               inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _hasModifiedGridInPreviousIteration = hasModifiedGridInPreviousIteration;
+               }
+               
+               
+               
+               inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _isTraversalInverted;
+               }
+               
+               
+               
+               inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _isTraversalInverted = isTraversalInverted;
+               }
+               
+               
+               
+               inline bool getReduceStateAndCell() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _reduceStateAndCell;
+               }
+               
+               
+               
+               inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _reduceStateAndCell = reduceStateAndCell;
+               }
+               
+               
+               
+               inline bool getCouldNotEraseDueToDecompositionFlag() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _couldNotEraseDueToDecompositionFlag;
+               }
+               
+               
+               
+               inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _couldNotEraseDueToDecompositionFlag = couldNotEraseDueToDecompositionFlag;
+               }
+               
+               
+               
+               inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _subWorkerIsInvolvedInJoinOrFork;
+               }
+               
+               
+               
+               inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _subWorkerIsInvolvedInJoinOrFork = subWorkerIsInvolvedInJoinOrFork;
+               }
+               
+               
+               
+            };
+            private: 
+               PersistentRecords _persistentRecords;
+               
+            public:
+               /**
+                * Generated
+                */
+               State();
+               
+               /**
+                * Generated
+                */
+               State(const PersistentRecords& persistentRecords);
+               
+               /**
+                * Generated
+                */
+               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               
+               /**
+                * Generated
+                */
+               virtual ~State();
+               
+               
+               inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._sendMode = sendMode;
+               }
+               
+               
+               
+               inline bool getReinitTimeStepData() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._reinitTimeStepData;
+               }
+               
+               
+               
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._reinitTimeStepData = reinitTimeStepData;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline double getTimeStepSizeWeightForPredictionRerun() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline bool getHasRefined() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._hasRefined;
+               }
+               
+               
+               
+               inline void setHasRefined(const bool& hasRefined) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._hasRefined = hasRefined;
+               }
+               
+               
+               
+               inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._hasTriggeredRefinementForNextIteration;
+               }
+               
+               
+               
+               inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._hasTriggeredRefinementForNextIteration = hasTriggeredRefinementForNextIteration;
+               }
+               
+               
+               
+               inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._hasErased;
+               }
+               
+               
+               
+               inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._hasErased = hasErased;
+               }
+               
+               
+               
+               inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._hasTriggeredEraseForNextIteration;
+               }
+               
+               
+               
+               inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._hasTriggeredEraseForNextIteration = hasTriggeredEraseForNextIteration;
+               }
+               
+               
+               
+               inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._hasChangedVertexOrCellState;
+               }
+               
+               
+               
+               inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._hasChangedVertexOrCellState = hasChangedVertexOrCellState;
+               }
+               
+               
+               
+               inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._hasModifiedGridInPreviousIteration;
+               }
+               
+               
+               
+               inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._hasModifiedGridInPreviousIteration = hasModifiedGridInPreviousIteration;
+               }
+               
+               
+               
+               inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._isTraversalInverted;
+               }
+               
+               
+               
+               inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._isTraversalInverted = isTraversalInverted;
+               }
+               
+               
+               
+               inline bool getReduceStateAndCell() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._reduceStateAndCell;
+               }
+               
+               
+               
+               inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._reduceStateAndCell = reduceStateAndCell;
+               }
+               
+               
+               
+               inline bool getCouldNotEraseDueToDecompositionFlag() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._couldNotEraseDueToDecompositionFlag;
+               }
+               
+               
+               
+               inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._couldNotEraseDueToDecompositionFlag = couldNotEraseDueToDecompositionFlag;
+               }
+               
+               
+               
+               inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._subWorkerIsInvolvedInJoinOrFork;
+               }
+               
+               
+               
+               inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._subWorkerIsInvolvedInJoinOrFork = subWorkerIsInvolvedInJoinOrFork;
+               }
+               
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const MergeMode& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getMergeModeMapping();
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const SendMode& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getSendModeMapping();
+               
+               /**
+                * Generated
+                */
+               std::string toString() const;
+               
+               /**
+                * Generated
+                */
+               void toString(std::ostream& out) const;
+               
+               
+               PersistentRecords getPersistentRecords() const;
+               /**
+                * Generated
+                */
+               StatePacked convert() const;
+               
+               
+            #ifdef Parallel
+               protected:
+                  static tarch::logging::Log _log;
+                  
+                  int _senderDestinationRank;
+                  
+               public:
+                  
+                  /**
+                   * Global that represents the mpi datatype.
+                   * There are two variants: Datatype identifies only those attributes marked with
+                   * parallelise. FullDatatype instead identifies the whole record with all fields.
+                   */
+                  static MPI_Datatype Datatype;
+                  static MPI_Datatype FullDatatype;
+                  
+                  /**
+                   * Initializes the data type for the mpi operations. Has to be called
+                   * before the very first send or receive operation is called.
+                   */
+                  static void initDatatype();
+                  
+                  static void shutdownDatatype();
+                  
+                  /**
+                   * @param communicateSleep -1 Data exchange through blocking mpi
+                   * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
+                   * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
+                   */
+                  void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+                  
+                  void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+                  
+                  static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
+                  
+                  int getSenderRank() const;
+                  #endif
+         
+      };
+      
+      #ifndef DaStGenPackedPadding
+        #define DaStGenPackedPadding 1      // 32 bit version
+        // #define DaStGenPackedPadding 2   // 64 bit version
+      #endif
+      
+      
+      #ifdef PackedRecords
+         #pragma pack (push, DaStGenPackedPadding)
+      #endif
+      
+      /**
+       * @author This class is generated by DaStGen
+       * 		   DataStructureGenerator (DaStGen)
+       * 		   2007-2009 Wolfgang Eckhardt
+       * 		   2012      Tobias Weinzierl
+       *
+       * 		   build date: 09-02-2014 14:40
+       *
+       * @date   05/04/2017 22:59
+       */
+      class exahype::records::StatePacked { 
+         
+         public:
+            
+            typedef exahype::records::State::MergeMode MergeMode;
+            
+            typedef exahype::records::State::SendMode SendMode;
+            
+            struct PersistentRecords {
+               int _maxRefinementLevelAllowed;
+               MergeMode _mergeMode;
+               SendMode _sendMode;
+               bool _reinitTimeStepData;
+               bool _stabilityConditionOfOneSolverWasViolated;
+               double _timeStepSizeWeightForPredictionRerun;
+               bool _isTraversalInverted;
+               
+               /** mapping of records:
+               || Member 	|| startbit 	|| length
+                |  hasRefined	| startbit 0	| #bits 1
+                |  hasTriggeredRefinementForNextIteration	| startbit 1	| #bits 1
+                |  hasErased	| startbit 2	| #bits 1
+                |  hasTriggeredEraseForNextIteration	| startbit 3	| #bits 1
+                |  hasChangedVertexOrCellState	| startbit 4	| #bits 1
+                |  hasModifiedGridInPreviousIteration	| startbit 5	| #bits 1
+                |  reduceStateAndCell	| startbit 6	| #bits 1
+                |  couldNotEraseDueToDecompositionFlag	| startbit 7	| #bits 1
+                |  subWorkerIsInvolvedInJoinOrFork	| startbit 8	| #bits 1
+                */
+               short int _packedRecords0;
+               
+               /**
+                * Generated
+                */
+               PersistentRecords();
+               
+               /**
+                * Generated
+                */
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               
+               
+               inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _sendMode = sendMode;
+               }
+               
+               
+               
+               inline bool getReinitTimeStepData() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _reinitTimeStepData;
+               }
+               
+               
+               
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _reinitTimeStepData = reinitTimeStepData;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline double getTimeStepSizeWeightForPredictionRerun() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline bool getHasRefined() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (0);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasRefined(const bool& hasRefined) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (0);
+   _packedRecords0 = static_cast<short int>( hasRefined ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (1);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (1);
+   _packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (2);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (2);
+   _packedRecords0 = static_cast<short int>( hasErased ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (3);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (3);
+   _packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (4);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (4);
+   _packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (5);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (5);
+   _packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _isTraversalInverted;
+               }
+               
+               
+               
+               inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _isTraversalInverted = isTraversalInverted;
+               }
+               
+               
+               
+               inline bool getReduceStateAndCell() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (6);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (6);
+   _packedRecords0 = static_cast<short int>( reduceStateAndCell ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getCouldNotEraseDueToDecompositionFlag() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (7);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (7);
+   _packedRecords0 = static_cast<short int>( couldNotEraseDueToDecompositionFlag ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (8);
+   short int tmp = static_cast<short int>(_packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (8);
+   _packedRecords0 = static_cast<short int>( subWorkerIsInvolvedInJoinOrFork ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+               }
+               
+               
+               
+            };
+            private: 
+               PersistentRecords _persistentRecords;
+               
+            public:
+               /**
+                * Generated
+                */
+               StatePacked();
+               
+               /**
+                * Generated
+                */
+               StatePacked(const PersistentRecords& persistentRecords);
+               
+               /**
+                * Generated
+                */
+               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               
+               /**
+                * Generated
+                */
+               virtual ~StatePacked();
+               
+               
+               inline int getMaxRefinementLevelAllowed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline void setMaxRefinementLevelAllowed(const int& maxRefinementLevelAllowed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._maxRefinementLevelAllowed = maxRefinementLevelAllowed;
+               }
+               
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._sendMode = sendMode;
+               }
+               
+               
+               
+               inline bool getReinitTimeStepData() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._reinitTimeStepData;
+               }
+               
+               
+               
+               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._reinitTimeStepData = reinitTimeStepData;
+               }
+               
+               
+               
+               inline bool getStabilityConditionOfOneSolverWasViolated() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
+               }
+               
+               
+               
+               inline double getTimeStepSizeWeightForPredictionRerun() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               }
+               
+               
+               
+               inline bool getHasRefined() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (0);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasRefined(const bool& hasRefined) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (0);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasRefined ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasTriggeredRefinementForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (1);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasTriggeredRefinementForNextIteration(const bool& hasTriggeredRefinementForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (1);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasTriggeredRefinementForNextIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasErased() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (2);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasErased(const bool& hasErased) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (2);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasErased ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasTriggeredEraseForNextIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (3);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasTriggeredEraseForNextIteration(const bool& hasTriggeredEraseForNextIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (3);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasTriggeredEraseForNextIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasChangedVertexOrCellState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (4);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasChangedVertexOrCellState(const bool& hasChangedVertexOrCellState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (4);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasChangedVertexOrCellState ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getHasModifiedGridInPreviousIteration() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (5);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setHasModifiedGridInPreviousIteration(const bool& hasModifiedGridInPreviousIteration) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (5);
+   _persistentRecords._packedRecords0 = static_cast<short int>( hasModifiedGridInPreviousIteration ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getIsTraversalInverted() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._isTraversalInverted;
+               }
+               
+               
+               
+               inline void setIsTraversalInverted(const bool& isTraversalInverted) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._isTraversalInverted = isTraversalInverted;
+               }
+               
+               
+               
+               inline bool getReduceStateAndCell() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (6);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setReduceStateAndCell(const bool& reduceStateAndCell) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (6);
+   _persistentRecords._packedRecords0 = static_cast<short int>( reduceStateAndCell ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getCouldNotEraseDueToDecompositionFlag() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (7);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setCouldNotEraseDueToDecompositionFlag(const bool& couldNotEraseDueToDecompositionFlag) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (7);
+   _persistentRecords._packedRecords0 = static_cast<short int>( couldNotEraseDueToDecompositionFlag ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               
+               inline bool getSubWorkerIsInvolvedInJoinOrFork() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (8);
+   short int tmp = static_cast<short int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+               }
+               
+               
+               
+               inline void setSubWorkerIsInvolvedInJoinOrFork(const bool& subWorkerIsInvolvedInJoinOrFork) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  short int mask = 1 << (8);
+   _persistentRecords._packedRecords0 = static_cast<short int>( subWorkerIsInvolvedInJoinOrFork ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
+               }
+               
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const MergeMode& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getMergeModeMapping();
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const SendMode& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getSendModeMapping();
+               
+               /**
+                * Generated
+                */
+               std::string toString() const;
+               
+               /**
+                * Generated
+                */
+               void toString(std::ostream& out) const;
+               
+               
+               PersistentRecords getPersistentRecords() const;
+               /**
+                * Generated
+                */
+               State convert() const;
+               
+               
+            #ifdef Parallel
+               protected:
+                  static tarch::logging::Log _log;
+                  
+                  int _senderDestinationRank;
+                  
+               public:
+                  
+                  /**
+                   * Global that represents the mpi datatype.
+                   * There are two variants: Datatype identifies only those attributes marked with
+                   * parallelise. FullDatatype instead identifies the whole record with all fields.
+                   */
+                  static MPI_Datatype Datatype;
+                  static MPI_Datatype FullDatatype;
+                  
+                  /**
+                   * Initializes the data type for the mpi operations. Has to be called
+                   * before the very first send or receive operation is called.
+                   */
+                  static void initDatatype();
+                  
+                  static void shutdownDatatype();
+                  
+                  /**
+                   * @param communicateSleep -1 Data exchange through blocking mpi
+                   * @param communicateSleep  0 Data exchange through non-blocking mpi, i.e. pending messages are received via polling until MPI_Test succeeds
+                   * @param communicateSleep >0 Same as 0 but in addition, each unsuccessful MPI_Test is follows by an usleep
+                   */
+                  void send(int destination, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+                  
+                  void receive(int source, int tag, bool exchangeOnlyAttributesMarkedWithParallelise, int communicateSleep);
+                  
+                  static bool isMessageInQueue(int tag, bool exchangeOnlyAttributesMarkedWithParallelise);
+                  
+                  int getSenderRank() const;
+                  #endif
+         
+      };
+      
+      #ifdef PackedRecords
+      #pragma pack (pop)
+      #endif
+      
+      
+      
+   
+#endif
+
+#endif
+

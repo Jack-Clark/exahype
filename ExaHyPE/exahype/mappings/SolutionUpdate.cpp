@@ -180,6 +180,8 @@ void exahype::mappings::SolutionUpdate::endIteration(
 
     solver->updateNextGridUpdateRequested(_solverFlags._gridUpdateRequested[solverNumber]);
 
+    logDebug("endIteration(State)", "solver "<<solverNumber<<": next grid update requested: "<<solver->getNextGridUpdateRequested());
+
     if (exahype::solvers::RegisteredSolvers[solverNumber]->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
       auto* limitingADERDGSolver = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver);
       limitingADERDGSolver->updateNextLimiterDomainHasChanged(_solverFlags._limiterDomainHasChanged[solverNumber]);
