@@ -4,7 +4,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Set;
 
-import eu.exahype.IOUtils;
+import eu.exahype.io.IOUtils;
+import eu.exahype.io.SourceTemplate;
 
 class GenericFiniteVolumesInC implements Solver {
   private String _type;
@@ -33,11 +34,11 @@ class GenericFiniteVolumesInC implements Solver {
 
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
-    String content = IOUtils.convertRessourceContentToString(
+    SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/GenericFiniteVolumesSolverHeader.template");
 
-    content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-    content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
+    content.put("Project", projectName);
+    content.put("Solver", solverName);
 
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
@@ -50,34 +51,34 @@ class GenericFiniteVolumesInC implements Solver {
     }
 
 
-    content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
-    content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
-    content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
-    //content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order)); // Goudonov is 2nd order or so. Should probably tell here.
+    content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
+    content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
+    content.put("Dimensions",String.valueOf( _dimensions));
+    //content.put("Order", String.valueOf(_order)); // Goudonov is 2nd order or so. Should probably tell here.
 
-    content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
-    content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
+    content.put("ProfilerInclude",profilerInclude);
+    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
 
-    writer.write(content);
+    writer.write(content.toString());
   }
   
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
-    String content = IOUtils.convertRessourceContentToString(
+    SourceTemplate content = SourceTemplate.fromRessourceContent(
             "eu/exahype/solvers/templates/GenericFiniteVolumesSolverInCUserCode.template");
     
-    content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-    content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
+    content.put("Project", projectName);
+    content.put("Solver", solverName);
     
-    content = content.replaceAll("\\{\\{Elements\\}\\}",  String.valueOf( _numberOfParameters+_numberOfVariables));
-    content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf(_dimensions));
+    content.put("Elements",  String.valueOf( _numberOfParameters+_numberOfVariables));
+    content.put("Dimensions",String.valueOf(_dimensions));
     
     //    String SolverInitSignatureExtension = "";
     String SolverInitSignatureExtension = "";
     if (_hasConstants) {
       SolverInitSignatureExtension = ", exahype::Parser::ParserView& constants";
     }
-    content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", SolverInitSignatureExtension);
+    content.put("SolverInitSignatureExtension", SolverInitSignatureExtension);
     
     // 
     int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
@@ -99,11 +100,11 @@ class GenericFiniteVolumesInC implements Solver {
        SolverInitCallExtension = ", constants";
     }
     
-    content = content.replaceAll("\\{\\{SolverInitCallExtension\\}\\}",SolverInitCallExtension);
+    content.put("SolverInitCallExtension",SolverInitCallExtension);
 
     String eigenvalues = "";
     for (int i = 0; i < _numberOfVariables; i++) {
-      eigenvalues += "  lambda[" + String.format("%" + digits + "d", i) + "] = 0.0;";
+      eigenvalues += "  lambda[" + String.format("%" + digits + "d", i) + "] = 1.0;";
       if (i<_numberOfVariables-1) eigenvalues += "\n";
     }
 
@@ -142,15 +143,15 @@ class GenericFiniteVolumesInC implements Solver {
       if (i<_numberOfVariables*_numberOfVariables-1) matrixb += "\n";
     }
     
-    content = content.replaceAll("\\{\\{AdjustedSolutionValues\\}\\}",adjustSolution);
-    content = content.replaceAll("\\{\\{Eigenvalues\\}\\}",eigenvalues);
-    content = content.replaceAll("\\{\\{Flux\\}\\}",flux);
-    content = content.replaceAll("\\{\\{Source\\}\\}",source);
-    content = content.replaceAll("\\{\\{BoundaryValues\\}\\}",boundaryValues);
-    content = content.replaceAll("\\{\\{NonConservativeProduct\\}\\}",ncp);
-    content = content.replaceAll("\\{\\{MatrixB\\}\\}",matrixb);
+    content.put("AdjustedSolutionValues",adjustSolution);
+    content.put("Eigenvalues",eigenvalues);
+    content.put("Flux",flux);
+    content.put("Source",source);
+    content.put("BoundaryValues",boundaryValues);
+    content.put("NonConservativeProduct",ncp);
+    content.put("MatrixB",matrixb);
     
-    writer.write(content);
+    writer.write(content.toString());
   }
 
   /**
@@ -165,11 +166,11 @@ class GenericFiniteVolumesInC implements Solver {
   @Override
   public void writeAbstractHeader(BufferedWriter writer, String solverName,
       String projectName) throws IOException {
-    String content = IOUtils.convertRessourceContentToString(
+    SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractGenericFiniteVolumesSolverHeader.template");
 
-    content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-    content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
+    content.put("Project", projectName);
+    content.put("Solver", solverName);
 
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
@@ -178,34 +179,34 @@ class GenericFiniteVolumesInC implements Solver {
       solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
     }
 
-    content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
-    content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
+    content.put("ProfilerInclude",profilerInclude);
+    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
     
-    content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
-    content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
-    content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
-    content = content.replaceAll("\\{\\{PatchSize\\}\\}", String.valueOf(_patchSize));
-    content = content.replaceAll("\\{\\{GhostLayerWidth\\}\\}",String.valueOf(_ghostLayerWidth));
+    content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
+    content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
+    content.put("Dimensions",String.valueOf( _dimensions));
+    content.put("PatchSize", String.valueOf(_patchSize));
+    content.put("GhostLayerWidth",String.valueOf(_ghostLayerWidth));
     
     String namingSchemes = "";
     for (String name : _namingSchemeNames) {
       namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
     }
-    content = content.replaceAll("\\{\\{NamingSchemes\\}\\}", namingSchemes);
+    content.put("NamingSchemes", namingSchemes);
 
-    writer.write(content);
+    writer.write(content.toString());
   }
   
   @Override
   public void writeAbstractImplementation(BufferedWriter writer,
       String solverName, String projectName) throws IOException {
-    String content = IOUtils.convertRessourceContentToString(
+    SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractGenericFiniteVolumesSolverInCImplementation.template");
 
-    content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-    content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
+    content.put("Project", projectName);
+    content.put("Solver", solverName);
     
-    content = content.replaceAll("\\{\\{FiniteVolumesType\\}\\}", _type);
+    content.put("FiniteVolumesType", _type);
     //
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
@@ -218,16 +219,16 @@ class GenericFiniteVolumesInC implements Solver {
     if (_hasConstants) {
       solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
     }
-    content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
-    content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
-    content = content.replaceAll("\\{\\{SolverConstructorArgumentExtension\\}\\}", solverConstructorArgumentExtension);
+    content.put("ProfilerInclude",profilerInclude);
+    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
+    content.put("SolverConstructorArgumentExtension", solverConstructorArgumentExtension);
     //
-    content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
-    content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
+    content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
+    content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
 
     // TODO(Dominic): Add profilers
     
-    writer.write(content); 
+    writer.write(content.toString()); 
   }
 
   public void writeUserPDE(java.io.BufferedWriter writer, String solverName, String projectName)

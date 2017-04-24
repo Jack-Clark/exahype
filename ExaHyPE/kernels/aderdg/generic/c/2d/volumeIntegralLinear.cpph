@@ -23,7 +23,7 @@ namespace c {
 
 #if DIMENSIONS == 2
 
-template <int numberOfVariables, int basisSize>
+template <bool useSourceOrNCP, bool useFlux, int numberOfVariables, int basisSize>
 void volumeIntegralLinear(double* lduh, const double* const lFhi,
                           const tarch::la::Vector<DIMENSIONS, double>& dx) {
   // for linear non-conservative PDE, the volume integral is trivial, since it
@@ -50,6 +50,25 @@ void volumeIntegralLinear(double* lduh, const double* const lFhi,
       }
     }
   }
+
+  // source from non-linear implementation
+  // if(useSourceOrNCP) {
+  //   idx3 idx(basisSize, basisSize, numberOfVariables);
+  //   const int s_offset = 2 * basisSize2 * numberOfVariables;
+  //   for (int j = 0; j < basisSize; j++) {
+  //     for (int k = 0; k < basisSize; k++) {
+  //       const double weight = kernels::gaussLegendreWeights[order][j] *
+  //                             kernels::gaussLegendreWeights[order][k];
+
+  //       // Fortran: lduh(:,k,j) += w * lShi(:,k,j)
+  //       for (int l = 0; l < numberOfVariables; l++) {
+  //         lduh[idx(j, k, l)] += weight * lFhi[s_offset + idx(j, k, l)];
+  //       }
+  //     }
+  //   }
+  // }
+
+
 }
 
 #endif  // DIMENSIONS == 2

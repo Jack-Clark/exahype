@@ -35,7 +35,9 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
     class Variables;
     class ReadOnlyVariables;
     class Fluxes;
-{{NamingSchemes}}    
+    class VariableShortcuts;
+    class VariableNames;
+{{NamingSchemes}}
     
     Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
 
@@ -43,6 +45,13 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
      * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
      */
     virtual AdjustSolutionValue useAdjustSolution( const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt ) const  {return AdjustSolutionValue::No;}
+
+    /**
+     * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
+     */
+    virtual bool useConservativeFlux()       const {return true;}
+
+    virtual void flux(const double* const Q,double** F);
 
     /**
      * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
@@ -125,8 +134,7 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
      *
      * See superclass for function's semantics.
      */
-    virtual bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const { return true; }
-
+    virtual bool isPhysicallyAdmissible(const double* const QMin, const double* const QMax, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx, const double t, const double dt) const { return true; }
 
 
     void pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempForceVector) override; 
@@ -144,6 +152,7 @@ class {{Project}}::Abstract{{Solver}}: public exahype::solvers::ADERDGSolver {
     void volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
     static void constantsToString(std::ostream& os);
+    static void abortWithMsg(const char* const msg);
 };
 
 #endif // __{{Solver}}_CLASS_HEADER__

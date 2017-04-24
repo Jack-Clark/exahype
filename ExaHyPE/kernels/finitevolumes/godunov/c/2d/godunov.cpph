@@ -30,7 +30,7 @@
  * new solution. 
  * Finally add the source terms.
  */
-template <typename SolverType>
+template <bool useSource, bool useNCP, bool useFlux, typename SolverType>
 double kernels::finitevolumes::godunov::c::solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,
@@ -49,16 +49,16 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   
   const double cellSize[2] = {dx[0]/patchSize, dx[1]/patchSize};
 
+  double fL[numberOfVariables];
+  double fR[numberOfVariables];
+
   double dt_max_allowed = std::numeric_limits<double>::max();
 
   // x faces
-  double  fL[numberOfVariables];
-  double  fR[numberOfVariables];
   for (int j = patchBegin; j < patchEnd; j++) {
     for (int k = patchBegin-1; k < patchEnd; k++) {  // We have patchSize+1 faces in each coordinate direction
       double s_max_x = 
-          riemannsolvers::c::rusanov<SolverType>(
-              solver,
+          solver.riemannSolver(
               fL, fR,
               luh + idx(j, k, 0),
               luh + idx(j, k+1, 0),
@@ -80,8 +80,7 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   for (int j = patchBegin-1; j < patchEnd; j++) {
     for (int k = patchBegin; k < patchEnd; k++) {
       double s_max_y =
-          riemannsolvers::c::rusanov<SolverType>(
-          solver,
+          solver.riemannSolver(
           fL, fR,
           luh + idx(j, k, 0),
           luh + idx(j+1, k, 0),
@@ -91,21 +90,21 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
           dt_max_allowed, cflFactor / DIMENSIONS * cellSize[1] / s_max_y);
       
       for (int l=0; l<numberOfVariables; ++l) {
-        luh_new[idx(j, k, l)]   -= dt / cellSize[1] * fL[l];  
+        luh_new[idx(j, k, l)]   -= dt / cellSize[1] * fL[l];
         luh_new[idx(j+1, k, l)] += dt / cellSize[1] * fR[l];
       }
     }
   }
 
   // 5. Add the source terms 
-  if (solver.useSource()) {
-    double  source[numberOfVariables];
+  if (useSource) {
+    double  source[numberOfVariables] = {0.0};
   
     for (int j = patchBegin; j < patchEnd; j++) {
       for (int k = patchBegin; k < patchEnd; k++) {
-	// TODO: Probably call fusedSource here instead with gradQ=0.
+        // TODO: Probably call fusedSource here instead with gradQ=0.
         solver.algebraicSource(luh + idx(j, k, 0), source);
-      
+
         for (int l = 0; l < numberOfVariables; l++) {
           // in Godunov 1st order, we have piecewise constant data and thus
           // no contribution from BgradQ (solver.cnp) to the solution, cf.

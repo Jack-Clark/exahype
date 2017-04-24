@@ -182,7 +182,7 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
     lFhi_z[i + 3] = 3.;
   }
 
-  kernels::aderdg::generic::c::volumeIntegralLinear<NumberOfVariables,Order+1>(
+  kernels::aderdg::generic::c::volumeIntegralLinear<false,false,NumberOfVariables,Order+1>(
       lduh, lFhi, dx);
 
   for (int i = 0; i < 320; i++) {
@@ -217,7 +217,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
   }
   std::fill_n(lShi, 320, 0.0);
 
-  kernels::aderdg::generic::c::volumeIntegralNonlinear<true,NumberOfVariables,Order+1>(
+  kernels::aderdg::generic::c::volumeIntegralNonlinear<true,true,NumberOfVariables,Order+1>(
       lduh, lFhi, dx[0]);
 
   for (int i = 0; i < 320; i++) {
@@ -372,7 +372,7 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
     }
   }
 
-  kernels::aderdg::generic::c::riemannSolverLinear<GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::riemannSolverLinear<false,GenericEulerKernelTest>(
       *this,
       FL, FR, QL, QR,
       tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,
@@ -456,15 +456,13 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     }
   }
 
-  _setNcpAndMatrixBToZero=true;
-  kernels::aderdg::generic::c::riemannSolverNonlinear<true, GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::riemannSolverNonlinear<false,GenericEulerKernelTest>(
       *this,
       FL, FR, QL, QR,
       tempFaceUnknowns,tempStateSizedVectors,tempStateSizedSquareMatrices,
       dt,
       1  // normalNonZero
   );
-  _setNcpAndMatrixBToZero=false;
 
   for (int i = 0; i < nVar*basisSize2; i++) {
     validateNumericalEqualsWithEpsWithParams1(
@@ -563,7 +561,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   double lFhbnd[480] = {0.0};  // nVar * nDOFy * nDOF_z * 6
 
   // TODO(Dominic): Fix test
-  kernels::aderdg::generic::c::spaceTimePredictorLinear<GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::spaceTimePredictorLinear<false,false,false,false,GenericEulerKernelTest>(
       *this,
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
@@ -675,7 +673,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   double lFhbnd[6 * nData*basisSize2] = {0.0};  // nData * nDOFy * nDOF_z * 6
 
   _setNcpAndMatrixBToZero = true;
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<GenericEulerKernelTest>(
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<true,true,true,GenericEulerKernelTest>(
       *this,
       lQhbnd, lFhbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,

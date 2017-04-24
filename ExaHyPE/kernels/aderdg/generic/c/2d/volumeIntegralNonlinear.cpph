@@ -28,7 +28,7 @@ namespace c {
 
 #if DIMENSIONS == 2
 
-template <bool useSourceOrNCP, const int numberOfVariables, int basisSize>
+template <bool useSourceOrNCP, bool useFlux, const int numberOfVariables, int basisSize>
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx) {
   constexpr int order      = basisSize - 1;
@@ -37,9 +37,10 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
   // Initialize the update DOF
   std::fill_n(lduh, basisSize2 * numberOfVariables, 0.0);
 
-  // x-direction
-  {
-    idx3 idx(basisSize, basisSize, numberOfVariables);
+  idx3 idx(basisSize, basisSize, numberOfVariables);
+
+  if (useFlux) {
+    // x-direction
     const int x_offset = 0 * basisSize2 * numberOfVariables;
     for (int j = 0; j < basisSize; j++) {
       const double weight = kernels::gaussLegendreWeights[order][j];
@@ -51,16 +52,13 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
         for (int l = 0; l < numberOfVariables; l++) {
           for (int m = 0; m < basisSize; m++) {
             lduh[idx(j, k, l)] += kernels::Kxi[order][k][m] *
-                                  lFhi[x_offset + idx(j, m, l)] * updateSize;
+                lFhi[x_offset + idx(j, m, l)] * updateSize;
           }
         }
       }
     }
-  }
 
-  // y-direction
-  {
-    idx3 idx(basisSize, basisSize, numberOfVariables);
+    // y-direction
     const int y_offset = 1 * basisSize2 * numberOfVariables;
     for (int j = 0; j < basisSize; j++) {
       const double weight = kernels::gaussLegendreWeights[order][j];
@@ -72,7 +70,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
         for (int l = 0; l < numberOfVariables; l++) {
           for (int m = 0; m < basisSize; m++) {
             lduh[idx(k, j, l)] += kernels::Kxi[order][k][m] *
-                                  lFhi[y_offset + idx(j, m, l)] * updateSize;
+                lFhi[y_offset + idx(j, m, l)] * updateSize;
           }
         }
       }

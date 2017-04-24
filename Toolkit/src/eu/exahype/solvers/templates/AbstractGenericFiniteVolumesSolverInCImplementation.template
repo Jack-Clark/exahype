@@ -9,10 +9,12 @@
 
 #include "kernels/finitevolumes/commons/c/commons.h"
 #include "kernels/finitevolumes/{{FiniteVolumesType}}/c/{{FiniteVolumesType}}.h"
+#include "kernels/finitevolumes/riemannsolvers/c/riemannsolvers.h"
 
 #include "{{Solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
 
 
+#include <stdio.h>
 #include <cstdlib> // abort()
 #include "kernels/KernelUtils.h" // idx
 
@@ -36,8 +38,47 @@ void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
 	   << ")";
 }
 
+void {{Project}}::Abstract{{Solver}}::abortWithMsg(const char* const msg) {
+	// verbosily fail even without assertions turned on
+	puts(msg);
+	abort();
+}
+
 void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) {
-  maxAdmissibleDt = kernels::finitevolumes::{{FiniteVolumesType}}::c::solutionUpdate<{{Solver}}>(*static_cast<{{Solver}}*>(this),luhNew,luh,tempStateSizedArrays,tempUnknowns,dx,dt);
+	
+#define SU(useSource,useNCP,useFlux)\
+  maxAdmissibleDt = kernels::finitevolumes::{{FiniteVolumesType}}::c::solutionUpdate<useSource,useNCP,useFlux, {{Solver}}>(\
+       *static_cast<{{Solver}}*>(this),luhNew,luh,tempStateSizedArrays,tempUnknowns,dx,dt);
+
+  if(useSource()) {
+    if(useNonConservativeProduct()) {
+      if(useConservativeFlux()) {
+         SU(true,true,true);
+      } else {
+         SU(true,true,false);
+      }
+    } else {
+      if(useConservativeFlux()) {
+         SU(true,false,true);
+      } else {
+         SU(true,false,false);
+      }
+    }
+  } else {
+    if(useNonConservativeProduct()) {
+      if(useConservativeFlux()) {
+         SU(false,true,true);
+      } else {
+         SU(false,true,false);
+      }
+    } else {
+      if(useConservativeFlux()) {
+         SU(false,false,true);
+      } else {
+         SU(false,false,false);
+      }
+    }
+  }
 }
 
 
@@ -68,37 +109,67 @@ void {{Project}}::Abstract{{Solver}}::boundaryLayerExtraction(double* luhbnd,con
 }
 
 
-void {{Project}}::Abstract{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      abort();
+double {{Project}}::Abstract{{Solver}}::riemannSolver(double* fL, double *fR, const double* qL, const double* qR, int normalNonZero) {
+  // Default FV Riemann Solver
+  #define RUSANOV(useNCP, useFlux) \
+      return kernels::finitevolumes::riemannsolvers::c::rusanov<useNCP, useFlux, {{Solver}}>(\
+          *static_cast<{{Solver}}*>(this), fL,fR,qL,qR,normalNonZero);
+
+  // TODO: As always, this guard <-> templating interface is not useful.
+  if(useNonConservativeProduct()) {
+    if(useConservativeFlux()) {
+      RUSANOV(true, true);
+    } else {
+      RUSANOV(true, false);
+    }
+  } else {
+    if(useConservativeFlux()) {
+      RUSANOV(false, true);
+    } else {
+      RUSANOV(false, false);
+    }
+  }
 }
 
-void {{Project}}::Abstract{{Solver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
-	// By default, if not given, fallback to nonConservativeProduct
-	kernels::idx2 idx_gradQ(DIMENSIONS, NumberOfVariables+NumberOfParameters);
-	kernels::idx2 idx_Bn(NumberOfVariables, NumberOfVariables);
-	
-	// build gradQ from normal vector and fill up Bn.
-	double gradQ[DIMENSIONS * (NumberOfVariables + NumberOfParameters)] = {0.};
-	for(int i=0; i<NumberOfVariables; i++) {
-		std::fill_n(gradQ, idx_gradQ.size, 0.0);
-		gradQ[idx_gradQ(d, i)] = 1.0;
-		nonConservativeProduct(Q, gradQ, Bn + idx_Bn(i,0));
-	}
+
+
+void {{Project}}::Abstract{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::Abstract{{Solver}}::algebraicSource(const double* const Q,double* S) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      abort();
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
+void {{Project}}::Abstract{{Solver}}::flux(const double* const Q,double** F) {
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+}
+
+/**
+ * Fallback implementations of joined functions. Users can either safely ignore this
+ * or overwrite with their own implementations.
+ **/
+#include "kernels/fusedMethods.cpph"
+
+
 void {{Project}}::Abstract{{Solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
-      algebraicSource(Q, S);
-      if(useNonConservativeProduct()) {
-        double ncp[NumberOfVariables];
-        nonConservativeProduct(Q, gradQ, ncp);
-        for(int l=0; l<NumberOfVariables; l++) {
-          S[l] -= ncp[l];
-        }
-      }
+   #define FUSEDSOURCE(useSource, useNCP) \
+      kernels::fusedSource<useSource, useNCP, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+  if(useSource()) {
+    if(useNonConservativeProduct()) {
+      FUSEDSOURCE(true, true);
+    } else {
+      FUSEDSOURCE(true, false);
+    }
+  } else {
+    if(useNonConservativeProduct()) {
+      FUSEDSOURCE(false, true);
+    } else {
+      FUSEDSOURCE(false, false);
+    }
+  }
+}
+
+void {{Project}}::Abstract{{Solver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
+  kernels::coefficientMatrix<{{Solver}}>(*static_cast<{{Solver}}*>(this), Q, d, Bn);
 }

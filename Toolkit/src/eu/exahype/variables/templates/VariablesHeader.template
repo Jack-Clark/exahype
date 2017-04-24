@@ -17,6 +17,60 @@
 
 #include "tarch/la/Matrix.h"
 
+/**
+ * Positions of fields in the vector of unkonwns.
+ *
+ * With these constants, you can write Q[g11], Q[K22] and Q[B33] instead of
+ * Q[0], Q[9] and Q[34]. Your code is meaningful in terms of physics while
+ * you still access on a C-array level.
+ *
+ * You might want to use a typedef to shorten the notation or create 
+ * an instance of this class.
+ **/
+class {{Project}}::Abstract{{Solver}}::VariableShortcuts {
+public:
+  static constexpr int _Q[] = { {{VariableShortcutsArray}} };
+
+{{VariableShortcuts}}
+
+  static const int* asArray() { return _Q; }
+  const int operator [] (int index) const { return _Q[index]; }
+  const int operator () (int index) const { return _Q[index]; }
+}; // end of VariableShortcuts
+
+/**
+ * Variable names as strings as given in the toolkit.
+ * 
+ * These names might want to be used for plotting, output, etc.
+ *
+ **/
+class {{Project}}::Abstract{{Solver}}::VariableNames {
+public:
+  static constexpr char const *_Q[] = { {{VariableNamesArray}} };
+
+{{VariableNames}}
+
+  static const char* const* asArray() { return _Q; } // type: whatever
+  const char* operator [] (int index) const { return _Q[index]; }
+  const char* operator () (int index) const { return _Q[index]; }
+}; // end of VariableNames
+
+/*
+ * NEW CLASS IDEA:
+ * 
+ * class ....::VariablePointers {
+ *   private:   double* Q;
+ *   public:
+ *      double &varfoo;
+ *      double &varbar;
+ *      VariablePointers(double*Q) : varfoo(Q[0]), bar(Q[1]), ... {}
+ * }
+ * 
+ * Advantages: Use as positions in Q.
+ *
+ */
+
+
 class {{Project}}::Abstract{{Solver}}::ReadOnlyVariables {
   private:
     const double* const _Q;
@@ -55,7 +109,7 @@ class {{Project}}::Abstract{{Solver}}::ReadOnlyVariables {
     
 
 {{VariablesGetters}}
-};
+}; // end of ReadOnlyVariables
 
 
 class {{Project}}::Abstract{{Solver}}::Variables {
@@ -109,7 +163,7 @@ class {{Project}}::Abstract{{Solver}}::Variables {
 {{VariablesGetters}}
 
 {{VariablesSetters}}
-};
+}; // end of Variables
 
 
 class {{Project}}::Abstract{{Solver}}::Fluxes {
@@ -135,9 +189,9 @@ class {{Project}}::Abstract{{Solver}}::Fluxes {
 {{FluxesGetters}}
 
 {{FluxesSetters}}
-};
+}; // end of Fluxes
 
-
+// NamingSchemes:
 {{NamingSchemes}}
 
 #endif

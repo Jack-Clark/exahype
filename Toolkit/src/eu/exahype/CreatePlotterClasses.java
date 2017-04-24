@@ -9,7 +9,8 @@ import eu.exahype.node.AFiniteVolumesSolver;
 import eu.exahype.node.ALimitingAderdgSolver;
 import eu.exahype.node.APlotSolution;
 import eu.exahype.node.AProject;
-
+import eu.exahype.io.FileSearch;
+import eu.exahype.io.IOUtils;
 
 public class CreatePlotterClasses extends DepthFirstAdapter {
   public Boolean valid = true;

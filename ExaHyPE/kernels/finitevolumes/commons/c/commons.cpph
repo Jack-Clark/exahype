@@ -73,15 +73,13 @@ void kernels::finitevolumes::commons::c::solutionAdjustment(
     const tarch::la::Vector<DIMENSIONS, double>& dx, const double t,const double dt) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-
-  constexpr int numberOfData = numberOfVariables+numberOfParameters;
+  constexpr int patchBegin         = ghostLayerWidth;
+  constexpr int patchEnd           = patchBegin+patchSize;
 
   double x[DIMENSIONS];
-
-  constexpr int patchBegin=ghostLayerWidth;
-  constexpr int patchEnd=patchBegin+patchSize;
   kernels::idx3 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
 
   for (int j = patchBegin; j < patchEnd; j++) {  // loop over dof
@@ -105,16 +103,15 @@ void kernels::finitevolumes::commons::c::boundaryLayerExtraction(
     const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-
-  constexpr int numberOfData = numberOfVariables+numberOfParameters;
+  constexpr int patchBegin         = ghostLayerWidth;
+  constexpr int patchEnd           = patchBegin+patchSize;
 
   // 1D patch values:
   // |G|G|U0|U1|..|UN|G|G|,
   // G: ghost value, Ui: local solution value
-  constexpr int patchBegin      = ghostLayerWidth;
-  constexpr int patchEnd        = patchBegin+patchSize;
   kernels::idx3 idx(patchSize+2*ghostLayerWidth, // y
       patchSize+2*ghostLayerWidth, // x
       numberOfData);
@@ -185,10 +182,9 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
     const int normalNonZero) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-
-  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
 
   const int orientation = faceIndex % 2; // orientation=1 if face normal follows the direction
   const int direction   = (faceIndex-orientation) / 2;
@@ -341,13 +337,12 @@ void kernels::finitevolumes::commons::c::ghostLayerFilling(
     const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
+  constexpr int patchBegin         = ghostLayerWidth;
+  constexpr int patchEnd           = patchBegin+patchSize; // exclusive
 
-  constexpr int numberOfData = numberOfVariables+numberOfParameters;
-
-  constexpr int patchBegin      = ghostLayerWidth;
-  constexpr int patchEnd        = patchBegin+patchSize; // exclusive
   kernels::idx3 idx(patchSize+2*ghostLayerWidth, // y
       patchSize+2*ghostLayerWidth, // x
       numberOfData);
@@ -472,11 +467,11 @@ void kernels::finitevolumes::commons::c::solutionAdjustment(
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
+  constexpr int patchBegin         = ghostLayerWidth;
+  constexpr int patchEnd           = patchBegin+patchSize;
 
   double x[DIMENSIONS];
 
-  constexpr int patchBegin = ghostLayerWidth;
-  constexpr int patchEnd   = patchBegin+patchSize;
   kernels::idx4 idx(patchSize+2*ghostLayerWidth,
       patchSize+2*ghostLayerWidth,
       patchSize+2*ghostLayerWidth,
@@ -507,13 +502,12 @@ void kernels::finitevolumes::commons::c::boundaryLayerExtraction(
     const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-
-  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
-
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
+
   kernels::idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
   kernels::idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
   kernels::idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
@@ -620,13 +614,12 @@ void kernels::finitevolumes::commons::c::ghostLayerFillingAtBoundary(
     const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-
-  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
-
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
+
   kernels::idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
   kernels::idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
   kernels::idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
@@ -737,10 +730,9 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
     const int normalNonZero) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-
-  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
 
   const int orientation = faceIndex % 2; // orientation=1 if face normal follows the direction
   const int direction   = (faceIndex-orientation) / 2;
@@ -878,13 +870,12 @@ void kernels::finitevolumes::commons::c::ghostLayerFilling(
     const tarch::la::Vector<DIMENSIONS,int>& neighbourPosition) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
-
-  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
-
   constexpr int patchBegin=ghostLayerWidth;
   constexpr int patchEnd=patchBegin+patchSize;
+
   kernels::idx4 idx(patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,patchSize+2*ghostLayerWidth,numberOfData);
 
   // TODO: Depending on the memory layout, we can remove the loop,

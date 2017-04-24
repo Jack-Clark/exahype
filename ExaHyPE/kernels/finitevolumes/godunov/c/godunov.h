@@ -19,7 +19,7 @@ namespace kernels {
 namespace finitevolumes {
 namespace godunov {
 namespace c {
-  template <class SolverType>
+  template <bool useSource, bool useNCP, bool useFlux, class SolverType>
   double solutionUpdate(
       SolverType& solver,double* luh_new, const double* luh,
       double** tempStateSizedVectors,double** tempUnknowns,

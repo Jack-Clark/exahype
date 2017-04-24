@@ -281,7 +281,7 @@ void ElasticityKernelTest::testRiemannSolverLinear() {
   tempStateSizedSquareMatrices[2] = tempStateSizedSquareMatrices[1]+nVar*nVar;
 
   // TODO(Dominic): Fix test
-  kernels::aderdg::generic::c::riemannSolverLinear<ElasticityKernelTest>(*this,
+  kernels::aderdg::generic::c::riemannSolverLinear<true,ElasticityKernelTest>(*this,
       FL, FR, qL, qR,
       tempFaceUnknowns,tempDataVectors,tempStateSizedSquareMatrices,
       dt, 1 /* normalNonZero */);
@@ -371,7 +371,7 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
 
   // Execute kernel
   // TODO(Dominic): Fix test
-  kernels::aderdg::generic::c::spaceTimePredictorLinear<ElasticityKernelTest>(
+  kernels::aderdg::generic::c::spaceTimePredictorLinear<false,false,false,true,ElasticityKernelTest>(
       *this,
       lQbnd, lFbnd,
       tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,
@@ -479,7 +479,7 @@ void ElasticityKernelTest::testVolumeIntegralLinear() {
                                                  35.7142857142857);
 
   // Execute kernel
-  kernels::aderdg::generic::c::volumeIntegralLinear<nVar, basisSize>(lduh, lFhi, dx);
+  kernels::aderdg::generic::c::volumeIntegralLinear<true,false,nVar, basisSize>(lduh, lFhi, dx);
 
   // Compare
   for (int i = 0; i < basisSize; i++) {
@@ -532,6 +532,7 @@ void ElasticityKernelTest::testSurfaceIntegralLinear() {
     }
   }
 }
+
 
 }  // namespace c
 }  // namespace tests

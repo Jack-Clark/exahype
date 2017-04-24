@@ -29,6 +29,7 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
   static constexpr int NumberOfVariables  = 5;
   static constexpr int NumberOfParameters = 1;
   static constexpr int Order              = 3;
+  static constexpr double CFL             = 0.9;
 
   GenericEulerKernelTest();
   virtual ~GenericEulerKernelTest();

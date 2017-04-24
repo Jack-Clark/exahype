@@ -8,6 +8,7 @@ import eu.exahype.node.ALimitingAderdgSolver;
 import eu.exahype.node.AProfiling;
 import eu.exahype.node.AProject;
 import eu.exahype.node.PSolver;
+import eu.exahype.io.FileSearch;
 
 public class GenerateSolverRegistration extends DepthFirstAdapter {
   public Boolean valid = true;

@@ -31,7 +31,7 @@ namespace c {
  * 
  * TODO(Dominic): We should distinguish between Linear and NonLinear ADERDGSolvers
  */
-template <typename SolverType>
+  template <bool usePointSource, bool useSource, bool useFlux, bool useNCP, typename SolverType>
 void spaceTimePredictorLinear(SolverType& solver,
     double* lQbnd, double* lFbnd,
     double** tempSpaceTimeUnknowns,
@@ -75,6 +75,7 @@ void spaceTimePredictorLinear(SolverType& solver,
    }
 
    // Add point source to the zeroth time derivative
+   if(usePointSource){
    for (int j = 0; j < basisSize; j++) {
      for (int k = 0; k < basisSize; k++) {
        for (int l = 0; l < basisSize; l++) {
@@ -98,6 +99,7 @@ void spaceTimePredictorLinear(SolverType& solver,
          }
        }
      }
+   }
    }
    double* lFi = tempSpaceTimeFluxUnknowns[0]; // size: basisSize4 * DIMENSIONS * numberOfData
    std::fill_n(lFi+basisSize4*DIMENSIONS*numberOfVariables, basisSize4*numberOfVariables, 0.0); // zero out sources; We should distinguish between Linear and NonLinear solvers
@@ -290,6 +292,7 @@ void spaceTimePredictorLinear(SolverType& solver,
 
 
    // Add point source to the right hand side
+   if(usePointSource){
    for (int j = 0; j < DIMENSIONS; j++) {
      for (int k = 0; k < basisSize; k++) {
        for (int l = 0; l < basisSize; l++) {
@@ -304,6 +307,7 @@ void spaceTimePredictorLinear(SolverType& solver,
          }
        }
      }
+   }
    }
 
 

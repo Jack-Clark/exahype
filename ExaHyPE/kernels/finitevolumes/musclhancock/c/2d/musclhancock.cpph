@@ -47,7 +47,7 @@ double kernels::finitevolumes::musclhancock::c::minmod(double a, double b) {
  * new solution.
  * Finally add the source terms.
  */
-template <typename SolverType>
+template <bool useSource, bool useNCP, bool useFlux, typename SolverType>
 double kernels::finitevolumes::musclhancock::c::solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,
@@ -60,7 +60,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
   constexpr int patchBegin         = ghostLayerWidth; // patchBegin cell is inside domain
   constexpr int patchEnd           = patchBegin+patchSize; // patchEnd cell is outside domain
-  constexpr double cflFactor       = SolverType::CFL;
+  constexpr double cflFactor       = CFL; // This is not SolverType::CFL; see the docu.
 
   const double cellSize[2] = {dx[0]/patchSize, dx[1]/patchSize};
 
@@ -134,27 +134,29 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
     for (int k = patchBegin; k < patchEnd; k++) {
       double* Qt = slopet + idx(j, k, 0);
       double* gradQ = slope + idx_slope(j, k, 0, 0);
-      if(solver.useSource()) {
+      if(useSource || useNCP) {
         solver.fusedSource(luh + idx(j,k,0), gradQ, Qt);
       }
 
-      // x fluxes
-      solver.flux(wLx + idx_w(j, k, 0), F); // FLx
-      for (int l = 0; l < numberOfVariables; l++) {
-        Qt[l] += F[0][l] / cellSize[0];
-      }
-      solver.flux(wRx + idx_w(j, k, 0), F); // FRx
-      for (int l = 0; l < numberOfVariables; l++) {
-        Qt[l] -= F[0][l] / cellSize[0];
-      }
-      // y fluxes
-      solver.flux(wLy + idx_w(j, k, 0), F); // FLy
-      for (int l = 0; l < numberOfVariables; l++) {
-        Qt[l] += F[1][l] / cellSize[1];
-      }
-      solver.flux(wRy + idx_w(j, k, 0), F); // FRy
-      for (int l = 0; l < numberOfVariables; l++) {
-        Qt[l] -= F[1][l] / cellSize[1];
+      if(useFlux) {
+        // x fluxes
+        solver.flux(wLx + idx_w(j, k, 0), F); // FLx
+        for (int l = 0; l < numberOfVariables; l++) {
+          Qt[l] += F[0][l] / cellSize[0];
+        }
+        solver.flux(wRx + idx_w(j, k, 0), F); // FRx
+        for (int l = 0; l < numberOfVariables; l++) {
+          Qt[l] -= F[0][l] / cellSize[0];
+        }
+        // y fluxes
+        solver.flux(wLy + idx_w(j, k, 0), F); // FLy
+        for (int l = 0; l < numberOfVariables; l++) {
+          Qt[l] += F[1][l] / cellSize[1];
+        }
+        solver.flux(wRy + idx_w(j, k, 0), F); // FRy
+        for (int l = 0; l < numberOfVariables; l++) {
+          Qt[l] -= F[1][l] / cellSize[1];
+        }
       }
 
       // evolve boundary states
@@ -176,7 +178,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   for (int j = patchBegin; j < patchEnd; j++) {
     for (int k = patchBegin-1; k < patchEnd; k++) {
       double s_max_x =
-          riemannsolvers::c::rusanov<SolverType>(solver,
+          solver.riemannSolver(
               fL, fR,
               wRx + idx_w(j, k, 0),
               wLx + idx_w(j, k+1, 0),
@@ -195,7 +197,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   // y edges
   for (int j = patchBegin-1; j < patchEnd; j++) {
     for (int k = patchBegin; k < patchEnd; k++) {
-      double s_max_y = riemannsolvers::c::rusanov<SolverType>(solver,
+      double s_max_y = solver.riemannSolver(
           fL, fR,
           wRy + idx_w(j, k, 0),
           wLy + idx_w(j+1, k, 0),
@@ -214,7 +216,7 @@ double kernels::finitevolumes::musclhancock::c::solutionUpdate(
   // TODO(guera): Early exit if dt > dt_max_allowed?!
 
   // 5. Evolve, evaluate source, update cells
-  if(solver.useSource()) {
+  if(useNCP || useSource) {
     double ws[numberOfVariables]  = {0.0};
     double src[numberOfVariables] = {0.0};
 

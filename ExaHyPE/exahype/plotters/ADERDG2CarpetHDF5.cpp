@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <sstream>
+#include <memory>
 
 
 std::string exahype::plotters::ADERDG2CarpetHDF5::getIdentifier() {
@@ -40,118 +41,219 @@ void exahype::plotters::ADERDG2CarpetHDF5::finishPlotting() {}
 #include "peano/utils/Loop.h"
 #include "exahype/solvers/ADERDGSolver.h"
 #include "kernels/DGBasisFunctions.h"
+#include "kernels/KernelUtils.h"
+#include "tarch/logging/Log.h"
+#include <sstream>
 
-// HDF5 stuff
+// HDF5 library, only available if HDF5 is on the path
 #include "H5Cpp.h"
 
 typedef tarch::la::Vector<DIMENSIONS, double> dvec;
 
+// my small C++11 to_string-independent workaround.
+template <typename T> std::string toString( T Number ) {
+	std::ostringstream ss; ss << Number; return ss.str();
+}
+
 class exahype::plotters::ADERDG2CarpetHDF5Writer {
+  tarch::logging::Log _log;
+
 public:
-  // The ADERDG2CarpetHDF5 instance
-  exahype::plotters::ADERDG2CarpetHDF5* device;
-  FILE* fh;
-  H5::H5File* hf;
-  
-  std::string txtfilename;
-  std::string h5filename;
-  
-  ADERDG2CarpetHDF5Writer(exahype::plotters::ADERDG2CarpetHDF5* _device) : device(_device) {
-  }
-  
+  exahype::plotters::ADERDG2CarpetHDF5* device; // backlink
+  H5::H5File *single_file, **seperate_files;
+  H5::DataSpace patch_space, dtuple;
+
+  bool oneFilePerTimestep, allUnknownsInOneFile;
+
+  /**
+   * cf. also the documentation in the ADERDG2CarpetHDF5.h
+   * 
+   * oneFilePerTimestep: You might want to have this to view the result during computation
+   *     as HDF5 is very lazy at writing. Note that writing out data this form is not compilant
+   *     with most CarpetHDF5 readers (ie. the visit reader). You must join seperate HDF5 files afterwards
+   *     manually.
+   * 
+   * allUnknownsInOneFile: Write different fields in a single H5 combined file. Typically for Cactus
+   *     as structure of arrays is to write each unknown in its own file (ie. one file per physical field).
+   *
+   **/
+  ADERDG2CarpetHDF5Writer(exahype::plotters::ADERDG2CarpetHDF5* _device, bool oneFilePerTimestep_=false, bool allUnknownsInOneFile_=false) :
+	_log("ADERDG2CarpetHDF5Writer"), device(_device),
+	single_file(nullptr), seperate_files(nullptr),
+	oneFilePerTimestep(oneFilePerTimestep_), allUnknownsInOneFile(allUnknownsInOneFile_) {}
+
   void init() {
-	// txt for cross checking
-	txtfilename = device->filename + ".txt";
-	h5filename = device->filename + ".h5";
-	
-	fh = fopen(txtfilename.c_str(), "w");
-	if(!fh) {
-		printf("Could not open file '%s'\n", txtfilename.c_str());
-		abort();
-	}
-	fprintf(fh, "# This is the ADERDG2CarpetHDF5Writer, just checking out...");
-	
 	using namespace H5;
 	
-	hf = new H5File( H5std_string(h5filename.c_str()), H5F_ACC_TRUNC  );
-	hf->setComment("Created by ExaHyPE");
+	// this is the dataspace describing how to write a patch/cell/component
+	const int dims_rank = DIMENSIONS;
+	hsize_t dims[dims_rank];
+	std::fill_n(dims, DIMENSIONS, device->order+1);
+	patch_space = DataSpace(dims_rank, dims);
 	
-	// write basic group
-	Group* parameters = new Group(hf->createGroup( "/Parameters and Global Attributes" ));
+	// this is just a vector of rank 1 with DIMENSIONS entries
+	const int tupleDim_rank = 1;
+	hsize_t tupleDim_len[] = {DIMENSIONS};
+	dtuple = DataSpace(tupleDim_rank, tupleDim_len);
 	
-	int ranks = 1;
+	if(!allUnknownsInOneFile) {
+		seperate_files = new H5::H5File*[device->writtenUnknowns];
+		std::fill_n(seperate_files, device->writtenUnknowns, nullptr);
+	}
+
+	// open file(s) initially, if neccessary
+	if(!oneFilePerTimestep) {
+		openH5(0);
+	}
+  }
+
+  void writeBasicGroup(H5::H5File* file) {
+	using namespace H5;
+	Group* parameters = new Group(file->createGroup( "/Parameters and Global Attributes" ));
 	
-	DataSpace dspace(H5S_SCALAR);
-	Attribute nioprocs = parameters->createAttribute("nioprocs", PredType::NATIVE_INT, dspace);
+	int ranks = 1; // TODO: extend for MPI.
+	
+	Attribute nioprocs = parameters->createAttribute("nioprocs", PredType::NATIVE_INT, H5S_SCALAR);
 	nioprocs.write(PredType::NATIVE_INT, &ranks);
+	
+	// Todo: add information how much files are printed (oneFilePerTimestep)
+  }
+  
+  /**
+   * We use a H5File** here in order to modify a passed pointer H5File* to a single
+   * H5File.
+   **/
+  void openH5File(H5::H5File** file, std::string& filename) {
+	using namespace H5;
+	if(*file) {
+		(*file)->close();
+		delete *file;
+		*file = nullptr;
+	}
+	
+	logInfo("openH5File", "Opening File '"<< filename << "'");
+	*file = new H5File( H5std_string(filename.c_str()), H5F_ACC_TRUNC  );
+	(*file)->setComment("Created by ExaHyPE");
+  }
+  
+  /**
+   * Opens or switchs the currently active H5 file or the list of H5 files.
+   * 
+   **/
+  void openH5(int iteration) {
+	using namespace H5;
+	
+	std::string filename, suffix, prefix, sep("-");
+	prefix = device->filename;
+	suffix = (oneFilePerTimestep?(sep + "it" + toString(iteration)):"") + ".h5";
+	if(allUnknownsInOneFile) {
+		filename = prefix + suffix;
+		openH5File(&single_file, filename);
+	} else {
+		for(int u=0; u < device->writtenUnknowns; u++) {
+			char* writtenQuantityName = device->writtenQuantitiesNames[u];
+			filename = prefix + sep + writtenQuantityName + suffix;
+			openH5File(&seperate_files[u], filename);
+		}
+	}
+  }
+  
+  void flushH5File(H5::H5File* file) {
+	using namespace H5;
+	if(file) {
+		file->flush(H5F_SCOPE_GLOBAL);
+	}
+  }
+
+  void startPlotting(double time, int iteration) {
+	if(oneFilePerTimestep) {
+		openH5(iteration);
+	}
+  }
+  
+  void finishPlotting() {
+	// flush in any case, even when closing the file. Cf. http://stackoverflow.com/a/31301117
+	if(allUnknownsInOneFile) {
+		flushH5File(single_file);
+	} else {
+		for(int u=0; u < device->writtenUnknowns; u++) {
+			flushH5File(seperate_files[u]);
+		}
+	}
   }
 
   /**
-   * Assumes u to be a (order+1,order+1) matrix of single values.
-   * This is 2D.
-   * This is only one writeOut quantity.
-   * This is simple.
+   * This is 2D and 3D, allows several unknowns, named fields and all that.
    **/
   void plotPatch(
-      const dvec& offsetOfPatch,
-      const dvec& sizeOfPatch,
-      double* mappedCell,
-      double timeStamp, int iteration, int component) {
+      const dvec& offsetOfPatch, const dvec& sizeOfPatch,
+      double* mappedCell, double timeStamp, int iteration, int component) {
+	for(int writtenUnknown=0; writtenUnknown < device->writtenUnknowns; writtenUnknown++) {
+		H5::H5File* target = allUnknownsInOneFile ? single_file : seperate_files[writtenUnknown];
+		plotPatchForSingleUnknown(offsetOfPatch, sizeOfPatch, mappedCell, timeStamp, iteration, component, writtenUnknown, target);
+	} // for writtenUnknown
+  }
+
+  void plotPatchForSingleUnknown(
+      const dvec& offsetOfPatch, const dvec& sizeOfPatch,
+      double* mappedCell, double timeStamp, int iteration, int component,
+      int writtenUnknown, H5::H5File* target) {
         using namespace H5;
-	
 	const int order = device->order;
-	const int rank = 2; // DIMENSIONS
-	hsize_t  dims[rank] = {order+1, order+1};
-	DataSpace patch_dataspace(rank, dims);
-	kernels::idx2 mappedIdx(order+1, order+1);
+
+	// in CarpetHDF5, the field name *must* contain a "::"
+	std::string name("ExaHyPE::");
+	char* field_name = device->writtenQuantitiesNames[writtenUnknown];
+	name += field_name ? field_name : "miserable-failure";
 	
 	char component_name[100];
-	sprintf(component_name, "EXA::rho it=%d tl=0 m=0 rl=0 c=%d", iteration, component);
+	sprintf(component_name, "%s it=%d tl=0 m=0 rl=0 c=%d", name.c_str(), iteration, component);
 	
-	DataSet table = hf->createDataSet(component_name, PredType::NATIVE_DOUBLE, patch_dataspace);
-	table.write(mappedCell, PredType::NATIVE_DOUBLE);
+	// 1) Compose a continous storage which is suitable.
+	// 2) (Probably) Transpose the data.
+	// TODO: I'm sure HDF5 provides a more performant way to interpret the different data layout.
+	double *componentPatch = new double[device->singleFieldIdx->size];
+	dfor(i,order+1) {
+		#if DIMENSIONS==2
+		componentPatch[device->singleFieldIdx->get(i(1),i(0))] = mappedCell[device->writtenCellIdx->get(i(0),i(1),writtenUnknown)];
+		#else
+		componentPatch[device->singleFieldIdx->get(i(2),i(1),i(0))] = mappedCell[device->writtenCellIdx->get(i(0),i(1),i(2),writtenUnknown)];
+		#endif
+	}
 	
-	// write the meat information about the new table
+	DataSet table = target->createDataSet(component_name, PredType::NATIVE_FLOAT, patch_space);
+	table.write(componentPatch, PredType::NATIVE_DOUBLE);
 	
-	//hsize_t dtuple_len[rank] = {1,1};
-	//DataSpace dtuple(rank, dtuple_len);
+	delete[] componentPatch;
 	
-	// tuple/vector with DIMENSIONS elements
-	assert(DIMENSIONS == 2);
-	hsize_t tupleDim_len[1] = {DIMENSIONS};
-	DataSpace tupleDim(sizeof(tupleDim_len)/sizeof(hsize_t), tupleDim_len);
-	
-	Attribute origin = table.createAttribute("origin", PredType::NATIVE_FLOAT, tupleDim);
+	// write all meta information about the table
+
+	Attribute origin = table.createAttribute("origin", PredType::NATIVE_DOUBLE, dtuple);
 	origin.write(PredType::NATIVE_DOUBLE, offsetOfPatch.data());
 	
-	double iorigin_data[rank] = {0.,0.};
-	Attribute iorigin = table.createAttribute("iorigin", PredType::NATIVE_INT, tupleDim);
-	iorigin.write(PredType::NATIVE_INT, &iorigin_data);
+	dvec iorigin_data = 0.0;
+	Attribute iorigin = table.createAttribute("iorigin", PredType::NATIVE_INT, dtuple);
+	iorigin.write(PredType::NATIVE_INT, iorigin_data.data());
 	
-	int level_data = 0;
+	int level_data = 0; // TODO: Read out real cell level
 	Attribute level = table.createAttribute("level", PredType::NATIVE_INT, H5S_SCALAR);
 	level.write(PredType::NATIVE_INT, &level_data);
 	
 	Attribute timestep = table.createAttribute("timestep", PredType::NATIVE_INT, H5S_SCALAR);
 	timestep.write(PredType::NATIVE_INT, &iteration);
 
-	Attribute time = table.createAttribute("time", PredType::NATIVE_FLOAT, H5S_SCALAR);
+	Attribute time = table.createAttribute("time", PredType::NATIVE_DOUBLE, H5S_SCALAR);
 	time.write(PredType::NATIVE_DOUBLE, &timeStamp);
 
 	// dx in terms of Cactus: Real seperation from each value
-	dvec dx = 1./(order + 1) * sizeOfPatch;
-	Attribute delta = table.createAttribute("delta", PredType::NATIVE_FLOAT, tupleDim);
+	dvec dx = 1./order * sizeOfPatch;
+	Attribute delta = table.createAttribute("delta", PredType::NATIVE_FLOAT, dtuple);
 	delta.write(PredType::NATIVE_DOUBLE, dx.data()); // issue: conversion from double to float
 	
 	const int max_string_length = 60;
-	StrType t_str = H5::StrType(H5::PredType::C_S1, max_string_length);
-	Attribute name = table.createAttribute("name", t_str, H5S_SCALAR);
-	name.write(t_str, "My fancy name");
-
-	// alternatively, also write to text file for comparison
-	dfor(i,order+1) {
-		fprintf(fh, "%d %d %f\n", i(0), i(1), mappedCell[mappedIdx(i(0),i(1))]);
-	}
+	StrType t_str = H5::StrType(H5::PredType::C_S1, max_string_length); // todo: use name.size().
+	Attribute aname = table.createAttribute("name", t_str, H5S_SCALAR);
+	aname.write(t_str, name.c_str());
   }
 
 }; // class ADERDG2CarpetHDF5Impl
@@ -162,7 +264,8 @@ public:
 
 exahype::plotters::ADERDG2CarpetHDF5::ADERDG2CarpetHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
     Device(postProcessing) {
-	writer = new exahype::plotters::ADERDG2CarpetHDF5Writer(this);
+	bool oneFilePerTimestep = true;
+	writer = new exahype::plotters::ADERDG2CarpetHDF5Writer(this, oneFilePerTimestep);
 }
 
 // all other methods are stubs
@@ -177,8 +280,31 @@ void exahype::plotters::ADERDG2CarpetHDF5::init(const std::string& _filename, in
 	select            = _select;
 	writtenUnknowns   = _writtenUnknowns;
 	iteration         = 0;
+	if(DIMENSIONS == 2) {
+	  writtenCellIdx       = new kernels::index(order+1, order+1, writtenUnknowns);
+	  singleFieldIdx       = new kernels::index(order+1, order+1);
+	} else {
+	  writtenCellIdx       = new kernels::index(order+1, order+1, order+1, writtenUnknowns);
+	  singleFieldIdx       = new kernels::index(order+1, order+1, order+1);
+	}
+	
+	// Determine names of output fields
+	writtenQuantitiesNames = new char*[writtenUnknowns];
+	std::fill_n(writtenQuantitiesNames, writtenUnknowns, nullptr);
+	_postProcessing->writtenQuantitiesNames(writtenQuantitiesNames);
+	
+	// make sure there are reasonable names everywhere
+	for(int u=0; u<writtenUnknowns; u++) {
+		char* field_name = writtenQuantitiesNames[u];
+		if(!field_name) {
+			std::string* replacement_name = new std::string("Q_");
+			*replacement_name += toString(u);
+			writtenQuantitiesNames[u] = const_cast<char*>(replacement_name->c_str());
+		}
+	}
 	
 	// todo at this place: Accept 3D slicing or so, cf. ADERDG2CartesianVTK
+	// another nice to have: allow oneFilePerTimestep as a specfile parameter...
 	
 	writer->init(); // open files and so
 }
@@ -204,25 +330,27 @@ void exahype::plotters::ADERDG2CarpetHDF5::plotPatch(
     double* u,
     double timeStamp) {
 
-    kernels::idx2 mappedIdx(order+1, order+1);
-    double* mappedCell  = new double[mappedIdx.size];
+    // TODO: if we knew that plotting would be serial, we could move *mappedCell to a class property.
+    double* mappedCell  = new double[writtenCellIdx->size];
 
     interpolateCartesianPatch(offsetOfPatch, sizeOfPatch, u, mappedCell, timeStamp);
-
-    component++;
     writer->plotPatch(offsetOfPatch, sizeOfPatch, mappedCell, timeStamp, iteration, component);
+    component++;
+
+    delete[] mappedCell;
 }
 
 
-void exahype::plotters::ADERDG2CarpetHDF5::startPlotting( double _time ) {
+void exahype::plotters::ADERDG2CarpetHDF5::startPlotting(double _time) {
 	time = _time;
-	component = 0;
+	component = 0; // CarpetHDF5 wants the components start with 0.
 	_postProcessing->startPlotting(time);
-	//writer->startPlotting(time);
+	writer->startPlotting(time, iteration);
 }
 
 void exahype::plotters::ADERDG2CarpetHDF5::finishPlotting() {
 	_postProcessing->finishPlotting();
+	writer->finishPlotting();
 	iteration++;
 }
 
@@ -234,14 +362,11 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
   double *mappedCell,
   double timeStamp
 ) {
-  // the layout of an ADERDG cell, assuming 2D here for the time being.
-  assert(DIMENSIONS==2);
   // make sure we only map to ONE written unknown, as this is how CarpetHDF5 works in the moment.
-  assert(writtenUnknowns == 1);
-  kernels::idx2 mappedIdx(order+1, order+1);
+  // assert(writtenUnknowns == 1); // this works for any number of writtenUnknowns.
 
   double* interpoland = new double[solverUnknowns];
-  //double* mappedCell  = new double[mappedIdx.size];
+  //double* mappedCell  = new double[writtenCellIdx.size];
   //double* value       = writtenUnknowns==0 ? nullptr : new double[writtenUnknowns];
   
   dfor(i,order+1) {
@@ -249,17 +374,23 @@ void exahype::plotters::ADERDG2CarpetHDF5::interpolateCartesianPatch(
       interpoland[unknown] = 0.0;
       dfor(ii,order+1) { // Gauss-Legendre node indices
         int iGauss = peano::utils::dLinearisedWithoutLookup(ii,order + 1);
-        interpoland[unknown] += kernels::equidistantGridProjector1d[order][ii(1)][i(1)] *
-                 kernels::equidistantGridProjector1d[order][ii(0)][i(0)] *
-                 #if DIMENSIONS==3
-                 kernels::equidistantGridProjector1d[order][ii(2)][i(2)] *
-                 #endif
-                 u[iGauss * solverUnknowns + unknown];
+        interpoland[unknown] +=
+		kernels::equidistantGridProjector1d[order][ii(0)][i(0)] *
+		kernels::equidistantGridProjector1d[order][ii(1)][i(1)] *
+		#if DIMENSIONS==3
+		kernels::equidistantGridProjector1d[order][ii(2)][i(2)] *
+		#endif
+		u[iGauss * solverUnknowns + unknown];
         assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
       }
     }
 
-    double* value = mappedCell + mappedIdx(i(0), i(1));
+    double *value = mappedCell;
+    #if DIMENSIONS==3
+    value += writtenCellIdx->get(i(2),i(1),i(0),0);
+    #else
+    value += writtenCellIdx->get(i(1),i(0),0);
+    #endif
     assertion(sizeOfPatch(0)==sizeOfPatch(1));
     _postProcessing->mapQuantities(
       offsetOfPatch,

@@ -26,12 +26,15 @@ namespace generic {
 namespace c {
 
 /**
+ * We implement a very simple Rusanov scheme with scalar dissipation
+ * (smax*Id).
+ *
  * We need to consider material parameters
  * in QL and QR,tempStateSizedVectors,tempFaceUnknownsArray
  * We don't need to consider material parameters
  * in FL,FR,tempStateSizedSquareMatrices,
  */
-template <bool useCoefficientMatrix, typename SolverType>
+template <bool useNCP, typename SolverType>
 void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
                             const double* const QL,
                             const double* const QR,
@@ -39,7 +42,7 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
                             double** tempStateSizedVectors,
                             double** tempStateSizedSquareMatrices,
                             const double dt,
-                            const int normalNonZero) {
+                            const int direction) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
   constexpr int numberOfData       = numberOfVariables+numberOfParameters;
@@ -63,112 +66,51 @@ void riemannSolverNonlinear(SolverType& solver, double* FL, double* FR,
 
   double LL[numberOfVariables] = {0.0}; // do not need to store material parameters
   double LR[numberOfVariables] = {0.0};
-  solver.eigenvalues(QavL, normalNonZero, LL);
-  solver.eigenvalues(QavR, normalNonZero, LR);
-  
-  double Qavg[numberOfData] = {0.0}; // ~(numberOfData)
-  for(int k=0; k < numberOfData; k++) {
-     Qavg[k] = (QavL[k] + QavR[k]) / 2;
-  }
+  solver.eigenvalues(QavL, direction, LL);
+  solver.eigenvalues(QavR, direction, LR);
 
-  // Here, we implement a very simple Rusanov scheme with scalar dissipation
-  // (smax*Id).
-  // We can change this into a more sophisticated Osher or HLLEM Riemann solver
-  // whenever needed!
   // skip parameters
-  std::transform(LL, LL + numberOfVariables, LL,
-                 std::abs<double>);
-  std::transform(LR, LR + numberOfVariables, LR,
-                 std::abs<double>);
-  const double* smax_L =
-      std::max_element(LL, LL + numberOfVariables);
-  const double* smax_R =
-      std::max_element(LR, LR + numberOfVariables);
-  const double smax = std::max(*smax_L, *smax_R);
-  
-  // NCP: Still has to be moved to the new NCP2 interface
+  std::transform(LL, LL + numberOfVariables, LL, std::abs<double>);
+  std::transform(LR, LR + numberOfVariables, LR, std::abs<double>);
+  const double* smax_L = std::max_element(LL, LL + numberOfVariables);
+  const double* smax_R = std::max_element(LR, LR + numberOfVariables);
+  const double smax    = std::max(*smax_L, *smax_R);
 
-  double Bn[numberOfVariables][numberOfVariables] = {0.0};
-  double ncp[numberOfVariables] = {0.0};
-  idx2 idx_Bn(numberOfVariables, numberOfVariables);
-  if(useCoefficientMatrix) {
-    solver.coefficientMatrix(Qavg, normalNonZero, Bn[0]); // Bn is nVar x nVar matrix
-  }
-
-  // We now compute the numerical flux. Note that the scheme is at the moment
-  // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
-  // this will be converted into the left and right fluctuations.
-  
-  //printf("dt = %f\n", dt); // extract dt
-
+  // compute fluxes (and fluctuations for non-conservative PDEs)
+  double Qavg[numberOfData];
+  idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+  double gradQ[DIMENSIONS][numberOfVariables] = {0.0};
+  double ncp[numberOfVariables]               = {0.0};
   {
     idx2 idx_FLR(basisSize, numberOfVariables);
     idx2 idx_QLR(basisSize, numberOfData);
-    for (int j = 0; j < basisSize; j++) {
-      
-      if(useCoefficientMatrix) {
-        // matmul(Bn, lQbndR(:,j,k) - lQbndL(:,j,k))
-        for(int l=0; l < numberOfVariables; l++) {
-          ncp[l] = 0;
-          for(int m=0; m < numberOfVariables; m++) {
-           // BUG resolved: Fortran <-> C matrix access
-           ncp[l] += Bn[m][l] * (QR[idx_QLR(j, m)] - QL[idx_QLR(j, m)]);
-          }
-          // printf("QR[%d, %d] = %.20e\n", j, l, QR[idx_QLR(j, l)]);
-          // printf("QL[%d, %d] = %.20e\n", j, l, QL[idx_QLR(j, l)]);
-          // printf("ncp[%d]=%.20e\n", l, ncp[l]);
-        }
-      }
-      
 
-      // (x,y) location in Q
-      /*
-      int posx = 20;
-      int posy = 21;
-      double xdeb = 3.703704e-02;
-      double ydeb = 2.571550e-03;
-      bool debug = false;
-      if(debug) printf("An position %e, %e:\n", xdeb, ydeb);
-      if(abs(QL[posx]-xdeb) < 1e-6 && abs(QL[posy] - ydeb) < 1e-6) {
-	for(int l=0; l < numberOfVariables; l++) {
-	      //for(int m=0; m < numberOfVariables; m++) {
-	     int m=0;
-	      //printf("Bn(m=%d, l=%d) = %.20e\n", m, l, Bn[idx_Bn(m, l)]);
-	     if(debug) printf("Qavg[%d] = %.20e\n", l, Qavg[l]);
-	      //}
-	}
+    for (int j = 0; j < basisSize; j++) {
+
+      if(useNCP) { // we don't use matrixB but the NCP call here.
+        for(int l=0; l < numberOfVariables; l++) {
+          gradQ[direction][l] = QR[idx_QLR(j, l)] - QL[idx_QLR(j, l)];
+          Qavg[l] = 0.5 * (QR[idx_QLR(j, l)] + QL[idx_QLR(j, l)]);
+        }
+
+        solver.nonConservativeProduct(Qavg, gradQ[0], ncp);
       }
-      */
 
       // skip parameters
       for (int k = 0; k < numberOfVariables; k++) {
         FL[idx_FLR(j, k)] =
             0.5 * (FR[idx_FLR(j, k)] + FL[idx_FLR(j, k)]) -
             0.5 * smax * (QR[idx_QLR(j, k)] - QL[idx_QLR(j, k)]);
-        if(useCoefficientMatrix) {
+
+        if(useNCP) {
           FR[idx_FLR(j, k)] = FL[idx_FLR(j, k)] - 0.5 * ncp[k];
           FL[idx_FLR(j, k)] = FL[idx_FLR(j, k)] + 0.5 * ncp[k];
         } else {
           FR[idx_FLR(j, k)] = FL[idx_FLR(j, k)];
         }
-        
-        //if(0) printf("QL[..]-QR = %f - %f\n", QL[idx_QLR(j, k)], QR[idx_QLR(j, k)]);
       }
-      
- /*
-      int mcheck = 6; // K11
-     if(debug) printf("Riemann j=%d m=%d: (x,y)=(%e,%e) ncp=%e QL=%e QR=%e FL=%e FR=%e, normal=%d\n",
-	     j, mcheck,
-	     QL[posx], QL[posy],
-	     ncp[mcheck],
-	     QL[idx_FQLR(j, mcheck)], QR[idx_FQLR(j, mcheck)],
-	     FL[idx_FQLR(j, mcheck)], FR[idx_FQLR(j, mcheck)],
-	     normalNonZero
-      );
-     */
     }
   }
-
 }
 
 }  // namespace c

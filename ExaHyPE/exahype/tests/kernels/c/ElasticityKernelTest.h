@@ -51,6 +51,7 @@ class ElasticityKernelTest : public tarch::tests::TestCase {
   static constexpr int NumberOfVariables  = 9;
   static constexpr int NumberOfParameters = 3; // !!! Must be chosen '3' see ncp(...) definition
   static constexpr int Order              = 4;
+  static constexpr double CFL             = 0.9;
 
   void flux(const double* const Q, double** F);
 

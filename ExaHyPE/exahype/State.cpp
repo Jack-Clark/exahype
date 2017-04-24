@@ -96,9 +96,9 @@ exahype::State::RefinementAnswer exahype::State::mayRefine(
     &&
     isCreationalEvent
   ) {
-    return RefinementAnswer::Refine;
-    // @todo Dominic
-//    return RefinementAnswer::EnforceRefinement;
+    // The simple refine works, but we want enforceRefine to work
+    //return RefinementAnswer::Refine;
+    return RefinementAnswer::EnforceRefinement;
   }
   else if ( _stateData.getMaxRefinementLevelAllowed()<0 ) {
     return RefinementAnswer::Refine;

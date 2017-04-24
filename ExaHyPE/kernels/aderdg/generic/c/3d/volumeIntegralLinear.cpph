@@ -18,7 +18,7 @@
 
 #if DIMENSIONS == 3
 
-template <int numberOfVariables, int basisSize>
+template <bool useSourceOrNCP, bool useFlux, int numberOfVariables, int basisSize>
 void kernels::aderdg::generic::c::volumeIntegralLinear(double* lduh, const double* const lFhi,
     const tarch::la::Vector<DIMENSIONS, double>& dx) {
   // for linear non-conservative PDE, the volume integral is trivial, since it

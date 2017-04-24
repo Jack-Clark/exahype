@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import eu.exahype.IOUtils;
+import eu.exahype.io.IOUtils;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AFiniteVolumesSolver;
 import eu.exahype.node.ALimitingAderdgSolver;
@@ -351,6 +351,91 @@ public class Variables {
     return setters;
   }
   
+  // Just a helper to get a fixed length string
+  public static String fixedLengthString(String string, int length) {
+    return String.format("%1$"+length+ "s", string);
+  }
+  
+  /**
+   * Generate the position shortcuts.
+   **/
+  private String createVariableShortcuts() {
+    String indent="  ";
+    String type="static constexpr int ";
+
+    String shortcuts = "";
+    int offset = 0;
+    if (_variablesMap!=null) {
+      // poor mans max identifier length for a nicer code layout
+      int maxIdentifierLength = 0;
+      for (String identifier : _variablesMap.keySet()) {
+          maxIdentifierLength = Math.max(identifier.length(), maxIdentifierLength);
+      }
+    
+      for (String identifier : _variablesMap.keySet()) {
+        int multiplicity = _variablesMap.get(identifier);
+        shortcuts += indent + type + " " + fixedLengthString(identifier, maxIdentifierLength) + " = " + String.valueOf(offset) + ";\n";
+        offset  += multiplicity;
+      }
+    }
+
+    return shortcuts;
+  }
+
+  private String createVariableShortcutArray() {
+    String shortcutArray = "";
+    int offset = 0;
+    if (_variablesMap!=null) {
+      for (String identifier : _variablesMap.keySet()) {
+        int multiplicity = _variablesMap.get(identifier);
+        shortcutArray += String.valueOf(offset) + ", ";
+        offset  += multiplicity;
+      }
+    }
+
+    // finish the array with a negative value
+    shortcutArray += "-1";
+
+    return shortcutArray;
+  }
+
+  /**
+   * Generate the names as strings
+   **/
+  private String createVariableNames() {
+    String indent="  ";
+    String type="static constexpr char const *";
+
+    String names = "";
+    if (_variablesMap!=null) {
+      // poor mans max identifier length for a nicer code layout
+      int maxIdentifierLength = 0;
+      for (String identifier : _variablesMap.keySet()) {
+          maxIdentifierLength = Math.max(identifier.length(), maxIdentifierLength);
+      }
+    
+      for (String identifier : _variablesMap.keySet()) {
+        names += indent + type + " " + fixedLengthString(identifier, maxIdentifierLength) + " = \"" + identifier  + "\";\n";
+      }
+    }
+
+    return names;
+  }
+
+  private String createVariableNamesArray() {
+    String namesArray = "";
+    if (_variablesMap!=null) {
+      for (String identifier : _variablesMap.keySet()) {
+        namesArray += "\"" + identifier + "\"" + ", ";
+      }
+    }
+
+    // finish the array with a null
+    namesArray += "nullptr";
+    return namesArray;
+  }
+  
+  
   /**
    * @note The current implementation assumes a column major memory layout
    * of the fluxes.
@@ -677,6 +762,12 @@ public class Variables {
     }
     
     content = content.replaceAll("\\{\\{NamingSchemes\\}\\}", namingSchemes);
+    
+    content = content.replaceAll("\\{\\{VariableShortcuts\\}\\}", createVariableShortcuts());
+    content = content.replaceAll("\\{\\{VariableShortcutsArray\\}\\}", createVariableShortcutArray());
+    content = content.replaceAll("\\{\\{VariableNames\\}\\}", createVariableNames());
+    content = content.replaceAll("\\{\\{VariableNamesArray\\}\\}", createVariableNamesArray());
+    
     writer.write(content);
   }
 }

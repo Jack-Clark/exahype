@@ -164,6 +164,26 @@ class exahype::plotters::Plotter {
        * Here you can specify if you want to map using gradients or not.
        **/
       virtual bool mapWithDerivatives() { return false; }
+
+      /**
+       * This method allows users to specify field names for plotters which support
+       * them. The usage is like
+       * 
+       * <pre>
+       *    void MyWriterPlotter:writtenQuantitiesNames(char** name) {
+       *       name[0] = "rho";
+       *       name[1] = (new std::string("velx")).c_str();
+       *       name[2] = "ham-constraint";
+       *       name[3] = MySolver_Variables::rho_str();
+       *       // for all output fields you have
+       *    }
+       * </pre>
+       *
+       * The plotters should handle non-given names gracefully, ie. by default all
+       * names are '\0' pointers or similar. Typically, this method is only invoked
+       * once at startup phase but may be also called on every plot.
+       **/
+      virtual void writtenQuantitiesNames(char** name) { /* by default, nothing */ }
   };
 
   /**

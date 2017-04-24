@@ -36,6 +36,8 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     class Variables;
     class ReadOnlyVariables;
     class Fluxes;
+    class VariableShortcuts;
+    class VariableNames;
 {{NamingSchemes}}
     
     Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
@@ -50,7 +52,11 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     void boundaryLayerExtraction(double* luhbnd,const double* luh,const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition) override;
     void boundaryConditions(double* stateOut,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) override;
 
+    /// Apr 18, Coding Week: Riemann Solvers in FV. Hopefully inlined as evaluated point wise.
+    virtual double riemannSolver(double* fL, double *fR, const double* qL, const double* qR, int normalNonZero);
+
     static void constantsToString(std::ostream& os);
+    static void abortWithMsg(const char* const msg);
     
     /**
      * Please overwrite in user's solver. See superclass for documentation.
@@ -63,6 +69,7 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
 
     virtual bool useSource()                 const { return false; }
     virtual bool useNonConservativeProduct() const { return false; }
+    virtual bool useConservativeFlux()       const { return true; }
 
     /**
      * Please overwrite in user's solver. See superclass for documentation.
@@ -73,7 +80,7 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
     virtual void algebraicSource(const double* const Q,double* S);
     virtual void fusedSource(const double* const Q, const double* const gradQ, double* S);
-
+    virtual void flux(const double* const Q,double** F);
 };
 
 

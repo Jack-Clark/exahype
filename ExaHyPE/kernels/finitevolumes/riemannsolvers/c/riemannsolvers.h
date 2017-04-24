@@ -27,7 +27,7 @@ namespace c {
  * \note This does not result in a well-balanced scheme.
  * It is not a good Riemann solver for the Shallow Water Equations (SWE) e.g.
  */
-template <typename SolverType>
+template <bool useNCP, bool useFlux, typename SolverType>
 double rusanov(SolverType& solver, double* fL, double *fR, const double* qL, const double* qR,
                int normalNonZero);
 } // namespace c

@@ -1116,7 +1116,9 @@ public:
    *
    * This operation is required for limiting.
    */
-  virtual bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax) const =0;
+  virtual bool isPhysicallyAdmissible(const double* const QMin,const double* const QMax,
+                                      const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
+                                      const double t, const double dt) const = 0;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time

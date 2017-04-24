@@ -156,6 +156,17 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
 
 void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max);
 
+/**
+ * Compare the min and max values with the interpolated values
+ * at the FV subcell centers.
+ *
+ * \note It is very important to make this check. Otherwise
+ * wrong values at the FV subcell centers get not noticed and
+ * this becomes a problem if we project the DG solution onto the FV
+ * subcell.
+ */
+void compareWithADERDGSolutionAtFVSubcellCenters(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max);
+
 } // namespace c
 } // namespace generic
 } // namespace limiter

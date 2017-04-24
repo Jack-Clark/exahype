@@ -267,6 +267,7 @@ void mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(
 ) {
   _weightMap[tarch::parallel::Node::getInstance().getRank()] = localWeight;
   #ifdef Parallel
+  assertion(_loadBalancingTag>=0);
 
   double ranksWeight = getMaximumWeightOfWorkers();
 

@@ -3,6 +3,19 @@
 #include "peano/utils/UserInterface.h"
 
 
+exahype::mappings::LoadBalancing::LoadBalancingAnalysis  exahype::mappings::LoadBalancing::_loadBalancingAnalysis;
+
+
+void exahype::mappings::LoadBalancing::setLoadBalancingAnalysis(LoadBalancingAnalysis loadBalancingAnalysis) {
+  _loadBalancingAnalysis = loadBalancingAnalysis;
+}
+
+
+exahype::mappings::LoadBalancing::LoadBalancingAnalysis exahype::mappings::LoadBalancing::getLoadBalancingAnalysis() {
+  return _loadBalancingAnalysis;
+}
+
+
 peano::CommunicationSpecification   exahype::mappings::LoadBalancing::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
@@ -94,10 +107,12 @@ void exahype::mappings::LoadBalancing::mergeWithMaster(
 ) {
   logTraceIn( "mergeWithMaster(...)" );
 
-  mpibalancing::HotspotBalancing::mergeWithMaster(
-    worker,
-    workerState.getCouldNotEraseDueToDecompositionFlag()
-  );
+  if (_loadBalancingAnalysis==LoadBalancingAnalysis::Hotspot) {
+    mpibalancing::HotspotBalancing::mergeWithMaster(
+      worker,
+      workerState.getCouldNotEraseDueToDecompositionFlag()
+    );
+  }
 
   logTraceOut( "mergeWithMaster(...)" );
 }
@@ -324,7 +339,9 @@ void exahype::mappings::LoadBalancing::prepareSendToMaster(
   const exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-  mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(_numberOfLocalCells);
+  if (_loadBalancingAnalysis==LoadBalancingAnalysis::Hotspot) {
+    mpibalancing::HotspotBalancing::setLocalWeightAndNotifyMaster(_numberOfLocalCells);
+  }
 }
 
 

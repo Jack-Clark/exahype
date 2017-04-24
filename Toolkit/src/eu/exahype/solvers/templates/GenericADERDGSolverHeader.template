@@ -77,7 +77,7 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      *                 as C array (already allocated).
      * \param[inout] F the fluxes at that point as C array (already allocated).
      */
-    void flux(const double* const Q,double** F);
+    virtual void flux(const double* const Q,double** F);
     
     /**
      * Compute the eigenvalues of the flux tensor per coordinate direction \p d.

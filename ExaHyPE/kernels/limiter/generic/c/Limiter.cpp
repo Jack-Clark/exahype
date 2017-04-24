@@ -270,7 +270,8 @@ bool discreteMaximumPrinciple(const double* const luh, const int numberOfVariabl
 /**
  * localMinPerVariables, localMaxPerVariables are double[numberOfVariables]
  */
-void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMinPerVariables, double* const localMaxPerVariables) {
+void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize,
+                            double* const localMinPerVariables, double* const localMaxPerVariables) {
   int index, ii, iVar, iiEnd;
   
   // initialize and process luh
@@ -292,8 +293,9 @@ void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables
     }
   }
  
-  //process lob
   compareWithADERDGSolutionAtGaussLobattoNodes(luh, numberOfVariables, basisSize, localMinPerVariables, localMaxPerVariables);
+  // !!! Do not skip this. It ensures that the previous FV solution is always valid if we perform a rollback
+  compareWithADERDGSolutionAtFVSubcellCenters(luh, numberOfVariables, basisSize, localMinPerVariables, localMaxPerVariables);
 }
 
 /**
@@ -410,6 +412,56 @@ const int order = basisSize-1;
           }
           min[v] = std::min( min[v], lobValue );
           max[v] = std::max( max[v], lobValue );
+        }
+      }
+    }
+  }
+
+}
+
+/**
+ * Auxilliary function to findMinMax
+ * Project onto FV subcell nodes and modify the min/max if required
+ */
+void compareWithADERDGSolutionAtFVSubcellCenters(const double* const luh, const int numberOfVariables, const int basisSize,
+                                                 double* const min, double* const max) {
+  const int basisSizeLim = getBasisSizeLim(basisSize);
+
+  #if DIMENSIONS == 3
+  const int basisSize3D       = basisSize;
+  const int basisSizeLim3D    = basisSizeLim;
+  #else
+  constexpr int basisSize3D       = 1;
+  constexpr int basisSizeLim3D    = 1;
+  #endif
+
+  idx4 idxLuh(basisSize3D, basisSize, basisSize, numberOfVariables);
+  idx4 idxLim(basisSizeLim3D, basisSizeLim, basisSizeLim, numberOfVariables);
+  idx2 idxConv(basisSize, basisSizeLim);
+
+  int x,y,z,v,ix,iy,iz;
+
+  //tensor operation
+  for(z=0; z<basisSizeLim3D; z++) {
+    for(y=0; y<basisSizeLim; y++) {
+      for(x=0; x<basisSizeLim; x++) {
+        for(v=0; v<numberOfVariables; v++) {
+          double limValue = 0.0;
+
+          for(iz=0; iz<basisSize3D; iz++) {
+            for(iy=0; iy<basisSize; iy++) {
+              for(ix=0; ix<basisSize; ix++) {
+                limValue += luh[idxLuh(iz,iy,ix,v)]
+                #if DIMENSIONS == 3
+                * uh2lim[basisSize-1][idxConv(iz,z)]
+                #endif
+                * uh2lim[basisSize-1][idxConv(iy,y)]
+                * uh2lim[basisSize-1][idxConv(ix,x)];
+              }
+            }
+          }
+          min[v] = std::min ( min[v], limValue );
+          max[v] = std::max ( max[v], limValue );
         }
       }
     }

@@ -19,6 +19,8 @@
 #include "exahype/repositories/RepositoryFactory.h"
 #include "exahype/mappings/TimeStepSizeComputation.h"
 #include "exahype/mappings/Sending.h"
+#include "exahype/mappings/LoadBalancing.h"
+
 
 #include "tarch/Assertions.h"
 
@@ -62,75 +64,97 @@
 
 tarch::logging::Log exahype::runners::Runner::_log("exahype::runners::Runner");
 
-exahype::runners::Runner::Runner(const Parser& parser) : _parser(parser) {}
+exahype::runners::Runner::Runner(Parser& parser) : _parser(parser) {}
 
 exahype::runners::Runner::~Runner() {}
 
 void exahype::runners::Runner::initDistributedMemoryConfiguration() {
   #ifdef Parallel
-  std::string configuration = _parser.getMPIConfiguration();
-  if (_parser.getMPILoadBalancingType()==Parser::MPILoadBalancingType::Static) {
-    if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
-      if (configuration.find( "FCFS" )!=std::string::npos ) {
-        tarch::parallel::NodePool::getInstance().setStrategy(
-            new tarch::parallel::FCFSNodePoolStrategy()
-        );
-        logInfo("initDistributedMemoryConfiguration()", "load balancing relies on FCFS answering strategy");
-      }
-      else if (configuration.find( "fair" )!=std::string::npos ) {
-        int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks_per_node"));
-        if (ranksPerNode<=0) {
-          logError( "initDistributedMemoryConfiguration()", "please inform fair balancing how many ranks per node you use through value \"ranks_per_node:XXX\". Read value " << ranksPerNode << " is invalid" );
-          ranksPerNode = 1;
-        }
-        if ( ranksPerNode>=tarch::parallel::Node::getInstance().getNumberOfNodes() ) {
-          logWarning( "initDistributedMemoryConfiguration()", "value \"ranks_per_node:XXX\" exceeds total rank count. Reset to 1" );
-          ranksPerNode = 1;
-        }
-        tarch::parallel::NodePool::getInstance().setStrategy(
-            new mpibalancing::FairNodePoolStrategy(ranksPerNode)
-        );
-        logInfo("initDistributedMemoryConfiguration()", "load balancing relies on fair answering strategy with " << ranksPerNode << " rank(s) per node") ;
-      }
-      else {
-        logError("initDistributedMemoryConfiguration()", "no valid load balancing answering strategy specified: use FCFS");
-        tarch::parallel::NodePool::getInstance().setStrategy(
-            new tarch::parallel::FCFSNodePoolStrategy()
-        );
-      }
-    }
+  const std::string configuration = _parser.getMPIConfiguration();
 
-    if ( configuration.find( "greedy" )!=std::string::npos ) {
-      logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins (mpibalancing/GreedyBalancing)");
-      peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-        new mpibalancing::GreedyBalancing(
-          getCoarsestGridLevelOfAllSolvers(),
-          getCoarsestGridLevelOfAllSolvers()+1
-        )
+  if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
+    //
+    // Configure answering behaviour of global node pool
+    // =================================================
+    //
+    if (configuration.find( "FCFS" )!=std::string::npos ) {
+      tarch::parallel::NodePool::getInstance().setStrategy(
+        new tarch::parallel::FCFSNodePoolStrategy()
       );
+      logInfo("initDistributedMemoryConfiguration()", "load balancing relies on FCFS answering strategy");
     }
-    else if ( configuration.find( "hotspot" )!=std::string::npos ) {
-      logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
-      peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-          new mpibalancing::HotspotBalancing(false,getCoarsestGridLevelOfAllSolvers()+1)
+    else if (configuration.find( "fair" )!=std::string::npos ) {
+      int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks_per_node"));
+      if (ranksPerNode<=0) {
+        logError( "initDistributedMemoryConfiguration()", "please inform fair balancing how many ranks per node you use through value \"ranks_per_node:XXX\". Read value " << ranksPerNode << " is invalid" );
+        ranksPerNode = 1;
+      }
+      if ( ranksPerNode>=tarch::parallel::Node::getInstance().getNumberOfNodes() ) {
+        logWarning( "initDistributedMemoryConfiguration()", "value \"ranks_per_node:XXX\" exceeds total rank count. Reset to 1" );
+        ranksPerNode = 1;
+      }
+      tarch::parallel::NodePool::getInstance().setStrategy(
+        new mpibalancing::FairNodePoolStrategy(ranksPerNode)
       );
+      logInfo("initDistributedMemoryConfiguration()", "load balancing relies on fair answering strategy with " << ranksPerNode << " rank(s) per node") ;
     }
     else {
-      logError("initDistributedMemoryConfiguration()", "no valid load balancing configured. Use greedy load balancing without joins");
-      peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-          new peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning(false)
-      );
+      logError("initDistributedMemoryConfiguration()", "no valid load balancing answering strategy specified");
+      _parser.invalidate();
     }
   }
+
+  if ( configuration.find( "greedy-naive" )!=std::string::npos ) {
+    exahype::mappings::LoadBalancing::setLoadBalancingAnalysis( exahype::mappings::LoadBalancing::LoadBalancingAnalysis::Greedy );
+  }
+  else if ( configuration.find( "greedy-regular" )!=std::string::npos ) {
+    exahype::mappings::LoadBalancing::setLoadBalancingAnalysis( exahype::mappings::LoadBalancing::LoadBalancingAnalysis::GreedyWithRegularityAnalysis );
+  }
+  else if ( configuration.find( "hotspot" )!=std::string::npos ) {
+    exahype::mappings::LoadBalancing::setLoadBalancingAnalysis( exahype::mappings::LoadBalancing::LoadBalancingAnalysis::Hotspot );
+  }
+  else {
+    logError("initDistributedMemoryConfiguration()", "no valid load balancing analysis type specified");
+    _parser.invalidate();
+  }
+
+  //
+  // Configure answering behaviour of global node pool
+  // =================================================
+  //
+  if (_parser.getMPILoadBalancingType()==Parser::MPILoadBalancingType::Static) {
+    switch ( exahype::mappings::LoadBalancing::getLoadBalancingAnalysis() ) {
+      case exahype::mappings::LoadBalancing::LoadBalancingAnalysis::Greedy:
+        logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins");
+        peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+            new peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning(false)
+        );
+        break;
+      case exahype::mappings::LoadBalancing::LoadBalancingAnalysis::GreedyWithRegularityAnalysis:
+        logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins (mpibalancing/GreedyBalancing)");
+        peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+          new mpibalancing::GreedyBalancing(
+            getCoarsestGridLevelOfAllSolvers(),
+            getCoarsestGridLevelOfAllSolvers()+1
+          )
+        );
+        break;
+      case exahype::mappings::LoadBalancing::LoadBalancingAnalysis::Hotspot:
+        logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
+        peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+            new mpibalancing::HotspotBalancing(false,getCoarsestGridLevelOfAllSolvers()+1)
+        );
+        break;
+    }
+  }
+  // Dynamic load balancing
+  // ----------------------
+  // @todo Missing
   else {
     logError("initDistributedMemoryConfiguration()", "only MPI static load balancing supported so far. ");
   }
 
-  // end of static load balancing
-
-
   tarch::parallel::NodePool::getInstance().restart();
-  tarch::parallel::NodePool::getInstance().waitForAllNodesToBecomeIdle();
 
   tarch::parallel::Node::getInstance().setDeadlockTimeOut(_parser.getMPITimeOut());
   tarch::parallel::Node::getInstance().setTimeOutWarning(_parser.getMPITimeOut()/2);
@@ -149,6 +173,8 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     logWarning("initDistributedMemoryConfiguration()", "ranks are not allowed to skip any reduction (might harm performance). Use optimisation section to switch feature on" );
     exahype::mappings::Sending::SkipReductionInBatchedTimeSteps = false;
   }
+
+  tarch::parallel::NodePool::getInstance().waitForAllNodesToBecomeIdle();
   #endif
 }
 
@@ -373,7 +399,6 @@ int exahype::runners::Runner::run() {
   initDataCompression();
   initHPCEnvironment();
 
-
   int result = 0;
   if ( _parser.isValid() ) {
     // We have to do this for any rank.
@@ -452,6 +477,10 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
 
     #if !defined(Parallel)
     logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+    #else
+    if (tarch::parallel::Node::getInstance().getNumberOfNodes()==1) {
+      logInfo("createGrid(...)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+    }
     #endif
 
     #ifdef Asserts

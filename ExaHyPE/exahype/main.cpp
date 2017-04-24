@@ -19,10 +19,11 @@
 
 #include "peano/peano.h"
 
+#include "exahype/main.h"
 #include "exahype/Parser.h"
 #include "exahype/Vertex.h"
 #include "exahype/runners/Runner.h"
-#include "buildinfo.h"
+#include "buildinfo.h" // this file is expected in the user application directory
 
 #include "kernels/KernelCalls.h"
 
@@ -30,23 +31,17 @@
 #include "kernels/DGMatrices.h"
 
 #include <vector>
-#include <string>
 #include <cstdlib> // getenv, exit
 #include <iostream>
 #include <cstdio>
 
 tarch::logging::Log _log("");
 
-void version(const std::string& programname); // version dumping, see below
-void help(const std::string& programname);  // A help message
-
-
-
 /**
  * The ping pong test has to be triggered by main very very early. There should
  * be no other message in the MPI subsystem.
  */
-void pingPoingTest() {
+void exahype::pingPoingTest() {
   #if defined(Asserts) && defined(Parallel)
   logInfo( "run()", "start ping-pong test" );
   exahype::Vertex::initDatatype();
@@ -165,7 +160,7 @@ void pingPoingTest() {
 }
 
 
-int main(int argc, char** argv) {
+int exahype::main(int argc, char** argv) {
   peano::fillLookupTables();
 
   //
@@ -350,70 +345,70 @@ if(! std::getenv("EXAHYPE_SKIP_TESTS")) { // cf issue #74
 }
 
 
-void version(const std::string& programname) {
-  std::cout << "This is " << programname << ", an ExaHyPE executable (http://exahype.eu)\n";
-  std::cout << "Compiled on host " << EXAHYPE_BUILD_HOST << " at " << EXAHYPE_BUILD_DATE << "\n";
+void exahype::version(const std::string& programname, std::ostream& out) {
+  out << "This is " << programname << ", an ExaHyPE executable (http://exahype.eu)\n";
+  out << "Compiled on host " << EXAHYPE_BUILD_HOST << " at " << EXAHYPE_BUILD_DATE << "\n";
 #ifdef EXAHYPE_GIT_INFO
-  std::cout << "ExaHyPE git version: " << EXAHYPE_GIT_INFO << "\n";
+  out << "ExaHyPE git version: " << EXAHYPE_GIT_INFO << "\n";
 #else
-  std::cout << "ExaHyPE git version: n/a\n";
+  out << "ExaHyPE git version: n/a\n";
 #endif
 #ifdef PEANO_SVN_INFO
-  std::cout << "Peano svn version:   " << PEANO_SVN_INFO << "\n";
+  out << "Peano svn version:   " << PEANO_SVN_INFO << "\n";
 #else
-  std::cout << "Peano svn version:   n/a\n";
+  out << "Peano svn version:   n/a\n";
 #endif
-  std::cout << "\n";
+  out << "\n";
 
-  std::cout << "Compile time options\n";
-  std::cout << "====================\n";
+  out << "Compile time options\n";
+  out << "====================\n";
 #ifdef DIMENSIONS
-  std::cout << "Dimensions:    "<< DIMENSIONS << "\n";
+  out << "Dimensions:    "<< DIMENSIONS << "\n";
 #else
-  std::cout << "Dimensions:    not determinable!\n";
+  out << "Dimensions:    not determinable!\n";
 #endif
 
 #ifdef Debug
-  std::cout << "Debug:         YES\n";
+  out << "Debug:         YES\n";
 #else
-  std::cout << "Debug:         no\n";
+  out << "Debug:         no\n";
 #endif
   
 #ifdef Asserts
-  std::cout << "Assertions:    YES\n";
+  out << "Assertions:    YES\n";
 #else
-  std::cout << "Assertions:    no\n";
+  out << "Assertions:    no\n";
 #endif
 
 #ifdef Parallel
-  std::cout << "MPI Support:   YES\n";
+  out << "MPI Support:   YES\n";
 #else
-  std::cout << "MPI Support:   no\n";
+  out << "MPI Support:   no\n";
 #endif
   
 #ifdef EXAHYPE_CFL_FACTOR // issue #100
-  std::cout << "CFL Factor:    "<< EXAHYPE_CFL_FACTOR << "\n";
+  out << "CFL Factor:    "<< EXAHYPE_CFL_FACTOR << "\n";
 #else
-  std::cout << "CFL Factor:    Default\n";
+  out << "CFL Factor:    Default\n";
 #endif
 
-  std::cout << "\n";
-  std::cout << "Makesystem build options\n";
-  std::cout << "========================\n";
+  out << "\n";
+  out << "Makesystem build options\n";
+  out << "========================\n";
 #ifdef EXAHYPE_BUILDINFO_AVAILABLE
-  std::cout << EXAHYPE_BUILD_INFO << "\n";
+  out << EXAHYPE_BUILD_INFO << "\n";
 #else
-  std::cout << "Symbols n/a" << "\n";
+  out << "Symbols n/a" << "\n";
 #endif
 
-  std::cout << "\n";
-  std::cout << "Toolkit static registry info\n";
-  std::cout << "============================\n";
-  kernels::toString(std::cout);
-  std::cout << "\n";
+  out << "\n";
+  out << "Toolkit static registry info\n";
+  out << "============================\n";
+  kernels::toString(out);
+  out << "\n";
 }
 
-void help(const std::string& programname) {
+void exahype::help(const std::string& programname) {
   std::cout << "Usage: " << programname << " <YourApplication.exahype>\n";
   std::cout << "\n";
   std::cout << "   where YourApplication.exahype is an ExaHyPE specification file.\n";
@@ -426,3 +421,21 @@ void help(const std::string& programname) {
   std::cout << "    --version  Show version and other hard coded information\n";
   std::cout << "\n";
 }
+
+
+#ifndef EXAHYPE_LATE_TAKEOVER
+
+/**
+ * By default, ExaHyPE provides the main function entrance of the program.
+ * If you want to embed ExaHyPE however as an engine in some other program,
+ * you can call the exahype::main(argc,argv) at any later time.
+ *
+ * Thus you can treat ExaHyPE similar to a GUI toolkit or game engine even loop.
+ * To do so, just define EXAHYPE_LATE_TAKEOVER. Don't forget to start ExaHyPE
+ * finally with calling exahype::main on yourself.
+ **/
+int main(int argc, char**argv) {
+	exahype::main(argc, argv);
+}
+
+#endif

@@ -5,7 +5,6 @@
 -include files.mk
 
 
-
 OBJECTS=$(SOURCES:.java=.class)
 
 
@@ -27,6 +26,10 @@ clean:
 	rm -f ../dist/ExaHyPE.jar
 	rm -rf eu/exahype/node
 
+#	delete unpacked dependencies.
+	rm -rf org/jtwig
+	rm -rf com/github/
+
 
 createParser:
 	java -jar ../lib/sablecc.jar -d . ../exahype.grammar 
@@ -34,6 +37,15 @@ createParser:
 
 
 compile: files.mk $(OBJECTS) 
+
+unpack_deps:
+#	Ugly trick to get the depencies in the same directory.
+#	They only contain .class files, so nothing to compile, needs only
+# 	to be present during compiling eu/exahype/.
+#
+#	jar xf ../lib/jtwig-core.jar org/jtwig
+#	jar xf ../lib/mustache.jar   com/github/mustachejava
+#	jar xf ../lib/handlebars.jar com/github/jknack
 
 jar:
 	jar cmf ./Manifest.txt ExaHyPE.jar .
@@ -44,10 +56,16 @@ dist:
 	tar -czf ../dist/ExaHyPE-toolkit.tar.gz --exclude=*.class Manifest.txt Makefile eu 
 
 
-all: clean createParser compile dist
+all:
+#	try serial making by invoking individual make instead of dependency list:
+	make clean
+	make createParser
+	make unpack_deps
+	make compile
+	make dist
 
 
-files.mk:
+files.mk:	
 	@touch files.mk
 	@echo "SOURCES=\\" > files.mk
 	find . -name '*.java' | tr '\n' ' ' >> files.mk

@@ -73,110 +73,122 @@ exahype::Parser::Parser() {
 }
 
 void exahype::Parser::readFile(const std::string& filename) {
-  const int MAX_CHARS_PER_LINE = 65536;
+   try {
+    const int MAX_CHARS_PER_LINE = 65536;
 
-  std::regex COMMENT_BEGIN(R"((\/\*))"); // Covers all cases /*,/**,/***,... .
-  std::regex COMMENT_END(R"((\*\/))"); //
-  std::regex GROUP_BEGIN_OR_END(R"(^(\s|\t)*([a-zA-Z][^\=]+)+)");
-  std::regex CONST_PARAMETER(R"(^(\s|\t)*([A-Za-z](\w|[^a-zA-Z\d\s\t])*)(\s|\t)+const(\s|\t)*=(\s|\t)*(([^\s\t]|\,\s*)+)(\s|\t)*$)");
-  std::regex PARAMETER(R"(^(\s|\t)*([A-Za-z](\w|[^a-zA-Z\d\s\t])*)(\s|\t)*=(\s|\t)*(([^\s\t]|\,\s*)+)(\s|\t)*$)");
-  std::regex NO_SPLITTING(R"(\}|\{)");
-  std::regex COMMA_SEPARATED(R"((\w|[^a-zA-Z\,\s\t])+)");
-  std::regex WHITESPACE_SEPARATED(R"(([^\s\t]+))");
-  std::smatch match;
+    std::regex COMMENT_BEGIN(R"((\/\*))"); // Covers all cases /*,/**,/***,... .
+    std::regex COMMENT_END(R"((\*\/))"); //
+    std::regex GROUP_BEGIN_OR_END(R"(^(\s|\t)*([a-zA-Z][^\=]+)+)");
+    std::regex CONST_PARAMETER(R"(^(\s|\t)*([A-Za-z](\w|[^a-zA-Z\d\s\t])*)(\s|\t)+const(\s|\t)*=(\s|\t)*(([^\s\t]|\,\s*)+)(\s|\t)*$)");
+    std::regex PARAMETER(R"(^(\s|\t)*([A-Za-z](\w|[^a-zA-Z\d\s\t])*)(\s|\t)*=(\s|\t)*(([^\s\t]|\,\s*)+)(\s|\t)*$)");
+    std::regex NO_SPLITTING(R"(\}|\{)");
+    std::regex COMMA_SEPARATED(R"((\w|[^a-zA-Z\,\s\t])+)");
+    std::regex WHITESPACE_SEPARATED(R"(([^\s\t]+))");
+    std::smatch match;
 
-  _tokenStream.clear();
-
-  std::ifstream inputFile;
-  inputFile.open(filename.c_str());
-  if (!inputFile.good()) {
-    logError("readFile(String)", "cannot open file " << filename);
     _tokenStream.clear();
-    _interpretationErrorOccured = true;
-    return;
-  }
 
-  int currentlyReadsComment = 0;
-  int lineNumber            = 0;
-  while (!inputFile.eof() && inputFile) {
-    char lineBuffer[MAX_CHARS_PER_LINE];
-    inputFile.getline(lineBuffer, MAX_CHARS_PER_LINE);
-    std::string line(lineBuffer);
-
-    // parse the line
-    if (std::regex_search(line, match, COMMENT_BEGIN) && match.size() > 1) {
-      currentlyReadsComment += 1;
-    }
-    if (std::regex_search(line, match, COMMENT_END) && match.size() > 1) {
-      currentlyReadsComment -= 1;
+    std::ifstream inputFile;
+    inputFile.open(filename.c_str());
+    if (!inputFile.good()) {
+      logError("readFile(String)", "cannot open file " << filename);
+      _tokenStream.clear();
+      _interpretationErrorOccured = true;
+      return;
     }
 
-    // Runtime parameters
-    if (currentlyReadsComment==0 && std::regex_search(line, match, PARAMETER) && match.size() > 1) {
-      _tokenStream.push_back(match.str(2)); // Subgroup 2 is left-hand side (trimmed)
-      std::string rightHandSide = match.str(6);
+    int currentlyReadsComment = 0;
+    int lineNumber            = 0;
+    while (!inputFile.eof() && inputFile) {
+      char lineBuffer[MAX_CHARS_PER_LINE];
+      inputFile.getline(lineBuffer, MAX_CHARS_PER_LINE);
+      std::string line(lineBuffer);
 
-      if (!std::regex_search(rightHandSide, match, NO_SPLITTING)) {
-        std::regex_iterator<std::string::iterator> regex_it ( rightHandSide.begin(), rightHandSide.end(), COMMA_SEPARATED );
-        std::regex_iterator<std::string::iterator> rend;
-        while(regex_it!=rend) {
-          _tokenStream.push_back(regex_it->str());
-          ++regex_it;
-        }
-      } else {
-        _tokenStream.push_back(rightHandSide);
+      // parse the line
+      if (std::regex_search(line, match, COMMENT_BEGIN) && match.size() > 1) {
+        currentlyReadsComment += 1;
       }
-    // Compile time parameters (Do not push the token const on the stream)
-    } else if (currentlyReadsComment==0 && std::regex_search(line, match, CONST_PARAMETER) && match.size() > 1) {
-      _tokenStream.push_back(match.str(2)); // Subgroup 2 is left-hand side (trimmed)
-      std::string rightHandSide = match.str(7);
+      if (std::regex_search(line, match, COMMENT_END) && match.size() > 1) {
+        currentlyReadsComment -= 1;
+      }
 
-      if (!std::regex_search(rightHandSide, match, NO_SPLITTING)) {
-        std::regex_iterator<std::string::iterator> regex_it ( rightHandSide.begin(), rightHandSide.end(), COMMA_SEPARATED );
+      // Runtime parameters
+      if (currentlyReadsComment==0 && std::regex_search(line, match, PARAMETER) && match.size() > 1) {
+        _tokenStream.push_back(match.str(2)); // Subgroup 2 is left-hand side (trimmed)
+        std::string rightHandSide = match.str(6);
+
+        if (!std::regex_search(rightHandSide, match, NO_SPLITTING)) {
+          std::regex_iterator<std::string::iterator> regex_it ( rightHandSide.begin(), rightHandSide.end(), COMMA_SEPARATED );
+          std::regex_iterator<std::string::iterator> rend;
+          while(regex_it!=rend) {
+            _tokenStream.push_back(regex_it->str());
+            ++regex_it;
+          }
+        } else {
+          _tokenStream.push_back(rightHandSide);
+        }
+      // Compile time parameters (Do not push the token const on the stream)
+      } else if (currentlyReadsComment==0 && std::regex_search(line, match, CONST_PARAMETER) && match.size() > 1) {
+        _tokenStream.push_back(match.str(2)); // Subgroup 2 is left-hand side (trimmed)
+        std::string rightHandSide = match.str(7);
+
+        if (!std::regex_search(rightHandSide, match, NO_SPLITTING)) {
+          std::regex_iterator<std::string::iterator> regex_it ( rightHandSide.begin(), rightHandSide.end(), COMMA_SEPARATED );
+          std::regex_iterator<std::string::iterator> rend;
+          while(regex_it!=rend) {
+            _tokenStream.push_back(regex_it->str());
+            ++regex_it;
+          }
+        } else {
+          _tokenStream.push_back(rightHandSide);
+        }
+      } else if (currentlyReadsComment==0 && std::regex_search(line, match, GROUP_BEGIN_OR_END) && match.size() > 1) {
+        std::regex_iterator<std::string::iterator> regex_it ( line.begin(), line.end(), WHITESPACE_SEPARATED );
         std::regex_iterator<std::string::iterator> rend;
-        while(regex_it!=rend) {
-          _tokenStream.push_back(regex_it->str());
-          ++regex_it;
-        }
-      } else {
-        _tokenStream.push_back(rightHandSide);
+        if (regex_it->str().compare("end")!=0) { // first token should not be end
+          while(regex_it!=rend) {
+            _tokenStream.push_back(regex_it->str());
+            ++regex_it;
+          }
+        } // else do nothing
+      } else if (currentlyReadsComment<0) {
+        logError("readFile(String)",
+             "Please remove additional multi-line comment end(s) in line '" << lineNumber << "'.");
+         _interpretationErrorOccured = true;
       }
-    } else if (currentlyReadsComment==0 && std::regex_search(line, match, GROUP_BEGIN_OR_END) && match.size() > 1) {
-      std::regex_iterator<std::string::iterator> regex_it ( line.begin(), line.end(), WHITESPACE_SEPARATED );
-      std::regex_iterator<std::string::iterator> rend;
-      if (regex_it->str().compare("end")!=0) { // first token should not be end
-        while(regex_it!=rend) {
-          _tokenStream.push_back(regex_it->str());
-          ++regex_it;
-        }
-      } // else do nothing
-    } else if (currentlyReadsComment<0) {
+      lineNumber++;
+    }
+
+    if (currentlyReadsComment>0) {
       logError("readFile(String)",
-           "Please remove additional multi-line comment end(s) in line '" << lineNumber << "'.");
-       _interpretationErrorOccured = true;
+               "A multi-line comment was not closed after line " << lineNumber);
+      _interpretationErrorOccured = true;
     }
-    lineNumber++;
-  }
-
-  if (currentlyReadsComment>0) {
-    logError("readFile(String)",
-             "A multi-line comment was not closed after line " << lineNumber);
+   }
+  catch (const std::regex_error& e) {
+    logError("readFile(String)", "catched exception " << e.what() );
     _interpretationErrorOccured = true;
   }
 
-//  For debugging purposes
-//  std::cout << "_tokenStream=" << std::endl;
-//  for (std::string str : _tokenStream) {
-//    std::cout << "["<<str<<"]" << std::endl;
-//  }
-//  std::string configuration = getMPIConfiguration();
-//  int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks_per_node"));
-//  std::cout << "ranks_per_node="<<ranksPerNode << std::endl;
+  //  For debugging purposes
+  //  std::cout << "_tokenStream=" << std::endl;
+  //  for (std::string str : _tokenStream) {
+  //    std::cout << "["<<str<<"]" << std::endl;
+  //  }
+  //  std::string configuration = getMPIConfiguration();
+  //  int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks_per_node"));
+  //  std::cout << "ranks_per_node="<<ranksPerNode << std::endl;
 }
 
 bool exahype::Parser::isValid() const {
   return !_tokenStream.empty() && !_interpretationErrorOccured;
 }
+
+
+void exahype::Parser::invalidate() {
+  _interpretationErrorOccured = true;
+}
+
 
 std::string exahype::Parser::getTokenAfter(std::string token,
                                            int additionalTokensToSkip) const {
@@ -272,12 +284,31 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getDomainSize() const {
   assertion(isValid());
   std::string token;
   tarch::la::Vector<DIMENSIONS, double> result;
+
+  token = getTokenAfter("computational-domain", "dimension", 0);	
+  int dim = std::atoi(token.c_str());
+  if (dim < DIMENSIONS) {
+    logError("getDomainSize()",
+             "dimension: value "<< token << " in specification file" <<
+             " does not match -DDim"<<DIMENSIONS<<" switch in Makefile");
+    _interpretationErrorOccured = true;
+    return result;
+  }
+
   token = getTokenAfter("computational-domain", "width", 0);
   result(0) = atof(token.c_str());
   token = getTokenAfter("computational-domain", "width", 1);
   result(1) = atof(token.c_str());
 #if DIMENSIONS == 3
-  token = getTokenAfter("computational-domain", "width", 2);
+  token = getTokenAfter("computational-domain", "width", 2);	
+  if (token.compare("offset")==0) {
+    logError("getDomainSize()",
+             "width: not enough values specified for " <<
+             DIMENSIONS<< " dimensions");
+    _interpretationErrorOccured = true;
+    return result;
+  }
+  
   result(2) = atof(token.c_str());
 #endif
   return result;
@@ -298,7 +329,16 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getOffset() const {
   result(0) = atof(token.c_str());
   token = getTokenAfter("computational-domain", "offset", 1);
   result(1) = atof(token.c_str());
-#if DIMENSIONS == 3
+#if DIMENSIONS == 3 
+  token = getTokenAfter("computational-domain", "offset", 2);	
+  if (token.compare("end-time")==0) {
+    logError("getOffset()",
+             "offset: not enough values specified for " <<
+             DIMENSIONS<< " dimensions");
+    _interpretationErrorOccured = true;
+    return result;
+  }
+
   token = getTokenAfter("computational-domain", "offset", 2);
   result(2) = atof(token.c_str());
 #endif

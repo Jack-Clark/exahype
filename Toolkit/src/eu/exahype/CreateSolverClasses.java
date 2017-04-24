@@ -14,6 +14,8 @@ import eu.exahype.node.PSolver;
 import eu.exahype.solvers.Solver;
 import eu.exahype.solvers.SolverFactory;
 import eu.exahype.variables.Variables;
+import eu.exahype.io.FileSearch;
+import eu.exahype.io.IOUtils;
 
 public class CreateSolverClasses extends DepthFirstAdapter {
   public Boolean valid = true;

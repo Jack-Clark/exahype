@@ -32,7 +32,7 @@
  * new solution. 
  * Finally add the source terms.
  */
-template <typename SolverType>
+template <bool useSource, bool useNCP, bool useFlux, typename SolverType>
 double kernels::finitevolumes::godunov::c::solutionUpdate(
     SolverType& solver,
     double* luh_new, const double* luh,
@@ -40,7 +40,7 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
     const tarch::la::Vector<DIMENSIONS, double>& dx,double dt) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
-  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
+  //constexpr int numberOfData       = numberOfVariables+numberOfParameters;
   constexpr int patchSize          = SolverType::PatchSize;
   constexpr int ghostLayerWidth    = SolverType::GhostLayerWidth;
   constexpr int patchBegin         = ghostLayerWidth;
@@ -61,8 +61,7 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   for (int j = patchBegin; j < patchEnd; j++) {
   for (int k = patchBegin-1; k < patchEnd; k++) {  // We have patchSize+1 faces in each coordinate direction
     const double s_max_x = 
-        riemannsolvers::c::rusanov<SolverType>(
-            solver,
+        solver.riemannSolver(
             fL, fR,
             luh + idx(i,j, k, 0),
             luh + idx(i,j, k+1, 0), 
@@ -85,8 +84,7 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   for (int j = patchBegin-1; j < patchEnd; j++) {
   for (int k = patchBegin; k < patchEnd; k++) {
     const double s_max_y =
-      riemannsolvers::c::rusanov<SolverType>(
-        solver,
+      solver.riemannSolver(
         fL, fR,
         luh + idx(i, j, k,0),
         luh + idx(i, j+1, k,0), 
@@ -107,8 +105,7 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   for (int j = patchBegin; j < patchEnd; j++) {
   for (int k = patchBegin; k < patchEnd; k++) {
     const double s_max_z =
-      riemannsolvers::c::rusanov<SolverType>(
-        solver,
+      solver.riemannSolver(
         fL, fR,
         luh + idx(i, j,k,0),
         luh + idx(i+1, j,k,0), 
@@ -125,12 +122,14 @@ double kernels::finitevolumes::godunov::c::solutionUpdate(
   }
 
   // 5. Add the source terms 
-  if (solver.useSource()) {
+  if (useSource) {
     double* source = tempStateSizedVectors[0]; // temp var; state sized vector
     for (int i = patchBegin; i < patchEnd; i++) {
     for (int j = patchBegin; j < patchEnd; j++) {
     for (int k = patchBegin; k < patchEnd; k++) {
+      // TODO: Probably call fusedSource here instead with gradQ=0.
       solver.algebraicSource(&luh[idx(i,j,k,0)], source);
+
       for (int l = 0; l < numberOfVariables; l++) {
         // No BgradQ contribution as this is first order, cf. 2D godunov.
         luh_new[idx(i,j,k,l)] += dt * source[l];

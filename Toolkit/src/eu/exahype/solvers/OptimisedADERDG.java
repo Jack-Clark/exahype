@@ -4,7 +4,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Set;
 
-import eu.exahype.IOUtils;
+import eu.exahype.io.IOUtils;
+import eu.exahype.io.SourceTemplate;
 
 public class OptimisedADERDG implements Solver {
   public static final String Identifier = "optimised::fluxes::nonlinear";
@@ -46,12 +47,12 @@ public class OptimisedADERDG implements Solver {
   @Override
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
-	  String content = IOUtils.convertRessourceContentToString(
+	  SourceTemplate content = SourceTemplate.fromRessourceContent(
 			  "eu/exahype/solvers/templates/OptimisedADERDGSolverHeader.template");
 
-	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
-    content = content.replaceAll("\\{\\{AbstractSolver\\}\\}", getAbstractSolverName(solverName));
+	  content.put("Project", projectName);
+	  content.put("Solver", solverName);
+    content.put("AbstractSolver", getAbstractSolverName(solverName));
 
 	  String profilerInclude                     = "";
     String parserInclude                       = "";
@@ -66,29 +67,29 @@ public class OptimisedADERDG implements Solver {
       parserInclude = "#include \"exahype/Parser.h\"";
       solverConstructorSignatureExtension += solverInitSignatureExtension;
 	  }
-	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
-    content = content.replaceAll("\\{\\{ParserInclude\\}\\}", parserInclude);
-	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
-    content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", solverInitSignatureExtension);
+	  content.put("ProfilerInclude",profilerInclude);
+    content.put("ParserInclude", parserInclude);
+	  content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
+    content.put("SolverInitSignatureExtension", solverInitSignatureExtension);
 
-	  content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
-	  content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
-	  content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
-	  content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order));
+	  content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
+	  content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
+	  content.put("Dimensions",String.valueOf( _dimensions));
+	  content.put("Order", String.valueOf(_order));
     
-	  writer.write(content);
+	  writer.write(content.toString());
   }
 
   
   @Override
   public void writeAbstractHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
-    String content = IOUtils.convertRessourceContentToString(
+    SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverHeader.template");
 
-    content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-    content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
-    content = content.replaceAll("\\{\\{AbstractSolver\\}\\}", getAbstractSolverName(solverName));
+    content.put("Project", projectName);
+    content.put("Solver", solverName);
+    content.put("AbstractSolver", getAbstractSolverName(solverName));
 
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
@@ -97,22 +98,22 @@ public class OptimisedADERDG implements Solver {
       profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
       solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
     }
-    content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", solverInitSignatureExtension);
-    content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
-    content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
+    content.put("SolverInitSignatureExtension", solverInitSignatureExtension);
+    content.put("ProfilerInclude",profilerInclude);
+    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
     
-    content = content.replaceAll("\\{\\{NumberOfVariables\\}\\}", String.valueOf(_numberOfVariables));
-    content = content.replaceAll("\\{\\{NumberOfParameters\\}\\}",String.valueOf( _numberOfParameters));
-    content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf( _dimensions));
-    content = content.replaceAll("\\{\\{Order\\}\\}", String.valueOf(_order));
+    content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
+    content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
+    content.put("Dimensions",String.valueOf( _dimensions));
+    content.put("Order", String.valueOf(_order));
 
     String namingSchemes = "";
     for (String name : _namingSchemeNames) {
       namingSchemes += "    " + "class "+name.substring(0, 1).toUpperCase() + name.substring(1) + ";\n";
     }
-    content = content.replaceAll("\\{\\{NamingSchemes\\}\\}", namingSchemes);
+    content.put("NamingSchemes", namingSchemes);
     
-    writer.write(content);
+    writer.write(content.toString());
   }
   
   @Override
@@ -122,12 +123,12 @@ public class OptimisedADERDG implements Solver {
     Helpers.invokeCodeGenerator(solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
         _microarchitecture, _pathToLibxsmm, _enableDeepProfiler);
         
-    String content = IOUtils.convertRessourceContentToString(
+    SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverImplementation.template"); //OptimisedADERDGSolverInCGeneratedCode_withConverter for debug (can switch SpaceTimePredictor and RiemannSolver to generic if needed)
     
-	  content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-	  content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
-    content = content.replaceAll("\\{\\{AbstractSolver\\}\\}", getAbstractSolverName(solverName));
+	  content.put("Project", projectName);
+	  content.put("Solver", solverName);
+    content.put("AbstractSolver", getAbstractSolverName(solverName));
 	  //
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
@@ -140,92 +141,92 @@ public class OptimisedADERDG implements Solver {
 		  solverConstructorArgumentExtension  += ", std::move(profiler)";
       
       if(_enableDeepProfiler) {
-        content = content.replaceAll("\\{\\{DeepProfilerArg\\}\\}", ", _profiler.get()");
+        content.put("DeepProfilerArg", ", _profiler.get()");
       } else {
-        content = content.replaceAll("\\{\\{DeepProfilerArg\\}\\}", "");  
+        content.put("DeepProfilerArg", "");  
       }
 		  
-      content = content.replaceAll("\\{\\{BeforeSpaceTimePredictor\\}\\}", "  _profiler->start(\"spaceTimePredictor\");");  
-      content = content.replaceAll("\\{\\{AfterSpaceTimePredictor\\}\\}", "  _profiler->stop(\"spaceTimePredictor\");"); 
-      content = content.replaceAll("\\{\\{BeforeSolutionUpdate\\}\\}", "  _profiler->start(\"solutionUpdate\");"); 
-      content = content.replaceAll("\\{\\{AfterSolutionUpdate\\}\\}", "  _profiler->stop(\"solutionUpdate\");"); 
-      content = content.replaceAll("\\{\\{BeforeVolumeIntegral\\}\\}", "  _profiler->start(\"volumeIntegral\");"); 
-      content = content.replaceAll("\\{\\{AfterVolumeIntegral\\}\\}", "  _profiler->stop(\"volumeIntegral\");"); 
-      content = content.replaceAll("\\{\\{BeforeSurfaceIntegral\\}\\}", "  _profiler->start(\"surfaceIntegral\");"); 
-      content = content.replaceAll("\\{\\{AfterSurfaceIntegral\\}\\}", "  _profiler->stop(\"surfaceIntegral\");"); 
-      content = content.replaceAll("\\{\\{BeforeRiemannSolver\\}\\}", "  _profiler->start(\"riemannSolver\");"); 
-      content = content.replaceAll("\\{\\{AfterRiemannSolver\\}\\}", "  _profiler->stop(\"riemannSolver\");"); 
-      content = content.replaceAll("\\{\\{BeforeBoundaryConditions\\}\\}", "  _profiler->start(\"boundaryConditions\");"); 
-      content = content.replaceAll("\\{\\{AfterBoundaryConditions\\}\\}", "  _profiler->stop(\"boundaryConditions\");"); 
-      content = content.replaceAll("\\{\\{BeforeStableTimeStepSize\\}\\}", "  _profiler->start(\"stableTimeStepSize\");"); 
-      content = content.replaceAll("\\{\\{AfterStableTimeStepSize\\}\\}", "  _profiler->stop(\"stableTimeStepSize\");"); 
-      content = content.replaceAll("\\{\\{BeforeSolutionAdjustment\\}\\}", "  _profiler->start(\"solutionAdjustment\");"); 
-      content = content.replaceAll("\\{\\{AfterSolutionAdjustment\\}\\}", "  _profiler->stop(\"solutionAdjustment\");"); 
-      content = content.replaceAll("\\{\\{BeforeFaceUnknownsProlongation\\}\\}", "  _profiler->start(\"faceUnknownsProlongation\");"); 
-      content = content.replaceAll("\\{\\{AfterFaceUnknownsProlongation\\}\\}", "  _profiler->stop(\"faceUnknownsProlongation\");"); 
-      content = content.replaceAll("\\{\\{BeforeFaceUnknownsRestriction\\}\\}", "  _profiler->start(\"faceUnknownsRestriction\");"); 
-      content = content.replaceAll("\\{\\{AfterFaceUnknownsRestriction\\}\\}", "  _profiler->stop(\"faceUnknownsRestriction\");"); 
-      content = content.replaceAll("\\{\\{BeforeVolumeUnknownsProlongation\\}\\}", "  _profiler->start(\"volumeUnknownsProlongation\");"); 
-      content = content.replaceAll("\\{\\{AfterVolumeUnknownsProlongation\\}\\}", "  _profiler->stop(\"volumeUnknownsProlongation\");"); 
-      content = content.replaceAll("\\{\\{BeforeVolumeUnknownsRestriction\\}\\}", "  _profiler->start(\"volumeUnknownsRestriction\");"); 
-      content = content.replaceAll("\\{\\{AfterVolumeUnknownsRestriction\\}\\}", "  _profiler->stop(\"volumeUnknownsRestriction\");");
+      content.put("BeforeSpaceTimePredictor", "  _profiler->start(\"spaceTimePredictor\");");  
+      content.put("AfterSpaceTimePredictor", "  _profiler->stop(\"spaceTimePredictor\");"); 
+      content.put("BeforeSolutionUpdate", "  _profiler->start(\"solutionUpdate\");"); 
+      content.put("AfterSolutionUpdate", "  _profiler->stop(\"solutionUpdate\");"); 
+      content.put("BeforeVolumeIntegral", "  _profiler->start(\"volumeIntegral\");"); 
+      content.put("AfterVolumeIntegral", "  _profiler->stop(\"volumeIntegral\");"); 
+      content.put("BeforeSurfaceIntegral", "  _profiler->start(\"surfaceIntegral\");"); 
+      content.put("AfterSurfaceIntegral", "  _profiler->stop(\"surfaceIntegral\");"); 
+      content.put("BeforeRiemannSolver", "  _profiler->start(\"riemannSolver\");"); 
+      content.put("AfterRiemannSolver", "  _profiler->stop(\"riemannSolver\");"); 
+      content.put("BeforeBoundaryConditions", "  _profiler->start(\"boundaryConditions\");"); 
+      content.put("AfterBoundaryConditions", "  _profiler->stop(\"boundaryConditions\");"); 
+      content.put("BeforeStableTimeStepSize", "  _profiler->start(\"stableTimeStepSize\");"); 
+      content.put("AfterStableTimeStepSize", "  _profiler->stop(\"stableTimeStepSize\");"); 
+      content.put("BeforeSolutionAdjustment", "  _profiler->start(\"solutionAdjustment\");"); 
+      content.put("AfterSolutionAdjustment", "  _profiler->stop(\"solutionAdjustment\");"); 
+      content.put("BeforeFaceUnknownsProlongation", "  _profiler->start(\"faceUnknownsProlongation\");"); 
+      content.put("AfterFaceUnknownsProlongation", "  _profiler->stop(\"faceUnknownsProlongation\");"); 
+      content.put("BeforeFaceUnknownsRestriction", "  _profiler->start(\"faceUnknownsRestriction\");"); 
+      content.put("AfterFaceUnknownsRestriction", "  _profiler->stop(\"faceUnknownsRestriction\");"); 
+      content.put("BeforeVolumeUnknownsProlongation", "  _profiler->start(\"volumeUnknownsProlongation\");"); 
+      content.put("AfterVolumeUnknownsProlongation", "  _profiler->stop(\"volumeUnknownsProlongation\");"); 
+      content.put("BeforeVolumeUnknownsRestriction", "  _profiler->start(\"volumeUnknownsRestriction\");"); 
+      content.put("AfterVolumeUnknownsRestriction", "  _profiler->stop(\"volumeUnknownsRestriction\");");
 	  } else {
-      content = content.replaceAll("\\{\\{DeepProfilerArg\\}\\}", "");  
-      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeSpaceTimePredictor\\}\\}", "");  
-      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterSpaceTimePredictor\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeSolutionUpdate\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterSolutionUpdate\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeVolumeIntegral\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterVolumeIntegral\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeSurfaceIntegral\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterSurfaceIntegral\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeRiemannSolver\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterRiemannSolver\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeBoundaryConditions\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterBoundaryConditions\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeStableTimeStepSize\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterStableTimeStepSize\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeSolutionAdjustment\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterSolutionAdjustment\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeFaceUnknownsProlongation\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterFaceUnknownsProlongation\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeFaceUnknownsRestriction\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterFaceUnknownsRestriction\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeVolumeUnknownsProlongation\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterVolumeUnknownsProlongation\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{BeforeVolumeUnknownsRestriction\\}\\}", ""); 
-      content = content.replaceAll("(\\n|\\r)+\\{\\{AfterVolumeUnknownsRestriction\\}\\}", "");
+      content.put("DeepProfilerArg", "");  
+      content.put("BeforeSpaceTimePredictor", "");  
+      content.put("AfterSpaceTimePredictor", ""); 
+      content.put("BeforeSolutionUpdate", ""); 
+      content.put("AfterSolutionUpdate", ""); 
+      content.put("BeforeVolumeIntegral", ""); 
+      content.put("AfterVolumeIntegral", ""); 
+      content.put("BeforeSurfaceIntegral", ""); 
+      content.put("AfterSurfaceIntegral", ""); 
+      content.put("BeforeRiemannSolver", ""); 
+      content.put("AfterRiemannSolver", ""); 
+      content.put("BeforeBoundaryConditions", ""); 
+      content.put("AfterBoundaryConditions", ""); 
+      content.put("BeforeStableTimeStepSize", ""); 
+      content.put("AfterStableTimeStepSize", ""); 
+      content.put("BeforeSolutionAdjustment", ""); 
+      content.put("AfterSolutionAdjustment", ""); 
+      content.put("BeforeFaceUnknownsProlongation", ""); 
+      content.put("AfterFaceUnknownsProlongation", ""); 
+      content.put("BeforeFaceUnknownsRestriction", ""); 
+      content.put("AfterFaceUnknownsRestriction", ""); 
+      content.put("BeforeVolumeUnknownsProlongation", ""); 
+      content.put("AfterVolumeUnknownsProlongation", ""); 
+      content.put("BeforeVolumeUnknownsRestriction", ""); 
+      content.put("AfterVolumeUnknownsRestriction", "");
 	  }
 	  if (_hasConstants) {
 		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
       solverInitCallExtension = ", constants";
 	  }
     
-	  content = content.replaceAll("\\{\\{SolverInitCallExtension\\}\\}",solverInitCallExtension);
-	  content = content.replaceAll("\\{\\{ProfilerInclude\\}\\}",profilerInclude);
-	  content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
-	  content = content.replaceAll("\\{\\{SolverConstructorArgumentExtension\\}\\}", solverConstructorArgumentExtension);
+	  content.put("SolverInitCallExtension",solverInitCallExtension);
+	  content.put("ProfilerInclude",profilerInclude);
+	  content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
+	  content.put("SolverConstructorArgumentExtension", solverConstructorArgumentExtension);
 	  
-	  writer.write(content);
+	  writer.write(content.toString());
   }
   
   @Override
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
-    String content = IOUtils.convertRessourceContentToString(
+    SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/GenericADERDGSolverInCUserCode.template");
     
-    content = content.replaceAll("\\{\\{Project\\}\\}", projectName);
-    content = content.replaceAll("\\{\\{Solver\\}\\}", solverName);
+    content.put("Project", projectName);
+    content.put("Solver", solverName);
     
-    content = content.replaceAll("\\{\\{Elements\\}\\}",  String.valueOf( _numberOfParameters+_numberOfVariables));
-    content = content.replaceAll("\\{\\{Dimensions\\}\\}",String.valueOf(_dimensions));
+    content.put("Elements",  String.valueOf( _numberOfParameters+_numberOfVariables));
+    content.put("Dimensions",String.valueOf(_dimensions));
 
     String SolverInitSignatureExtension = "";
     if (_hasConstants) {
         SolverInitSignatureExtension = ", exahype::Parser::ParserView& constants";
     }
-    content = content.replaceAll("\\{\\{SolverInitSignatureExtension\\}\\}", SolverInitSignatureExtension);
+    content.put("SolverInitSignatureExtension", SolverInitSignatureExtension);
     //
     String solverConstructorArgumentExtension  = "";
     String solverConstructorSignatureExtension = "";
@@ -239,9 +240,9 @@ public class OptimisedADERDG implements Solver {
        SolverInitCallExtension = ", constants";
     }
 
-    content = content.replaceAll("\\{\\{SolverInitCallExtension\\}\\}",SolverInitCallExtension);
-    content = content.replaceAll("\\{\\{SolverConstructorSignatureExtension\\}\\}", solverConstructorSignatureExtension);
-    content = content.replaceAll("\\{\\{SolverConstructorArgumentExtension\\}\\}", solverConstructorArgumentExtension);
+    content.put("SolverInitCallExtension",SolverInitCallExtension);
+    content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
+    content.put("SolverConstructorArgumentExtension", solverConstructorArgumentExtension);
     
     // user functions
     int digits = String.valueOf(_numberOfVariables + _numberOfParameters).length();
@@ -305,15 +306,15 @@ public class OptimisedADERDG implements Solver {
       if (i<_numberOfVariables*_numberOfVariables-1) matrixb += "\n";
     }
     
-    content = content.replaceAll("\\{\\{AdjustedSolutionValues\\}\\}",adjustSolution);
-    content = content.replaceAll("\\{\\{Eigenvalues\\}\\}",eigenvalues);
-    content = content.replaceAll("\\{\\{Flux\\}\\}",flux);
-    content = content.replaceAll("\\{\\{Source\\}\\}",source);
-    content = content.replaceAll("\\{\\{BoundaryValues\\}\\}",boundaryValues);
-    content = content.replaceAll("\\{\\{NonConservativeProduct\\}\\}",ncp);
-    content = content.replaceAll("\\{\\{MatrixB\\}\\}",matrixb);
+    content.put("AdjustedSolutionValues",adjustSolution);
+    content.put("Eigenvalues",eigenvalues);
+    content.put("Flux",flux);
+    content.put("Source",source);
+    content.put("BoundaryValues",boundaryValues);
+    content.put("NonConservativeProduct",ncp);
+    content.put("MatrixB",matrixb);
     
-    writer.write(content);
+    writer.write(content.toString());
   }
   
   @Deprecated

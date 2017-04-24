@@ -14,6 +14,12 @@
 
 #include "{{Solver}}.h" // Have to include a proper declaration. Cannot use forward declared classes in static_cast.
 
+#include <stdio.h>
+
+// Code generation information.
+{{defineLinear}}
+{{defineFortran}}
+
 // We define the constructor of the actual solver here in order to regenerate it easily.
 {{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
   Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
@@ -35,9 +41,85 @@ void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
 	   << ")";
 }
 
+void {{Project}}::Abstract{{Solver}}::abortWithMsg(const char* const msg) {
+	// verbosily fail even without assertions turned on
+	puts(msg);
+	abort();
+}
+
 void {{Project}}::Abstract{{Solver}}::spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) {
 {{BeforeSpaceTimePredictor}}
-  {{spaceTimePredictor}}
+#ifdef isFortran
+  kernels::aderdg::generic::fortran::spaceTimePredictor{{NonlinearOrLinear}}<{{Solver}}>(*static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd,tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
+#else
+#ifdef isLinear
+
+#define STPL(usePointSource, useSource, useFlux, useNCP)				\
+        kernels::aderdg::generic::c::spaceTimePredictorLinear<usePointSource, useSource, useFlux, useNCP, {{Solver}}>( \
+           *static_cast<{{Solver}}*>(this),lQhbnd,lFhbnd, \
+           tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,luh,dx,dt, pointForceSources);
+
+ if( usePointSource() &&  useAlgebraicSource() &&  useConservativeFlux() &&  useNonConservativeProduct()) STPL(true,true,true,true);
+ if( usePointSource() &&  useAlgebraicSource() &&  useConservativeFlux() && !useNonConservativeProduct()) STPL(true,true,true,false);
+ if( usePointSource() &&  useAlgebraicSource() && !useConservativeFlux() &&  useNonConservativeProduct()) STPL(true,true,false,true);
+ if( usePointSource() &&  useAlgebraicSource() && !useConservativeFlux() && !useNonConservativeProduct()) STPL(true,true,false,false);
+ if( usePointSource() && !useAlgebraicSource() &&  useConservativeFlux() &&  useNonConservativeProduct()) STPL(true,false,true,true);
+ if( usePointSource() && !useAlgebraicSource() &&  useConservativeFlux() && !useNonConservativeProduct()) STPL(true,false,true,false);
+ if( usePointSource() && !useAlgebraicSource() && !useConservativeFlux() &&  useNonConservativeProduct()) STPL(true,false,false,true);
+ if( usePointSource() && !useAlgebraicSource() && !useConservativeFlux() && !useNonConservativeProduct()) STPL(true,false,false,false);
+ if(!usePointSource() &&  useAlgebraicSource() &&  useConservativeFlux() &&  useNonConservativeProduct()) STPL(false,true,true,true);
+ if(!usePointSource() &&  useAlgebraicSource() &&  useConservativeFlux() && !useNonConservativeProduct()) STPL(false,true,true,false);
+ if(!usePointSource() &&  useAlgebraicSource() && !useConservativeFlux() &&  useNonConservativeProduct()) STPL(false,true,false,true);
+ if(!usePointSource() &&  useAlgebraicSource() && !useConservativeFlux() && !useNonConservativeProduct()) STPL(false,true,false,false);
+ if(!usePointSource() && !useAlgebraicSource() &&  useConservativeFlux() &&  useNonConservativeProduct()) STPL(false,false,true,true);
+ if(!usePointSource() && !useAlgebraicSource() &&  useConservativeFlux() && !useNonConservativeProduct()) STPL(false,false,true,false);
+ if(!usePointSource() && !useAlgebraicSource() && !useConservativeFlux() &&  useNonConservativeProduct()) STPL(false,false,false,true);
+ if(!usePointSource() && !useAlgebraicSource() && !useConservativeFlux() && !useNonConservativeProduct()) STPL(false,false,false,false);
+
+#else
+
+  // For some reason, we compile here the SpaceTimepRedictorNonLinear (STPNL) for all possible
+  // combinations, even if the guards have no other possibility than staying constant for the whole
+  // run (which means they could be constexpr). I have no clue why we need this overhead here. In
+  // my eyes it's waste of time. Maybe somebody can explain it to me.  -- Sven, 2017-04-07.
+
+#define STPNL(useSource, useFlux, useNCP) \
+    kernels::aderdg::generic::c::spaceTimePredictorNonlinear<useSource, useFlux, useNCP, {{Solver}}>(\
+        *static_cast<{{Solver}}*>(this), lQhbnd, lFhbnd,\
+        tempSpaceTimeUnknowns,tempSpaceTimeFluxUnknowns,tempUnknowns,tempFluxUnknowns,tempStateSizedVectors,\
+        luh,dx,dt);
+  
+  if(useAlgebraicSource()) {
+    if(useConservativeFlux()) {
+      if(useNonConservativeProduct()) {
+        STPNL(true,true,true);
+      } else {
+        STPNL(true,true,false);
+      }
+    } else {
+      if(useNonConservativeProduct()) {
+        STPNL(true,false,true);
+      } else {
+        STPNL(true,false,false);
+      }
+    }
+  } else {
+    if(useConservativeFlux()) {
+      if(useNonConservativeProduct()) {
+        STPNL(false,true,true);
+      } else {
+        STPNL(false,true,false);
+      }
+    } else {
+      if(useNonConservativeProduct()) {
+        STPNL(false,false,true);
+      } else {
+        STPNL(false,false,false);
+      }
+    }
+  } 
+#endif // isLinear
+#endif // isFortran
 {{AfterSpaceTimePredictor}}
 }
 
@@ -53,7 +135,35 @@ void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luh,const double* c
 
 void {{Project}}::Abstract{{Solver}}::volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) {
 {{BeforeVolumeIntegral}}
-  {{volumeIntegral}}
+#ifdef isFortran
+  kernels::aderdg::generic::fortran::volumeIntegral{{NonlinearOrLinear}}(lduh,lFhi,dx,getNumberOfVariables(),getNumberOfParameters(),getNodesPerCoordinateAxis());
+#endif
+#ifndef isFortran
+#ifdef isLinear
+#define VI(useSource, useFlux) \
+	  kernels::aderdg::generic::c::volumeIntegralLinear<useSource,useFlux,NumberOfVariables,Order+1>(lduh,lFhi,dx);
+
+#else
+
+#define VI(useSource, useFlux) \
+	    kernels::aderdg::generic::c::volumeIntegralNonlinear<useSource,useFlux,NumberOfVariables,Order+1>(lduh,lFhi,dx);
+#endif // isLinear
+  
+  if(useAlgebraicSource() || useNonConservativeProduct()) {
+    if(useConservativeFlux()) {
+      VI(true, true);
+    } 	else {
+      VI(true, false);
+    } 
+  } else {
+    if(useConservativeFlux()) {
+      VI(false, true);
+    } else {			 
+      VI(false, false);
+    }
+  }
+
+#endif // !isFortran
 {{AfterVolumeIntegral}}
 }
 
@@ -71,7 +181,24 @@ void {{Project}}::Abstract{{Solver}}::riemannSolver(double* FL,double* FR,const 
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
 {{BeforeRiemannSolver}}
-  {{riemannSolver}}
+#ifdef isFortran
+  kernels::aderdg::generic::fortran::riemannSolver{{NonlinearOrLinear}}<{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+#endif
+#ifndef isFortran
+#ifdef isLinear
+  if(useNonConservativeProduct()) {
+   kernels::aderdg::generic::c::riemannSolverLinear<true,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+  } else {
+   kernels::aderdg::generic::c::riemannSolverLinear<false,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+  }
+#else
+  if(useNonConservativeProduct()) {
+    kernels::aderdg::generic::c::riemannSolverNonlinear<true,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+  } else {
+    kernels::aderdg::generic::c::riemannSolverNonlinear<false,{{Solver}}>(*static_cast<{{Solver}}*>(this),FL,FR,QL,QR,tempFaceUnknownsArray,tempStateSizedVectors,tempStateSizedSquareMatrices,dt,normalNonZeroIndex);
+  }
+#endif // isLinear
+#endif // !isFortran
 {{AfterRiemannSolver}}
 }
 
@@ -98,7 +225,7 @@ void {{Project}}::Abstract{{Solver}}::adjustSolution(double *luh,const tarch::la
 {{BeforeSolutionAdjustment}}
   switch (useAdjustSolution(center, dx, t, dt)) {
     case AdjustSolutionValue::No:
-      assertionMsg(false, "Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
+      abortWithMsg("Branch may not be entered. Solver spec clarifies that adjust solution is not to be called, but kernel nevertheless invokes adjustSolution." );
       break;
     case AdjustSolutionValue::PointWisely:
       kernels::aderdg::generic::{{Language}}::solutionAdjustment<{{Solver}}>(*static_cast<{{Solver}}*>(this),luh,center,dx,t,dt);
@@ -152,50 +279,24 @@ void {{Project}}::Abstract{{Solver}}::pointSource(const double t,const double dt
 {{AfterPointSource}}
 }
 
-void {{Project}}::Abstract{{Solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
-      algebraicSource(Q, S);
-      if(useNonConservativeProduct()) {
-        double ncp[NumberOfVariables];
-        nonConservativeProduct(Q, gradQ, ncp);
-        for(int l=0; l<NumberOfVariables; l++) {
-          S[l] -= ncp[l];
-        }
-      }
+void {{Project}}::Abstract{{Solver}}::flux(const double* const Q,double** F) {
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::Abstract{{Solver}}::algebraicSource(const double* const Q,double* S) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      abort();
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
         
 void {{Project}}::Abstract{{Solver}}::nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      abort();
-}
-
-void {{Project}}::Abstract{{Solver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
-	// By default, if not given, fallback to nonConservativeProduct
-	kernels::idx2 idx_gradQ(DIMENSIONS, NumberOfVariables+NumberOfParameters);
-	kernels::idx2 idx_Bn(NumberOfVariables, NumberOfVariables);
-	
-	// build gradQ from normal vector and fill up Bn.
-	double gradQ[DIMENSIONS * (NumberOfVariables + NumberOfParameters)] = {0.0};
-	for(int i=0; i<NumberOfVariables; i++) {
-		std::fill_n(gradQ, idx_gradQ.size, 0.0);
-		gradQ[idx_gradQ(d, i)] = 1.0;
-		nonConservativeProduct(Q, gradQ, Bn + idx_Bn(i,0));
-	}
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::Abstract{{Solver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      abort();
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
 void {{Project}}::Abstract{{Solver}}::adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      abort();
-}
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );}
 
 void {{Project}}::Abstract{{Solver}}::adjustPatchSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
@@ -203,6 +304,35 @@ void {{Project}}::Abstract{{Solver}}::adjustPatchSolution(
       const double t,
       const double dt,
       double* luh) {
-      assertionMsg(false,"If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
-      abort();
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
+
+/**
+ * Fallback implementations of joined functions. Users can either safely ignore this
+ * or overwrite with their own implementations.
+ **/
+#include "kernels/fusedMethods.cpph"
+
+void {{Project}}::Abstract{{Solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
+   #define FUSEDSOURCE(useSource, useNCP) \
+      kernels::fusedSource<useSource, useNCP, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
+  if(useAlgebraicSource()) {
+    if(useNonConservativeProduct()) {
+      FUSEDSOURCE(true, true);
+    } else {
+      FUSEDSOURCE(true, false);
+    }
+  } else {
+    if(useNonConservativeProduct()) {
+      FUSEDSOURCE(false, true);
+    } else {
+      FUSEDSOURCE(false, false);
+    }
+  }
+}
+
+void {{Project}}::Abstract{{Solver}}::coefficientMatrix(const double* const Q,const int d,double* Bn) {
+  kernels::coefficientMatrix<{{Solver}}>(*static_cast<{{Solver}}*>(this), Q, d, Bn);
+}
+
+

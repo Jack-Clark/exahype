@@ -1,15 +1,15 @@
 /**
- * This file is part of the ExaHyPE project.
- * Copyright (c) 2016  http://exahype.eu
- * All rights reserved.
- *
- * The project has received funding from the European Union's Horizon
- * 2020 research and innovation programme under grant agreement
- * No 671698. For copyrights and licensing, please consult the webpage.
- *
- * Released under the BSD 3 Open Source License.
- * For the full license text, see LICENSE.txt
- **/
+* This file is part of the ExaHyPE project.
+* Copyright (c) 2016  http://exahype.eu
+* All rights reserved.
+*
+* The project has received funding from the European Union's Horizon
+* 2020 research and innovation programme under grant agreement
+* No 671698. For copyrights and licensing, please consult the webpage.
+*
+* Released under the BSD 3 Open Source License.
+* For the full license text, see LICENSE.txt
+**/
 
 // included in ../../Kernels.h
 
@@ -21,128 +21,105 @@
 #include "../../../../KernelUtils.h"
 
 namespace kernels {
-  namespace aderdg {
-    namespace generic {
-      namespace c {
+namespace aderdg {
+namespace generic {
+namespace c {
 
-        /**
-         * We need to consider material parameters
-         * in QL and QR,tempStateSizedVectors,tempFaceUnknownsArray
-         * We don't need to consider material parameters
-         * in FL,FR,tempStateSizedSquareMatrices,
-         */
-        template <bool useCoefficientMatrix, typename SolverType>
-        void riemannSolverNonlinear(SolverType& solver,
-                                    double* FL, double* FR, const double* const QL,
-                                    const double* const QR,
-                                    double* tempFaceUnknownsArray,
-                                    double** tempStateSizedVectors,
-                                    double** tempStateSizedSquareMatrices,
-                                    const double dt,
-                                    const int normalNonZero) {
-          constexpr int numberOfVariables  = SolverType::NumberOfVariables;
-          constexpr int numberOfParameters = SolverType::NumberOfParameters;
-          constexpr int numberOfData       = numberOfVariables+numberOfParameters;
-          constexpr int order              = SolverType::Order;
-          constexpr int basisSize          = order+1;
+/**
+* We implement a very simple Rusanov scheme with scalar dissipation
+* (smax*Id).
+*
+* We need to consider material parameters
+* in QL and QR,tempStateSizedVectors,tempFaceUnknownsArray
+* We don't need to consider material parameters
+* in FL,FR,tempStateSizedSquareMatrices,
+*/
+template <bool useNCP, typename SolverType>
+void riemannSolverNonlinear(SolverType& solver,
+                          double* FL, double* FR, const double* const QL,
+                          const double* const QR,
+                          double* tempFaceUnknownsArray,
+                          double** tempStateSizedVectors,
+                          double** tempStateSizedSquareMatrices,
+                          const double dt,
+                          const int direction) {
+  constexpr int numberOfVariables  = SolverType::NumberOfVariables;
+  constexpr int numberOfParameters = SolverType::NumberOfParameters;
+  constexpr int numberOfData       = numberOfVariables+numberOfParameters;
+  constexpr int order              = SolverType::Order;
+  constexpr int basisSize          = order+1;
 
-          // Compute the average variables and parameters from the left and the right
-          double QavL[numberOfData] = {0.0};
-          double QavR[numberOfData] = {0.0};
-          {
-            idx3 idx_QLR(basisSize, basisSize, numberOfData);
-            for (int i = 0; i < basisSize; i++) {
-              for (int j = 0; j < basisSize; j++) {
-                const double weight = kernels::gaussLegendreWeights[order][i] *
-                    kernels::gaussLegendreWeights[order][j];
+  // Compute the average variables and parameters from the left and the right
+  double QavL[numberOfData] = {0.0};
+  double QavR[numberOfData] = {0.0};
+  {
+    idx3 idx_QLR(basisSize, basisSize, numberOfData);
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        const double weight =
+            kernels::gaussLegendreWeights[order][i] *
+            kernels::gaussLegendreWeights[order][j];
 
-                for (int k = 0; k < numberOfVariables+numberOfParameters; k++) {
-                  QavL[k] += weight * QL[idx_QLR(i, j, k)];
-                  QavR[k] += weight * QR[idx_QLR(i, j, k)];
-                }
-              }
-            }
+        for (int k = 0; k < numberOfData; k++) {
+          QavL[k] += weight * QL[idx_QLR(i, j, k)];
+          QavR[k] += weight * QR[idx_QLR(i, j, k)];
+        }
+      }
+    }
+  }
+
+  double LL[numberOfVariables] = {0.0}; // do not need to store material parameters
+  double LR[numberOfVariables] = {0.0};
+  solver.eigenvalues(QavL, direction, LL);
+  solver.eigenvalues(QavR, direction, LR);
+
+  // skip parameters
+  std::transform(LL, LL + numberOfVariables, LL, std::abs<double>);
+  std::transform(LR, LR + numberOfVariables, LR, std::abs<double>);
+  const double* smax_L = std::max_element(LL, LL + numberOfVariables);
+  const double* smax_R = std::max_element(LR, LR + numberOfVariables);
+  const double smax    = std::max(*smax_L, *smax_R);
+
+  // compute fluxes (and fluctuations for non-conservative PDEs)
+  double Qavg[numberOfData];
+  idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
+  double gradQ[DIMENSIONS][numberOfVariables] = {0.0};
+  double ncp[numberOfVariables]               = {0.0};
+  {
+    idx3 idx_FLR(basisSize, basisSize, numberOfVariables);
+    idx3 idx_QLR(basisSize, basisSize, numberOfData);
+
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+
+        if(useNCP) { // we don't use matrixB but the NCP call here.
+          for(int l=0; l < numberOfVariables; l++) {
+            gradQ[direction][l] = QR[idx_QLR(i, j, l)] - QL[idx_QLR(i, j, l)];
+            Qavg[l] = 0.5 * (QR[idx_QLR(i, j, l)] + QL[idx_QLR(i, j, l)]);
           }
 
-          double LL[numberOfVariables] = {0.0}; // do not need to store material parameters
-          double LR[numberOfVariables] = {0.0};
-          solver.eigenvalues(QavL, normalNonZero, LL);
-          solver.eigenvalues(QavR, normalNonZero, LR);
-
-          double Qavg[numberOfData];
-          /*
-  // Wurde nur bei matrixB verwendet, gemittelt ueber die gesamte Flaeche/Kante
-  for(int k=0; k < numberOfVariables; k++) {
-    Qavg[k] = (QavL[k] + QavR[k]) / 2;
-  }
-           */
-
-          // Here, we implement a very simple Rusanov scheme with scalar dissipation
-          // (smax*Id).
-          // We can change this into a more sophisticated Osher or HLLEM Riemann solver
-          // whenever needed!
-          // skip parameters
-          std::transform(LL, LL + numberOfVariables, LL,
-                         std::abs<double>);
-          std::transform(LR, LR + numberOfVariables, LR,
-                         std::abs<double>);
-          const double* smax_L =
-              std::max_element(LL, LL + numberOfVariables);
-          const double* smax_R =
-              std::max_element(LR, LR + numberOfVariables);
-          const double smax = std::max(*smax_L, *smax_R);
-
-          //double* Bn  = tempStateSizedSquareMatrices[0];
-          //double* ncp = tempStateSizedVectors[4];
-          //idx2 idx_Bn(numberOfVariables, numberOfVariables);
-          /*constexpr*/ idx2 idx_gradQ(DIMENSIONS, numberOfVariables);
-          double gradQ[DIMENSIONS*numberOfVariables] = {0.0};
-          double ncp[numberOfVariables] = {0.0};
-          /*
-  if(useCoefficientMatrix) {
-    solver.coefficientMatrix(Qavg, normalNonZero, Bn);
-  }
-           */
-
-          // This comment is not true:
-          // We now compute the numerical flux. Note that the scheme is at the moment
-          // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
-          // this will be converted into the left and right fluctuations.
-
-          {
-            idx3 idx_FLR(basisSize, basisSize, numberOfVariables);
-            idx3 idx_QLR(basisSize, basisSize, numberOfData);
-
-            for (int i = 0; i < basisSize; i++) {
-              for (int j = 0; j < basisSize; j++) {
-
-                if(useCoefficientMatrix) { // we don't use matrixB but the NCP call here.
-                  for(int l=0; l < numberOfVariables; l++) {
-                    gradQ[idx_gradQ(normalNonZero, l)] = QR[idx_QLR(i, j, l)] - QL[idx_QLR(i, j, l)];
-                    Qavg[l] = 0.5 * (QR[idx_QLR(i, j, l)] + QL[idx_QLR(i, j, l)]);
-                  }
-                  solver.nonConservativeProduct(Qavg, gradQ, ncp);
-                }
-
-                // skip parameters
-                for (int k = 0; k < numberOfVariables; k++) {
-                  FL[idx_FLR(i, j, k)] =
-                      0.5 * (FR[idx_FLR(i, j, k)] + FL[idx_FLR(i, j, k)]) -
-                      0.5 * smax * (QR[idx_QLR(i, j, k)] - QL[idx_QLR(i, j, k)]);
-
-                  if(useCoefficientMatrix) {
-                    FR[idx_FLR(i, j, k)] = FL[idx_FLR(i, j, k)] - 0.5 * ncp[k];
-                    FL[idx_FLR(i, j, k)] = FL[idx_FLR(i, j, k)] + 0.5 * ncp[k];
-                  } else {
-                    FR[idx_FLR(i, j, k)] = FL[idx_FLR(i, j, k)];
-                  }
-                }
-              }
-            }
-          }
+          solver.nonConservativeProduct(Qavg, gradQ[0], ncp);
         }
 
-      }  // namespace c
-    }  // namespace generic
-  }  // namespace aderdg
+        // skip parameters
+        for (int k = 0; k < numberOfVariables; k++) {
+          FL[idx_FLR(i, j, k)] =
+              0.5 * (FR[idx_FLR(i, j, k)] + FL[idx_FLR(i, j, k)]) -
+              0.5 * smax * (QR[idx_QLR(i, j, k)] - QL[idx_QLR(i, j, k)]);
+
+          if(useNCP) {
+            FR[idx_FLR(i, j, k)] = FL[idx_FLR(i, j, k)] - 0.5 * ncp[k];
+            FL[idx_FLR(i, j, k)] = FL[idx_FLR(i, j, k)] + 0.5 * ncp[k];
+          } else {
+            FR[idx_FLR(i, j, k)] = FL[idx_FLR(i, j, k)];
+          }
+        }
+      }
+    }
+  }
+}
+
+}  // namespace c
+}  // namespace generic
+}  // namespace aderdg
 }  // namespace kernels

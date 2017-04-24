@@ -36,7 +36,7 @@ class exahype::runners::Runner {
  private:
   static tarch::logging::Log _log;
 
-  const exahype::Parser& _parser;
+  exahype::Parser& _parser;
 
   /**
    * Setup the oracles for the shared memory parallelisation. Different
@@ -209,7 +209,7 @@ class exahype::runners::Runner {
   int getCoarsestGridLevelOfAllSolvers() const;
   int getFinestGridLevelOfAllSolvers() const;
  public:
-  explicit Runner(const Parser& parser);
+  explicit Runner(Parser& parser);
   virtual ~Runner();
 
   // Disallow copy and assignment
