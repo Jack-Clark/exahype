@@ -16,12 +16,12 @@
  * For the full license text, see LICENSE.txt
  */
 exahype-project  TrivialProject
-  peano-kernel-path          = ./Peano
-  exahype-path               = ./ExaHyPE
-  output-directory           = ./Demonstrators/TrivialProject
+  peano-kernel-path const    = ./Peano
+  exahype-path const         = ./ExaHyPE
+  output-directory const     = ./Demonstrators/TrivialProject
   
   computational-domain
-    dimension                = 2
+    dimension const          = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 10.0

@@ -26,19 +26,19 @@ exahype-project EulerFV
 
   computational-domain
     dimension const         = 2
-    width                    = 1.0, 1.0
-    offset                   = 0.0, 0.0
-    end-time                 = 1.00
+    width                   = 1.0, 1.0
+    offset                  = 0.0, 0.0
+    end-time                = 0.4
   end computational-domain
  
   solver Finite-Volumes MyEulerSolver
     variables const    = rho:1,j:3,E:1
     patch-size const  = 10
-    maximum-mesh-size = 5e-3
+    maximum-mesh-size = 2e-2     
     time-stepping     = global
-    kernel const      = generic::Godunov
+    kernel const      = generic::godunov
     language const    = C
-    plot vtk::Cartesian::cells::ascii EulerWriter
+    plot vtu::Cartesian::cells::ascii EulerWriter
       variables const = 5
       time            = 0.0
       repeat          = 0.01
