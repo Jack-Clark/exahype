@@ -16,7 +16,7 @@
 #include "exahype/solvers/Solver.h"
 
 peano::CommunicationSpecification
-exahype::mappings::PreProcessing::communicationSpecification() {
+exahype::mappings::PreProcessing::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeDescendIntoLocalSubtree,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
@@ -24,7 +24,7 @@ exahype::mappings::PreProcessing::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::PreProcessing::enterCellSpecification() {
+exahype::mappings::PreProcessing::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
@@ -34,31 +34,31 @@ exahype::mappings::PreProcessing::enterCellSpecification() {
  * Nop.
  */
 peano::MappingSpecification
-exahype::mappings::PreProcessing::leaveCellSpecification() {
+exahype::mappings::PreProcessing::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::PreProcessing::
-    touchVertexLastTimeSpecification() {
+    touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::PreProcessing::
-    touchVertexFirstTimeSpecification() {
+    touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::PreProcessing::ascendSpecification() {
+exahype::mappings::PreProcessing::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::PreProcessing::descendSpecification() {
+exahype::mappings::PreProcessing::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);

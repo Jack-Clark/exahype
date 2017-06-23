@@ -18,14 +18,16 @@
 #include <cstdlib> // abort()
 #include "kernels/KernelUtils.h" // idx
 
-{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
-  Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
-  init(cmdlineargs);
+#include "exahype/disableOptimization.h" // we experience compiler bugs sometimes.
+
+{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
+  Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,maximumAdaptiveMeshDepth,timeStepping{{AbstractSolverConstructorArgumentExtension}}) {
+  init(cmdlineargs{{SolverInitCallExtension}});
 }
 
-{{Project}}::Abstract{{Solver}}::Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}}):
+{{Project}}::Abstract{{Solver}}::Abstract{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping{{AbstractSolverConstructorSignatureExtension}}):
   exahype::solvers::FiniteVolumesSolver("{{Solver}}",NumberOfVariables,NumberOfParameters,PatchSize,
-                                        GhostLayerWidth,maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
+                                        GhostLayerWidth,maximumMeshSize,maximumAdaptiveMeshDepth,timeStepping{{SolverConstructorArgumentExtension}}) {
 }
 
 void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
@@ -50,7 +52,7 @@ void {{Project}}::Abstract{{Solver}}::solutionUpdate(double* luhNew,const double
   maxAdmissibleDt = kernels::finitevolumes::{{FiniteVolumesType}}::c::solutionUpdate<useSource,useNCP,useFlux, {{Solver}}>(\
        *static_cast<{{Solver}}*>(this),luhNew,luh,tempStateSizedArrays,tempUnknowns,dx,dt);
 
-  if(useSource()) {
+  if(useAlgebraicSource()) {
     if(useNonConservativeProduct()) {
       if(useConservativeFlux()) {
          SU(true,true,true);
@@ -145,6 +147,10 @@ void {{Project}}::Abstract{{Solver}}::flux(const double* const Q,double** F) {
       abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
 }
 
+void {{Project}}::Abstract{{Solver}}::pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) {
+      abortWithMsg("If this operation is entered, you have activated the corresponding guard. Then you have to re-implement this routine, too." );
+}
+
 /**
  * Fallback implementations of joined functions. Users can either safely ignore this
  * or overwrite with their own implementations.
@@ -155,7 +161,7 @@ void {{Project}}::Abstract{{Solver}}::flux(const double* const Q,double** F) {
 void {{Project}}::Abstract{{Solver}}::fusedSource(const double* const Q, const double* const gradQ, double* S) {
    #define FUSEDSOURCE(useSource, useNCP) \
       kernels::fusedSource<useSource, useNCP, {{Solver}}>(*static_cast<{{Solver}}*>(this), Q, gradQ, S);
-  if(useSource()) {
+  if(useAlgebraicSource()) {
     if(useNonConservativeProduct()) {
       FUSEDSOURCE(true, true);
     } else {

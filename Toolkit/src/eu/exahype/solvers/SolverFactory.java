@@ -1,6 +1,8 @@
 package eu.exahype.solvers;
 
 import java.util.Set;
+import java.util.List;
+import java.util.Arrays;
 
 public class SolverFactory {
   private int _dimensions;
@@ -54,15 +56,15 @@ public class SolverFactory {
           numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
           _enableProfiler, hasConstants);
     }
-    else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
+    else if (!isFortran && generalKernel.startsWith( eu.exahype.solvers.OptimisedADERDG.Identifier )) {
       return new eu.exahype.solvers.OptimisedADERDG(_dimensions,
           numberOfVariables, numberOfParameters, namingSchemeNames, order, _microarchitecture, _pathToLibxsmm,
-          _enableProfiler, _enableDeepProfiler, hasConstants, false);
+          _enableProfiler, _enableDeepProfiler, hasConstants, false, Arrays.asList(generalKernel.split("::")));
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {
       return new eu.exahype.solvers.KernelEuler2d();
     }
-
+    
     return null;
   }
   

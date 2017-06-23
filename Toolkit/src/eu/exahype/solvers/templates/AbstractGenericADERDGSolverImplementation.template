@@ -21,15 +21,15 @@
 {{defineFortran}}
 
 // We define the constructor of the actual solver here in order to regenerate it easily.
-{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
-  Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
+{{Project}}::{{Solver}}::{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}}):
+  Abstract{{Solver}}::Abstract{{Solver}}(maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,timeStepping{{AbstractSolverConstructorArgumentExtension}}) {
   init(cmdlineargs{{SolverInitCallExtension}});
 }
 
 
-{{Project}}::Abstract{{Solver}}::Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}}):
+{{Project}}::Abstract{{Solver}}::Abstract{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping{{AbstractSolverConstructorSignatureExtension}}):
   exahype::solvers::ADERDGSolver("{{Solver}}",NumberOfVariables,NumberOfParameters,Order+1,
-                                 maximumMeshSize,timeStepping{{SolverConstructorArgumentExtension}}) {
+                                 maximumMeshSize,maximumAdaptiveMeshDepth,DMPObservables,timeStepping{{SolverConstructorArgumentExtension}}) {
 }
 
 void {{Project}}::Abstract{{Solver}}::constantsToString(std::ostream& os) {
@@ -177,7 +177,7 @@ void {{Project}}::Abstract{{Solver}}::surfaceIntegral(double* lduh,const double*
 
 
 
-void {{Project}}::Abstract{{Solver}}::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex) {
+void {{Project}}::Abstract{{Solver}}::riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex,bool isBoundaryFace) {
   assertion2(normalNonZeroIndex>=0,dt,normalNonZeroIndex);
   assertion2(normalNonZeroIndex<DIMENSIONS,dt,normalNonZeroIndex);
 {{BeforeRiemannSolver}}

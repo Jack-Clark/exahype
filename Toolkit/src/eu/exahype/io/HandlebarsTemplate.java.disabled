@@ -1,0 +1,53 @@
+package eu.exahype.io;
+
+import eu.exahype.io.SourceTemplate;
+
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Template;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+
+
+/**
+ * A template instance using Handlebars-java.
+ *
+ * Handlebars is a logicful extension to the logicless Mustache
+ * template language. We currently use a Rhino via JavaScript
+ * implementation, thus having an ugly 300kB large JAR file
+ * to run this. Anyway.
+ *
+ *
+ * TODO: Check all templates on syntactical correctness at compile
+ *       time of toolkit.
+ *
+ * TODO: Make sure we get useful error information if templates
+ *       fail to compile.
+ **/
+public class HandlebarsTemplate extends SourceTemplate {
+  Template template;
+  Map<String,Object> values;
+
+  public HandlebarsTemplate(String inline_template) {
+    values = new HashMap<String,Object>();
+    Handlebars handlebars = new Handlebars();
+    try{
+     template = handlebars.compileInline(inline_template);
+    } catch(IOException e) {
+      System.out.println("ERROR: " + e.toString());
+      System.err.println("ExaHyPE script failed ");
+      e.printStackTrace();
+    }
+  }
+
+  public void put(String key, Object value) {
+    values.put(key, value);
+  }
+
+  public String toString() {
+    return template.apply(values);
+  }
+}

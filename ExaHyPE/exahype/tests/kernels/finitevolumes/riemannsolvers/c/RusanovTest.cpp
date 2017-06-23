@@ -69,12 +69,14 @@ exahype::tests::kernels::finitevolumes::riemannsolvers::c::RusanovTest::RusanovT
 exahype::tests::kernels::finitevolumes::riemannsolvers::c::RusanovTest::~RusanovTest() {}
 
 void exahype::tests::kernels::finitevolumes::riemannsolvers::c::RusanovTest::run() {
+  #if defined(Debug) || defined(Asserts)
   _log.info("RusanovTest::run()", "RusanovTest is active");
 
   // ZeroFluxZeroNCP
   ZeroFluxZeroNCP mockupSolver;
   double qL[ZeroFluxZeroNCP::NumberOfVariables+ZeroFluxZeroNCP::NumberOfParameters] = {0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8};
   double qR[ZeroFluxZeroNCP::NumberOfVariables+ZeroFluxZeroNCP::NumberOfParameters] = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
+
   const double output_fL[ZeroFluxZeroNCP::NumberOfVariables] = {0.3, 0.3, 0.3, 0.3};
   const double output_fR[ZeroFluxZeroNCP::NumberOfVariables] = {0.3, 0.3, 0.3, 0.3};
 
@@ -87,6 +89,8 @@ void exahype::tests::kernels::finitevolumes::riemannsolvers::c::RusanovTest::run
       qR,
       0 // this test is independent of the dimension since non-conservative product and flux are zero
   );
+  #endif
+
   for (int i=0; i<ZeroFluxZeroNCP::NumberOfVariables; i++) {
     assertionNumericalEquals2(fL[i],output_fL[i],fL[i],output_fL[i]);
     assertionNumericalEquals2(fR[i],output_fR[i],fR[i],output_fR[i]);

@@ -1,0 +1,45 @@
+package eu.exahype.io;
+
+import eu.exahype.io.SourceTemplate;
+
+import org.jtwig.environment.DefaultEnvironmentConfiguration;
+import org.jtwig.environment.EnvironmentConfiguration;
+
+import org.jtwig.JtwigModel;
+import org.jtwig.JtwigTemplate;
+
+
+import java.util.HashMap;
+import java.util.Map;
+
+
+/**
+ * A template instance using jtwig-core.
+ *
+ * To compile, get the JAR from
+ * https://bintray.com/jtwig/maven/jtwig-core#files/org/jtwig/jtwig-core/5.85.3.RELEASE
+ *
+ * It compiles in principle, but has a bloody amount of dependencies, ie see
+ * https://github.com/jtwig/jtwig-core/blob/master/build.gradle#L40
+ *
+ * It should run, but due to the depencies I could not really check.
+ *
+ **/
+public class JTwigTemplate extends SourceTemplate {
+  JtwigTemplate tpl;
+  Map<String,Object> values;
+
+  public JTwigTemplate(String inline_template) {
+    EnvironmentConfiguration configuration = new DefaultEnvironmentConfiguration();
+    tpl = JtwigTemplate.inlineTemplate(inline_template, configuration);
+  }
+
+  public void put(String key, String value) {
+    values.put(key, value);
+  }
+
+  public String toString() {
+    JtwigModel model = JtwigModel.newModel(values);
+    return tpl.render(model);
+  }
+}

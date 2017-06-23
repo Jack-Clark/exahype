@@ -93,7 +93,11 @@ class exahype::mappings::AugmentedAMRTreePlot2d {
   tarch::plotter::griddata::Writer::CellDataWriter* _cellDescriptionIndexWriter;
   tarch::plotter::griddata::Writer::CellDataWriter* _cellRefinementEventWriter;
   tarch::plotter::griddata::Writer::CellDataWriter* _cellDataWriter;
+  tarch::plotter::griddata::Writer::CellDataWriter* _augmentationStatusWriter;
+  tarch::plotter::griddata::Writer::CellDataWriter* _helperStatusWriter;
   tarch::plotter::griddata::Writer::CellDataWriter* _limiterStatusWriter;
+  tarch::plotter::griddata::Writer::CellDataWriter* _previousLimiterStatusWriter;
+  tarch::plotter::griddata::Writer::CellDataWriter* _isAugmentedWriter;
 
   int _cellCounter;
 
@@ -106,14 +110,14 @@ class exahype::mappings::AugmentedAMRTreePlot2d {
   static double SqueezeZAxis;
   static double TreeConnectionsValue;
 
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
-  static peano::MappingSpecification enterCellSpecification();
-  static peano::MappingSpecification leaveCellSpecification();
-  static peano::MappingSpecification ascendSpecification();
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
+  peano::MappingSpecification enterCellSpecification(int level) const;
+  peano::MappingSpecification leaveCellSpecification(int level) const;
+  peano::MappingSpecification ascendSpecification(int level) const;
+  peano::MappingSpecification descendSpecification(int level) const;
 
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   AugmentedAMRTreePlot2d();
 

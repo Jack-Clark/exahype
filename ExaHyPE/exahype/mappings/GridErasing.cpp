@@ -1,7 +1,7 @@
 #include "exahype/mappings/GridErasing.h"
 
 
-peano::CommunicationSpecification   exahype::mappings::GridErasing::communicationSpecification() {
+peano::CommunicationSpecification   exahype::mappings::GridErasing::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
@@ -9,40 +9,40 @@ peano::CommunicationSpecification   exahype::mappings::GridErasing::communicatio
   );
 }
 
-peano::MappingSpecification   exahype::mappings::GridErasing::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::mappings::GridErasing::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 
-peano::MappingSpecification   exahype::mappings::GridErasing::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::mappings::GridErasing::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 
-peano::MappingSpecification   exahype::mappings::GridErasing::enterCellSpecification() {
+peano::MappingSpecification   exahype::mappings::GridErasing::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 
-peano::MappingSpecification   exahype::mappings::GridErasing::leaveCellSpecification() {
+peano::MappingSpecification   exahype::mappings::GridErasing::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 
-peano::MappingSpecification   exahype::mappings::GridErasing::ascendSpecification() {
+peano::MappingSpecification   exahype::mappings::GridErasing::ascendSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
 
-peano::MappingSpecification   exahype::mappings::GridErasing::descendSpecification() {
+peano::MappingSpecification   exahype::mappings::GridErasing::descendSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }

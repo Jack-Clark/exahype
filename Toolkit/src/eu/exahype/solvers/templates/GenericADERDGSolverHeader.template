@@ -33,7 +33,7 @@ class {{Project}}::{{Solver}}: public {{Project}}::Abstract{{Solver}} {
      */
     static tarch::logging::Log _log;
   public:
-    {{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
+    {{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping,std::vector<std::string>& cmdlineargs{{SolverConstructorSignatureExtension}});
 
     /**
      * Initialise the solver.

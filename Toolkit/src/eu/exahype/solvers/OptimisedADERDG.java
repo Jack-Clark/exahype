@@ -3,12 +3,13 @@ package eu.exahype.solvers;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Set;
+import java.util.List;
 
 import eu.exahype.io.IOUtils;
 import eu.exahype.io.SourceTemplate;
 
 public class OptimisedADERDG implements Solver {
-  public static final String Identifier = "optimised::fluxes::nonlinear";
+  public static final String Identifier = "optimised"; //"optimised::options::nonlinear"
 
   private int     _dimensions;
   private int     _numberOfVariables;
@@ -23,9 +24,12 @@ public class OptimisedADERDG implements Solver {
   private boolean _hasConstants;
   private boolean _isLinear;
   private boolean _isFortran;
+  private boolean _useFlux;
+  private boolean _useSource;
+  private boolean _useNCP;
 
   public OptimisedADERDG(int dimensions, int numberOfVariables, int numberOfParameters, Set<String> namingSchemeNames,
-      int order,String microarchitecture, String pathToLibxsmm, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants,boolean isLinear) {
+      int order,String microarchitecture, String pathToLibxsmm, boolean enableProfiler, boolean enableDeepProfiler, boolean hasConstants,boolean isLinear, List<String> options) {
     _dimensions         = dimensions;
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
@@ -38,10 +42,18 @@ public class OptimisedADERDG implements Solver {
     _enableDeepProfiler = enableDeepProfiler;
     _hasConstants       = hasConstants;
     _isLinear           = isLinear;
+    _useFlux            = options.contains("fluxes");
+    _useSource          = options.contains("sources");
+    _useNCP             = options.contains("ncp");
+    
   }
   
   private String getAbstractSolverName(String solverName) {
     return "Abstract"+solverName;
+  }
+  
+  private String boolToTemplate(boolean b) {
+    return b? "true" : "false";
   }
   
   @Override
@@ -93,19 +105,21 @@ public class OptimisedADERDG implements Solver {
 
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
+    String abstractSolverConstructorSignatureExtension = "";
     String solverInitSignatureExtension        = "";
     if (_enableProfiler) {
       profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
       solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
+      abstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
     }
     content.put("SolverInitSignatureExtension", solverInitSignatureExtension);
+    content.put("AbstractSolverConstructorSignatureExtension", abstractSolverConstructorSignatureExtension);
     content.put("ProfilerInclude",profilerInclude);
     content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
     
-    content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
-    content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
-    content.put("Dimensions",String.valueOf( _dimensions));
-    content.put("Order", String.valueOf(_order));
+    content.put("useFlux", boolToTemplate(_useFlux));
+    content.put("useSource", boolToTemplate(_useSource));
+    content.put("useNCP", boolToTemplate(_useNCP));
 
     String namingSchemes = "";
     for (String name : _namingSchemeNames) {
@@ -120,8 +134,8 @@ public class OptimisedADERDG implements Solver {
   public void writeAbstractImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
         
-    Helpers.invokeCodeGenerator(solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
-        _microarchitecture, _pathToLibxsmm, _enableDeepProfiler);
+    Helpers.invokeCodeGenerator(projectName + "::" + solverName, _numberOfVariables, _numberOfParameters, _order, _isLinear, _dimensions,
+        _microarchitecture, _pathToLibxsmm, _enableDeepProfiler, _useFlux, _useSource, _useNCP);
         
     SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/solvers/templates/AbstractOptimisedADERDGSolverImplementation.template"); //OptimisedADERDGSolverInCGeneratedCode_withConverter for debug (can switch SpaceTimePredictor and RiemannSolver to generic if needed)
@@ -133,12 +147,16 @@ public class OptimisedADERDG implements Solver {
 	  String profilerInclude                     = "";
 	  String solverConstructorSignatureExtension = "";
 	  String solverConstructorArgumentExtension  = "";
+    String abstractSolverConstructorSignatureExtension = "";
+    String abstractSolverConstructorArgumentExtension = "";
     String solverInitCallExtension             = "";    
     
 	  if (_enableProfiler) {
 		  profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
+      abstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
 		  solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
 		  solverConstructorArgumentExtension  += ", std::move(profiler)";
+      abstractSolverConstructorArgumentExtension  += ", std::move(profiler)";
       
       if(_enableDeepProfiler) {
         content.put("DeepProfilerArg", ", _profiler.get()");
@@ -201,7 +219,8 @@ public class OptimisedADERDG implements Solver {
 		  solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
       solverInitCallExtension = ", constants";
 	  }
-    
+    content.put("AbstractSolverConstructorSignatureExtension", abstractSolverConstructorSignatureExtension);
+    content.put("AbstractSolverConstructorArgumentExtension", abstractSolverConstructorArgumentExtension);
 	  content.put("SolverInitCallExtension",solverInitCallExtension);
 	  content.put("ProfilerInclude",profilerInclude);
 	  content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);

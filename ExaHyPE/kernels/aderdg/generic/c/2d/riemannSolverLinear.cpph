@@ -92,7 +92,7 @@ void riemannSolverLinear(SolverType& solver, double* FL, double* FR,
   solver.coefficientMatrix(Qav, normalNonZero, Bn[0]);        // Bn is nVarxnVar matrix
 
   double BnMinusIdSmax[numberOfVariables][numberOfVariables] = {0.0}; // size: numberOfVariables * numberOfVariables
-  double BnPlusIdSmax[numberOfVariables][numberOfVariables] = {0.0}; // size: numberOfVariables * numberOfVariables
+  double BnPlusIdSmax[numberOfVariables][numberOfVariables]  = {0.0}; // size: numberOfVariables * numberOfVariables
   {
     // skip parameters
     std::copy_n (Bn[0], numberOfVariables2, BnMinusIdSmax[0]);

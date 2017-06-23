@@ -37,6 +37,9 @@ class Reinitialisation;
  * This mapping is part of three mappings (+adapters) which together perform the limiter
  * status spreading the recomputation of troubled cells (and their direct) neighbours.
  *
+ * This mapping is shared by both algorithmic sections
+ * LocalRecomputation and APosterioriRefinement.
+ *
  * \see exahype::mappings::SolutionRecomputation for more details.
  *
  * @author Dominic Charrier
@@ -56,11 +59,10 @@ class exahype::mappings::Reinitialisation {
 #ifdef Parallel
   /**
    * We only send empty data for LimitingADERDGSolvers
-   * where we have detected a change of the limiter domain.
+   * where we have detected a irregular change of the limiter domain
+   * but no additional mesh refinement was required.
    * This information should be available on all ranks.
    * We ignore other solver types.
-   *
-   * TODO(Dominic): Add more docu.
    */
   static void sendEmptyDataToNeighbour(
       const int                                    toRank,
@@ -72,12 +74,11 @@ class exahype::mappings::Reinitialisation {
       const int                                    level);
 
   /*
-   * We only send solver and empty data for LimitingADERDGSolvers
-   * where we have detected a change of the limiter domain.
+   * We only send data for LimitingADERDGSolvers
+   * where we have detected a irregular change of the limiter domain
+   * but no additional mesh refinement was required.
    * This information should be available on all ranks.
    * We ignore other solver types.
-   *
-   * TODO(Dominic): Add more docu.
    */
   static void sendDataToNeighbour(
       const int                                    toRank,
@@ -94,34 +95,36 @@ class exahype::mappings::Reinitialisation {
    * Mask out data exchange between master and worker.
    * Further let Peano handle heap data exchange internally.
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
    * Run through the whole grid. Run concurrently on the fine grid.
    */
-  static peano::MappingSpecification enterCellSpecification();
-  /**
-   * TODO(Dominic): Add docu.
-   */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
-
+  /////
+  // Below all Specifications are nop
+  /////
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification leaveCellSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification ascendSpecification();
+  peano::MappingSpecification leaveCellSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification ascendSpecification(int level) const;
+  /**
+   * Nop.
+   */
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**
      * Initialise debug counters.
@@ -134,9 +137,18 @@ class exahype::mappings::Reinitialisation {
     void endIteration(exahype::State& solverState);
 
     /**
-     * Overwrite the merged limiter status values on the faces
-     * by a unified value determined on hand of those values.
-     * Do not touch the cell-based limiter status.
+     * For all cells hosting a solver patch of a
+     * LimitingADERDGSolver, perform the following operations:
+     *
+     * 1. Perform a rollback to the previous time step.
+     * 2. Reinitialise the solver patch, i.e. perform a rollback in
+     *    cells with LimiterStatus other than Ok, and
+     *    allocate an additional limiter patch if necessary.
+     *    If the solver requested a global recomputation, i.e.
+     *    additional mesh refinement,
+     *    also perform a rollback in cells with LimiterStatus
+     *    Ok.
+     * 3. Reset the neighbour merging flags.
      */
     void enterCell(
         exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -160,7 +172,9 @@ class exahype::mappings::Reinitialisation {
 
   #ifdef Parallel
     /**
-     * TODO(Dominic): Add docu.
+     * In case a solver is a LimitingADERDGSolver and we have detected a irregular
+     * limiter domain change that does not require a mesh update, we
+     * ask the solver to send FV subcell data to neighbouring ranks.
      */
     void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,
                                 const tarch::la::Vector<DIMENSIONS, double>& x,

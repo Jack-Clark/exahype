@@ -178,10 +178,13 @@ tarch::la::Vector<THREE_POWER_D,int> multiscalelinkedcell::getIndicesAroundCell(
 
 
 multiscalelinkedcell::HangingVertexBookkeeper::HangingVertexBookkeeper():
+    _inheritIndicesFromCoarserGrids(true),
   _vertexMap() {
 }
 
-
+void multiscalelinkedcell::HangingVertexBookkeeper::disableInheritingOfCoarseGridIndices() {
+  _inheritIndicesFromCoarserGrids = false;
+}
 
 multiscalelinkedcell::HangingVertexBookkeeper&  multiscalelinkedcell::HangingVertexBookkeeper::getInstance() {
   static multiscalelinkedcell::HangingVertexBookkeeper instance;
@@ -324,11 +327,11 @@ tarch::la::Vector<TWO_POWER_D,int> multiscalelinkedcell::HangingVertexBookkeeper
   const tarch::la::Vector<DIMENSIONS,double>&                  x,
   int                                                          level,
   const tarch::la::Vector<DIMENSIONS,int>&                     fineGridPositionOfVertex,
-  const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&  adjacencyEntries
+  const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&  coarseGridAdjacencyEntries
 ) {
   const tarch::la::Vector<DIMENSIONS+1, double> key = getKey(x,level);
 
-  logTraceInWith6Arguments( "createHangingVertex(...)",x,level,fineGridPositionOfVertex,adjacencyEntries,key,_vertexMap.count(key));
+  logTraceInWith6Arguments( "createHangingVertex(...)",x,level,fineGridPositionOfVertex,coarseGridAdjacencyEntries,key,_vertexMap.count(key));
 
   if (_vertexMap.count(key)==0) {
     HangingVertexIdentifier   newHangingVertexIdentifier;
@@ -366,10 +369,21 @@ tarch::la::Vector<TWO_POWER_D,int> multiscalelinkedcell::HangingVertexBookkeeper
       ||
       (_vertexMap[key].indicesOfAdjacentCells(kScalar)==DomainBoundaryAdjacencyIndex)
      ) {
-      _vertexMap[key].indicesOfAdjacentCells(kScalar) = adjacencyEntries(
-        peano::utils::dLinearised(fromCoarseGridVertex,2) * TWO_POWER_D +
-        peano::utils::dLinearised(coarseGridVertexAdjacentCellDescriptionIndex,2)
-      );
+      int index = coarseGridAdjacencyEntries(
+          peano::utils::dLinearised(fromCoarseGridVertex,2) * TWO_POWER_D +
+          peano::utils::dLinearised(coarseGridVertexAdjacentCellDescriptionIndex,2));
+
+      if ( // Overwrite index by invalid index if not a  remote/boundary indicator
+          !_inheritIndicesFromCoarserGrids
+          &&
+          index!=DomainBoundaryAdjacencyIndex
+          &&
+          index!=RemoteAdjacencyIndex
+      ) {
+        index = InvalidAdjacencyIndex;
+      }
+
+      _vertexMap[key].indicesOfAdjacentCells(kScalar) = index;
     }
   enddforx
 

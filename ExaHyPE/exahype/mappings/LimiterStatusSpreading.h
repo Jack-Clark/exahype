@@ -3,7 +3,7 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon
+ * The project has received funding from the European Union's Horizon 
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
@@ -27,6 +27,8 @@
 #include "exahype/State.h"
 #include "exahype/Vertex.h"
 
+#include "peano/utils/Globals.h"
+
 namespace exahype {
 namespace mappings {
 class LimiterStatusSpreading;
@@ -34,113 +36,68 @@ class LimiterStatusSpreading;
 }
 
 /**
- * This mapping is part of three mappings (+adapters) which together perform the limiter
- * status spreading the recomputation of troubled cells (and their direct) neighbours.
+ * This mapping is used to spread the limiter status
+ * among neighbouring cells and from child to parent.
  *
- * \see exahype::mappings::SolutionRecomputation for more details.
+ * TODO(Dominic): Update docu
  *
- * @author Dominic Charrier
+ * @author Dominic E. Charrier
  */
 class exahype::mappings::LimiterStatusSpreading {
- private:
+private:
   /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
 
-  #ifdef Debug
-  int _interiorFaceMerges;
-  int _boundaryFaceMerges;
+  /**
+   * Local copy of the state.
+   */
+  exahype::State _localState;
+
+  /**
+   * Per solver a flag, indicating if has requested
+   * a mesh update request or a limiter domain change.
+   */
+  exahype::solvers::SolverFlags _solverFlags;
+
+public:
+  #ifdef Parallel
+  /**
+   * This variable is unset in LimiterStatusSpreading::beginIteration(...) in the first iteration
+   * of LimiterStatusSpreading and then reset in
+   * MeshRefinement::beginIteration(...) and Reinitialisaion::beginIteration().
+   */
+  static bool IsFirstIteration;
   #endif
-
- public:
-#ifdef Parallel
   /**
-   * Loop over all the solvers and check
-   * if a cell description (ADERDGCellDescription,
-   * FiniteVolumesCellDescription,...) is registered
-   * for the solver type and if the limiter
-   * domain was changed for this solver.
-   * If so, send out the limiter status or empty messages to the
-   * rank \p toRank that owns the neighbouring domain.
+   * Switched on.
+   */
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
+  /**
+   * Switched off
+   */
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
+  peano::MappingSpecification enterCellSpecification(int level) const;
+  peano::MappingSpecification leaveCellSpecification(int level) const;
+  peano::MappingSpecification ascendSpecification(int level) const;
+  peano::MappingSpecification descendSpecification(int level) const;
+
+  peano::CommunicationSpecification communicationSpecification() const;
+
+#if defined(SharedMemoryParallelisation)
+  /**
+   * We copy over the veto flag from the master thread
+   */
+  LimiterStatusSpreading(const LimiterStatusSpreading& masterThread);
+#endif
+  /**
+   * Update the cell-wise limiter status only for solvers
+   * of type LimitingADERDG for which the limiter domain
+   * has changed irregularly.
    *
-   * If not so, send out empty messages for the particular
-   * solver.
-   *
-   * \note Not thread-safe.
-   */
-  static void sendMergedLimiterStatusToNeighbour(
-      const int                                    toRank,
-      const tarch::la::Vector<DIMENSIONS,int>&     src,
-      const tarch::la::Vector<DIMENSIONS,int>&     dest,
-      const int                                    srcCellDescriptionIndex,
-      const int                                    destCellDescriptionIndex,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level);
-
-  /**
-   * Loop over all the solvers and check
-   * send out empty messages for the particular
-   * solver.
-   *
-   * \note Not thread-safe.
-   */
-  static void sendEmptyDataInsteadOfMergedLimiterStatusToNeighbour(
-      const int                                    toRank,
-      const tarch::la::Vector<DIMENSIONS, int>&    src,
-      const tarch::la::Vector<DIMENSIONS, int>&    dest,
-      const int                                    srcCellDescriptionIndex,
-      const int                                    destCellDescriptionIndex,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level);
-  #endif
-
-  /**
-   * Run through the whole grid. Run concurrently on the fine grid.
-   */
-  static peano::MappingSpecification enterCellSpecification();
-
-  /**
-   * Nop.
-   */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
-  /**
-   * Nop.
-   */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
-  /**
-   * Nop.
-   */
-  static peano::MappingSpecification leaveCellSpecification();
-  /**
-   * Nop.
-   */
-  static peano::MappingSpecification ascendSpecification();
-  /**
-   * Nop.
-   */
-  static peano::MappingSpecification descendSpecification();
-
-  /**
-   * Mask out data exchange between master and worker.
-   * Further let Peano handle heap data exchange internally.
-   */
-  static peano::CommunicationSpecification communicationSpecification();
-
-  /**
-   * Initialise debug counters.
-   */
-  void beginIteration(exahype::State& solverState);
-
-  /**
-   * Print debug counters.
-   */
-  void endIteration(exahype::State& solverState);
-
-  /**
-   * Overwrite the merged limiter status values on the faces
-   * by a unified value determined on hand of those values.
-   * Do not touch the cell-based limiter status.
+   * For these solvers further check if a grid update
+   * is necessary after the spreading.
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -150,49 +107,84 @@ class exahype::mappings::LimiterStatusSpreading {
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
+
   /**
-   * Nop.
+   * Initialise all heaps.
+   *
+   * For each solver, reset the grid update requested flag
+   * to false.
+   *
+   * <h2>MPI</h2>
+   * Finish the previous synchronous sends and
+   * start synchronous sending again.
    */
-  void touchVertexFirstTime(
-      exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+  void beginIteration(exahype::State& solverState);
+
+  /**
+   * For each solver, set the grid update requested flag
+   * for the next iteration.
+   *
+   * <h2>MPI</h2>
+   * If this rank is the global master, update the
+   * initial grid refinement strategy.
+   */
+  void endIteration(exahype::State& solverState);
+
 
 #ifdef Parallel
-  /**
-   * TODO(Dominic): Not implemented yet.
-   */
+
   void mergeWithNeighbour(exahype::Vertex& vertex,
-                          const exahype::Vertex& neighbour, int fromRank,
-                          const tarch::la::Vector<DIMENSIONS, double>& x,
-                          const tarch::la::Vector<DIMENSIONS, double>& h,
-                          int level);
+      const exahype::Vertex& neighbour, int fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const tarch::la::Vector<DIMENSIONS, double>& h,
+      int level);
 
   /**
-   * TODO(Dominic): Not implemented yet.
+   * Loop over all cells adjacent to the
+   * vertex. If one of the cells is adjacent
+   * to a MPI boundary, send the solver type of all solvers
+   * registered to the neighbouring MPI rank.
    */
   void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,
-                              const tarch::la::Vector<DIMENSIONS, double>& x,
-                              const tarch::la::Vector<DIMENSIONS, double>& h,
-                              int level);
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const tarch::la::Vector<DIMENSIONS, double>& h,
+      int level);
+
+
+  /**
+   * Reduce the grid update requested flag up
+   * to the master.
+   */
+  void prepareSendToMaster(
+      exahype::Cell& localCell, exahype::Vertex* vertices,
+      const peano::grid::VertexEnumerator& verticesEnumerator,
+      const exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      const exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+  /**
+   * Merge the master's grid update requested flag with the one of the workers.
+   */
+  void mergeWithWorker(exahype::Cell& localCell,
+                       const exahype::Cell& receivedMasterCell,
+                       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+                       const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+                       int level);
 
   //
-  // Below all methods are nop.
+  // All methods below are nop,
   //
-  //===================================
+  // ==================================
+
 
   /**
    * Nop.
    */
   void prepareCopyToRemoteNode(exahype::Vertex& localVertex, int toRank,
-                               const tarch::la::Vector<DIMENSIONS, double>& x,
-                               const tarch::la::Vector<DIMENSIONS, double>& h,
-                               int level);
-
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const tarch::la::Vector<DIMENSIONS, double>& h,
+      int level);
   /**
    * Nop.
    */
@@ -200,7 +192,6 @@ class exahype::mappings::LimiterStatusSpreading {
       exahype::Cell& localCell, int toRank,
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
-
   /**
    * Nop.
    */
@@ -208,7 +199,6 @@ class exahype::mappings::LimiterStatusSpreading {
       exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
       int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
       const tarch::la::Vector<DIMENSIONS, double>& h, int level);
-
   /**
    * Nop.
    */
@@ -216,7 +206,6 @@ class exahype::mappings::LimiterStatusSpreading {
       exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
       int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
-
   /**
    * Nop.
    */
@@ -228,7 +217,6 @@ class exahype::mappings::LimiterStatusSpreading {
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       int worker);
-
   /**
    * Nop.
    */
@@ -244,18 +232,6 @@ class exahype::mappings::LimiterStatusSpreading {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       int worker, const exahype::State& workerState,
       exahype::State& masterState);
-
-  /**
-   * Nop.
-   */
-  void prepareSendToMaster(
-      exahype::Cell& localCell, exahype::Vertex* vertices,
-      const peano::grid::VertexEnumerator& verticesEnumerator,
-      const exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      const exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
   /**
    * Nop.
    */
@@ -269,50 +245,29 @@ class exahype::mappings::LimiterStatusSpreading {
       const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
       exahype::Cell& workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop.
-   */
-  void mergeWithWorker(exahype::Cell& localCell,
-                       const exahype::Cell& receivedMasterCell,
-                       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-                       const tarch::la::Vector<DIMENSIONS, double>& cellSize,
-                       int level);
-
   /**
    * Nop.
    */
   void mergeWithWorker(exahype::Vertex& localVertex,
-                       const exahype::Vertex& receivedMasterVertex,
-                       const tarch::la::Vector<DIMENSIONS, double>& x,
-                       const tarch::la::Vector<DIMENSIONS, double>& h,
-                       int level);
+      const exahype::Vertex& receivedMasterVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const tarch::la::Vector<DIMENSIONS, double>& h,
+      int level);
 #endif
-
   /**
    * Nop
    */
   LimiterStatusSpreading();
-
-#if defined(SharedMemoryParallelisation)
   /**
-   * Nop.
-   */
-  LimiterStatusSpreading(const LimiterStatusSpreading& masterThread);
-#endif
-
-  /**
-   * Nop.
+   * Nop
    */
   virtual ~LimiterStatusSpreading();
-
 #if defined(SharedMemoryParallelisation)
   /**
    * Nop.
    */
   void mergeWithWorkerThread(const LimiterStatusSpreading& workerThread);
 #endif
-
   /**
    * Nop.
    */
@@ -324,48 +279,11 @@ class exahype::mappings::LimiterStatusSpreading {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
   /**
    * Nop.
    */
   void createBoundaryVertex(
       exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void createHangingVertex(
-      exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void destroyHangingVertex(
-      const exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void destroyVertex(
-      const exahype::Vertex& fineGridVertex,
       const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
       const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
       exahype::Vertex* const coarseGridVertices,
@@ -387,18 +305,6 @@ class exahype::mappings::LimiterStatusSpreading {
   /**
    * Nop.
    */
-  void destroyCell(
-      const exahype::Cell& fineGridCell,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop.
-   */
   void touchVertexLastTime(
       exahype::Vertex& fineGridVertex,
       const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -407,7 +313,6 @@ class exahype::mappings::LimiterStatusSpreading {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
   /**
    * Nop.
    */
@@ -422,23 +327,77 @@ class exahype::mappings::LimiterStatusSpreading {
   /**
    * Nop.
    */
-  void descend(
-      exahype::Cell* const fineGridCells,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+  void createHangingVertex(
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
       exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell);
-
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
   /**
    * Nop.
    */
-  void ascend(exahype::Cell* const fineGridCells,
-              exahype::Vertex* const fineGridVertices,
-              const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-              exahype::Vertex* const coarseGridVertices,
-              const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-              exahype::Cell& coarseGridCell);
-};
+  void destroyHangingVertex(
+     const exahype::Vertex& fineGridVertex,
+     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+     exahype::Vertex* const coarseGridVertices,
+     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+     exahype::Cell& coarseGridCell,
+     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+ /**
+  * Nop.
+  */
+ void destroyVertex(
+     const exahype::Vertex& fineGridVertex,
+     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+     exahype::Vertex* const coarseGridVertices,
+     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+     exahype::Cell& coarseGridCell,
+     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+ /**
+  * Nop.
+  */
+ void destroyCell(
+     const exahype::Cell& fineGridCell,
+     exahype::Vertex* const fineGridVertices,
+     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+     exahype::Vertex* const coarseGridVertices,
+     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+     exahype::Cell& coarseGridCell,
+     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+ /**
+  * Nop.
+  */
+ void touchVertexFirstTime(
+     exahype::Vertex& fineGridVertex,
+     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+     exahype::Vertex* const coarseGridVertices,
+     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+     exahype::Cell& coarseGridCell,
+     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
+ /**
+  * Nop.
+  */
+ void descend(
+     exahype::Cell* const fineGridCells,
+     exahype::Vertex* const fineGridVertices,
+     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+     exahype::Vertex* const coarseGridVertices,
+     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+     exahype::Cell& coarseGridCell);
+ /**
+  * Nop.
+  */
+ void ascend(exahype::Cell* const fineGridCells,
+     exahype::Vertex* const fineGridVertices,
+     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+     exahype::Vertex* const coarseGridVertices,
+     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+     exahype::Cell& coarseGridCell);
+};
 #endif

@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   05/04/2017 22:59
+    * @date   11/06/2017 00:44
     */
    class exahype::records::FiniteVolumesCellDescription { 
       
@@ -46,7 +46,7 @@ namespace exahype {
          };
          
          enum Type {
-            Erased = 0, Ancestor = 1, EmptyAncestor = 2, Cell = 3, Descendant = 4, EmptyDescendant = 5
+            Erased = 0, Ancestor = 1, Cell = 2, Descendant = 3
          };
          
          struct PersistentRecords {
@@ -68,9 +68,9 @@ namespace exahype {
             tarch::la::Vector<DIMENSIONS,double> _size;
             #endif
             #ifdef UseManualAlignment
-            std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed __attribute__((aligned(VectorisationAlignment)));
+            std::bitset<DIMENSIONS_TIMES_TWO> _neighbourMergePerformed __attribute__((aligned(VectorisationAlignment)));
             #else
-            std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
+            std::bitset<DIMENSIONS_TIMES_TWO> _neighbourMergePerformed;
             #endif
             #ifdef UseManualAlignment
             std::bitset<DIMENSIONS_TIMES_TWO> _isInside __attribute__((aligned(VectorisationAlignment)));
@@ -94,7 +94,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             
             inline int getSolverNumber() const 
@@ -372,12 +372,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+            inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _riemannSolvePerformed;
+               return _neighbourMergePerformed;
             }
             
             
@@ -401,12 +401,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+            inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _riemannSolvePerformed = (riemannSolvePerformed);
+               _neighbourMergePerformed = (neighbourMergePerformed);
             }
             
             
@@ -625,7 +625,7 @@ namespace exahype {
             /**
              * Generated
              */
-            FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             /**
              * Generated
@@ -960,12 +960,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+            inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _persistentRecords._riemannSolvePerformed;
+               return _persistentRecords._neighbourMergePerformed;
             }
             
             
@@ -989,50 +989,50 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+            inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _persistentRecords._riemannSolvePerformed = (riemannSolvePerformed);
+               _persistentRecords._neighbourMergePerformed = (neighbourMergePerformed);
             }
             
             
             
-            inline bool getRiemannSolvePerformed(int elementIndex) const 
+            inline bool getNeighbourMergePerformed(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                assertion(elementIndex>=0);
                assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-               return _persistentRecords._riemannSolvePerformed[elementIndex];
+               return _persistentRecords._neighbourMergePerformed[elementIndex];
                
             }
             
             
             
-            inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
+            inline void setNeighbourMergePerformed(int elementIndex, const bool& neighbourMergePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                assertion(elementIndex>=0);
                assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-               _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
+               _persistentRecords._neighbourMergePerformed[elementIndex]= neighbourMergePerformed;
                
             }
             
             
             
-            inline void flipRiemannSolvePerformed(int elementIndex) 
+            inline void flipNeighbourMergePerformed(int elementIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                assertion(elementIndex>=0);
                assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-               _persistentRecords._riemannSolvePerformed.flip(elementIndex);
+               _persistentRecords._neighbourMergePerformed.flip(elementIndex);
             }
             
             
@@ -1389,7 +1389,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   05/04/2017 22:59
+    * @date   11/06/2017 00:44
     */
    class exahype::records::FiniteVolumesCellDescriptionPacked { 
       
@@ -1409,7 +1409,7 @@ namespace exahype {
             int _level;
             tarch::la::Vector<DIMENSIONS,double> _offset;
             tarch::la::Vector<DIMENSIONS,double> _size;
-            std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
+            std::bitset<DIMENSIONS_TIMES_TWO> _neighbourMergePerformed;
             std::bitset<DIMENSIONS_TIMES_TWO> _isInside;
             bool _oneRemoteBoundaryNeighbourIsOfTypeCell;
             tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _faceDataExchangeCounter;
@@ -1424,7 +1424,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             
             inline int getSolverNumber() const 
@@ -1702,12 +1702,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+            inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _riemannSolvePerformed;
+               return _neighbourMergePerformed;
             }
             
             
@@ -1731,12 +1731,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+            inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _riemannSolvePerformed = (riemannSolvePerformed);
+               _neighbourMergePerformed = (neighbourMergePerformed);
             }
             
             
@@ -1955,7 +1955,7 @@ namespace exahype {
             /**
              * Generated
              */
-            FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
             
             /**
              * Generated
@@ -2290,12 +2290,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+            inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _persistentRecords._riemannSolvePerformed;
+               return _persistentRecords._neighbourMergePerformed;
             }
             
             
@@ -2319,50 +2319,50 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+            inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _persistentRecords._riemannSolvePerformed = (riemannSolvePerformed);
+               _persistentRecords._neighbourMergePerformed = (neighbourMergePerformed);
             }
             
             
             
-            inline bool getRiemannSolvePerformed(int elementIndex) const 
+            inline bool getNeighbourMergePerformed(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                assertion(elementIndex>=0);
                assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-               return _persistentRecords._riemannSolvePerformed[elementIndex];
+               return _persistentRecords._neighbourMergePerformed[elementIndex];
                
             }
             
             
             
-            inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
+            inline void setNeighbourMergePerformed(int elementIndex, const bool& neighbourMergePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                assertion(elementIndex>=0);
                assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-               _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
+               _persistentRecords._neighbourMergePerformed[elementIndex]= neighbourMergePerformed;
                
             }
             
             
             
-            inline void flipRiemannSolvePerformed(int elementIndex) 
+            inline void flipNeighbourMergePerformed(int elementIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                assertion(elementIndex>=0);
                assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-               _persistentRecords._riemannSolvePerformed.flip(elementIndex);
+               _persistentRecords._neighbourMergePerformed.flip(elementIndex);
             }
             
             
@@ -2715,7 +2715,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   11/06/2017 00:44
        */
       class exahype::records::FiniteVolumesCellDescription { 
          
@@ -2728,7 +2728,7 @@ namespace exahype {
             };
             
             enum Type {
-               Erased = 0, Ancestor = 1, EmptyAncestor = 2, Cell = 3, Descendant = 4, EmptyDescendant = 5
+               Erased = 0, Ancestor = 1, Cell = 2, Descendant = 3
             };
             
             struct PersistentRecords {
@@ -2750,9 +2750,9 @@ namespace exahype {
                tarch::la::Vector<DIMENSIONS,double> _size;
                #endif
                #ifdef UseManualAlignment
-               std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed __attribute__((aligned(VectorisationAlignment)));
+               std::bitset<DIMENSIONS_TIMES_TWO> _neighbourMergePerformed __attribute__((aligned(VectorisationAlignment)));
                #else
-               std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
+               std::bitset<DIMENSIONS_TIMES_TWO> _neighbourMergePerformed;
                #endif
                #ifdef UseManualAlignment
                std::bitset<DIMENSIONS_TIMES_TWO> _isInside __attribute__((aligned(VectorisationAlignment)));
@@ -2770,7 +2770,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+               PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                
                inline int getSolverNumber() const 
@@ -3048,12 +3048,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+               inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _riemannSolvePerformed;
+                  return _neighbourMergePerformed;
                }
                
                
@@ -3077,12 +3077,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+               inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _riemannSolvePerformed = (riemannSolvePerformed);
+                  _neighbourMergePerformed = (neighbourMergePerformed);
                }
                
                
@@ -3223,7 +3223,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+               FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                /**
                 * Generated
@@ -3558,12 +3558,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+               inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._riemannSolvePerformed;
+                  return _persistentRecords._neighbourMergePerformed;
                }
                
                
@@ -3587,50 +3587,50 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+               inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._riemannSolvePerformed = (riemannSolvePerformed);
+                  _persistentRecords._neighbourMergePerformed = (neighbourMergePerformed);
                }
                
                
                
-               inline bool getRiemannSolvePerformed(int elementIndex) const 
+               inline bool getNeighbourMergePerformed(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                  return _persistentRecords._riemannSolvePerformed[elementIndex];
+                  return _persistentRecords._neighbourMergePerformed[elementIndex];
                   
                }
                
                
                
-               inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
+               inline void setNeighbourMergePerformed(int elementIndex, const bool& neighbourMergePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                  _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
+                  _persistentRecords._neighbourMergePerformed[elementIndex]= neighbourMergePerformed;
                   
                }
                
                
                
-               inline void flipRiemannSolvePerformed(int elementIndex) 
+               inline void flipNeighbourMergePerformed(int elementIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                  _persistentRecords._riemannSolvePerformed.flip(elementIndex);
+                  _persistentRecords._neighbourMergePerformed.flip(elementIndex);
                }
                
                
@@ -3883,7 +3883,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   11/06/2017 00:44
        */
       class exahype::records::FiniteVolumesCellDescriptionPacked { 
          
@@ -3903,7 +3903,7 @@ namespace exahype {
                int _level;
                tarch::la::Vector<DIMENSIONS,double> _offset;
                tarch::la::Vector<DIMENSIONS,double> _size;
-               std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
+               std::bitset<DIMENSIONS_TIMES_TWO> _neighbourMergePerformed;
                std::bitset<DIMENSIONS_TIMES_TWO> _isInside;
                Type _type;
                int _parentIndex;
@@ -3916,7 +3916,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+               PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                
                inline int getSolverNumber() const 
@@ -4194,12 +4194,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+               inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _riemannSolvePerformed;
+                  return _neighbourMergePerformed;
                }
                
                
@@ -4223,12 +4223,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+               inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _riemannSolvePerformed = (riemannSolvePerformed);
+                  _neighbourMergePerformed = (neighbourMergePerformed);
                }
                
                
@@ -4369,7 +4369,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+               FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const double& previousTimeStepSize, const int& solution, const int& previousSolution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                /**
                 * Generated
@@ -4704,12 +4704,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
+               inline std::bitset<DIMENSIONS_TIMES_TWO> getNeighbourMergePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._riemannSolvePerformed;
+                  return _persistentRecords._neighbourMergePerformed;
                }
                
                
@@ -4733,50 +4733,50 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
+               inline void setNeighbourMergePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& neighbourMergePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._riemannSolvePerformed = (riemannSolvePerformed);
+                  _persistentRecords._neighbourMergePerformed = (neighbourMergePerformed);
                }
                
                
                
-               inline bool getRiemannSolvePerformed(int elementIndex) const 
+               inline bool getNeighbourMergePerformed(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                  return _persistentRecords._riemannSolvePerformed[elementIndex];
+                  return _persistentRecords._neighbourMergePerformed[elementIndex];
                   
                }
                
                
                
-               inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
+               inline void setNeighbourMergePerformed(int elementIndex, const bool& neighbourMergePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                  _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
+                  _persistentRecords._neighbourMergePerformed[elementIndex]= neighbourMergePerformed;
                   
                }
                
                
                
-               inline void flipRiemannSolvePerformed(int elementIndex) 
+               inline void flipNeighbourMergePerformed(int elementIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                  _persistentRecords._riemannSolvePerformed.flip(elementIndex);
+                  _persistentRecords._neighbourMergePerformed.flip(elementIndex);
                }
                
                

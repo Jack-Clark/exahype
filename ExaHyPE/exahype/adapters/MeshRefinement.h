@@ -19,8 +19,8 @@
 
 
  #include "exahype/mappings/PreProcessing.h"
+ #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/MeshRefinement.h"
- #include "exahype/mappings/InitialCondition.h"
  #include "exahype/mappings/LoadBalancing.h"
  #include "exahype/mappings/PostProcessing.h"
  #include "exahype/adapters/MeshRefinement2MultiscaleLinkedCell_5.h"
@@ -44,28 +44,28 @@ namespace exahype {
 class exahype::adapters::MeshRefinement {
   private:
     typedef mappings::PreProcessing Mapping0;
-    typedef mappings::MeshRefinement Mapping1;
-    typedef mappings::InitialCondition Mapping2;
+    typedef mappings::Merging Mapping1;
+    typedef mappings::MeshRefinement Mapping2;
     typedef mappings::LoadBalancing Mapping3;
     typedef mappings::PostProcessing Mapping4;
     typedef adapters::MeshRefinement2MultiscaleLinkedCell_5 Mapping5;
 
      Mapping0  _map2PreProcessing;
-     Mapping1  _map2MeshRefinement;
-     Mapping2  _map2InitialCondition;
+     Mapping1  _map2Merging;
+     Mapping2  _map2MeshRefinement;
      Mapping3  _map2LoadBalancing;
      Mapping4  _map2PostProcessing;
      Mapping5  _map2MeshRefinement2MultiscaleLinkedCell_5;
 
 
   public:
-    static peano::MappingSpecification         touchVertexLastTimeSpecification();
-    static peano::MappingSpecification         touchVertexFirstTimeSpecification();
-    static peano::MappingSpecification         enterCellSpecification();
-    static peano::MappingSpecification         leaveCellSpecification();
-    static peano::MappingSpecification         ascendSpecification();
-    static peano::MappingSpecification         descendSpecification();
-    static peano::CommunicationSpecification   communicationSpecification();
+    peano::MappingSpecification         touchVertexLastTimeSpecification(int level) const;
+    peano::MappingSpecification         touchVertexFirstTimeSpecification(int level) const;
+    peano::MappingSpecification         enterCellSpecification(int level) const;
+    peano::MappingSpecification         leaveCellSpecification(int level) const;
+    peano::MappingSpecification         ascendSpecification(int level) const;
+    peano::MappingSpecification         descendSpecification(int level) const;
+    peano::CommunicationSpecification   communicationSpecification() const;
 
     MeshRefinement();
 

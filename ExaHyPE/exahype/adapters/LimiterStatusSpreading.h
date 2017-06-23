@@ -18,7 +18,7 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/Merging.h"
+ #include "exahype/adapters/LimiterStatusSpreading2MultiscaleLinkedCell_0.h"
  #include "exahype/mappings/LimiterStatusSpreading.h"
 
 
@@ -39,21 +39,21 @@ namespace exahype {
  */
 class exahype::adapters::LimiterStatusSpreading {
   private:
-    typedef mappings::Merging Mapping0;
+    typedef adapters::LimiterStatusSpreading2MultiscaleLinkedCell_0 Mapping0;
     typedef mappings::LimiterStatusSpreading Mapping1;
 
-     Mapping0  _map2Merging;
+     Mapping0  _map2LimiterStatusSpreading2MultiscaleLinkedCell_0;
      Mapping1  _map2LimiterStatusSpreading;
 
 
   public:
-    static peano::MappingSpecification         touchVertexLastTimeSpecification();
-    static peano::MappingSpecification         touchVertexFirstTimeSpecification();
-    static peano::MappingSpecification         enterCellSpecification();
-    static peano::MappingSpecification         leaveCellSpecification();
-    static peano::MappingSpecification         ascendSpecification();
-    static peano::MappingSpecification         descendSpecification();
-    static peano::CommunicationSpecification   communicationSpecification();
+    peano::MappingSpecification         touchVertexLastTimeSpecification(int level) const;
+    peano::MappingSpecification         touchVertexFirstTimeSpecification(int level) const;
+    peano::MappingSpecification         enterCellSpecification(int level) const;
+    peano::MappingSpecification         leaveCellSpecification(int level) const;
+    peano::MappingSpecification         ascendSpecification(int level) const;
+    peano::MappingSpecification         descendSpecification(int level) const;
+    peano::CommunicationSpecification   communicationSpecification() const;
 
     LimiterStatusSpreading();
 

@@ -197,12 +197,18 @@ public class GenericADERDG implements Solver {
 
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
+    String AbstractSolverConstructorSignatureExtension = "";
     String SolverInitSignatureExtension        = "";
     if (_enableProfiler) {
       profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
+      solverConstructorSignatureExtension         += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
+      AbstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
     }
+    //if (_hasConstants) {
+    //  AbstractSolverConstructorSignatureExtension += ", exahype::Parser::ParserView constants";
+    //}
     content.put("SolverInitSignatureExtension", SolverInitSignatureExtension);
+    content.put("AbstractSolverConstructorSignatureExtension", AbstractSolverConstructorSignatureExtension);
     content.put("ProfilerInclude",profilerInclude);
     content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
     
@@ -232,11 +238,15 @@ public class GenericADERDG implements Solver {
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
     String solverConstructorArgumentExtension  = "";
+    String AbstractSolverConstructorSignatureExtension = "";
+    String AbstractSolverConstructorArgumentExtension = "";
     String SolverInitCallExtension             = "";
     if (_enableProfiler) {
       profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-      solverConstructorArgumentExtension  += ", std::move(profiler)";
+      solverConstructorSignatureExtension         += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
+      AbstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
+      solverConstructorArgumentExtension          += ", std::move(profiler)";
+      AbstractSolverConstructorArgumentExtension  += ", std::move(profiler)";
       
       content.put("BeforeSpaceTimePredictor", "  _profiler->start(\"spaceTimePredictor\");");  
       content.put("AfterSpaceTimePredictor", "  _profiler->stop(\"spaceTimePredictor\");"); 
@@ -294,7 +304,7 @@ public class GenericADERDG implements Solver {
     }
     if (_hasConstants) {
       solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value?
-       SolverInitCallExtension = ", constants";
+      SolverInitCallExtension = ", constants";
       
     }
 
@@ -302,6 +312,8 @@ public class GenericADERDG implements Solver {
     content.put("ProfilerInclude",profilerInclude);
     content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
     content.put("SolverConstructorArgumentExtension", solverConstructorArgumentExtension);
+    content.put("AbstractSolverConstructorSignatureExtension", AbstractSolverConstructorSignatureExtension);
+    content.put("AbstractSolverConstructorArgumentExtension", AbstractSolverConstructorArgumentExtension);
     
     //TODO JMG move this to template when using template engine
     //     SK: I just moved the logic to C++ level. There is no reason this could not stay there.

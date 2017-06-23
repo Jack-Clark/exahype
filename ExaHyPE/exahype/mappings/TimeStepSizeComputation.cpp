@@ -23,11 +23,12 @@
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 #include <limits>
+#include <iomanip>
 
 bool exahype::mappings::TimeStepSizeComputation::VetoFusedTimeSteppingTimeStepSizeReinitialisation = false;
 
 peano::CommunicationSpecification
-exahype::mappings::TimeStepSizeComputation::communicationSpecification() {
+exahype::mappings::TimeStepSizeComputation::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
@@ -35,7 +36,7 @@ exahype::mappings::TimeStepSizeComputation::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::TimeStepSizeComputation::enterCellSpecification() {
+exahype::mappings::TimeStepSizeComputation::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
@@ -44,31 +45,31 @@ exahype::mappings::TimeStepSizeComputation::enterCellSpecification() {
  * Nop.
  */
 peano::MappingSpecification exahype::mappings::TimeStepSizeComputation::
-    touchVertexLastTimeSpecification() {
+    touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::TimeStepSizeComputation::
-    touchVertexFirstTimeSpecification() {
+    touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::TimeStepSizeComputation::leaveCellSpecification() {
+exahype::mappings::TimeStepSizeComputation::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::TimeStepSizeComputation::ascendSpecification() {
+exahype::mappings::TimeStepSizeComputation::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::TimeStepSizeComputation::descendSpecification() {
+exahype::mappings::TimeStepSizeComputation::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
@@ -78,13 +79,12 @@ tarch::logging::Log exahype::mappings::TimeStepSizeComputation::_log(
     "exahype::mappings::TimeStepSizeComputation");
 
 void exahype::mappings::TimeStepSizeComputation::prepareLocalTimeStepVariables(){
-  int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
+  const unsigned int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
   _minTimeStepSizes.resize(numberOfSolvers);
   _minCellSizes.resize(numberOfSolvers);
   _maxCellSizes.resize(numberOfSolvers);
 
-  for (unsigned int solverNumber=0;
-      solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+  for (unsigned int solverNumber=0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
     _minTimeStepSizes[solverNumber] = std::numeric_limits<double>::max();
     _minCellSizes    [solverNumber] = std::numeric_limits<double>::max();
     _maxCellSizes    [solverNumber] = -std::numeric_limits<double>::max(); // "-", min
@@ -96,12 +96,9 @@ exahype::mappings::TimeStepSizeComputation::~TimeStepSizeComputation() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::TimeStepSizeComputation::TimeStepSizeComputation(const TimeStepSizeComputation& masterThread)
-{
+  : _localState(masterThread._localState) {
   prepareLocalTimeStepVariables();
   exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
-
-  // TODO(Dominic): Keep for later.
-//  logInfo("TimeStepSizeComputation(const TimeStepSizeComputation&)","copy mapping for thread");
 }
 
 // Merge over threads
@@ -115,15 +112,14 @@ void exahype::mappings::TimeStepSizeComputation::mergeWithWorkerThread(
     _maxCellSizes[i] =
         std::max(_maxCellSizes[i], workerThread._maxCellSizes[i]);
   }
-
-  // TODO(Dominic): Keep for later.
-//  logInfo("mergeWithWorkerThread(const TimeStepSizeComputation&)","Merge with worker thread");
 }
 #endif
 
 void exahype::mappings::TimeStepSizeComputation::beginIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
+
+  _localState = solverState;
 
   prepareLocalTimeStepVariables();
   exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
@@ -164,25 +160,29 @@ void exahype::mappings::TimeStepSizeComputation::reinitialiseTimeStepDataIfLastP
   if (aderdgSolver!=nullptr) {
     const double stableTimeStepSize = aderdgSolver->getMinNextPredictorTimeStepSize();
     double usedTimeStepSize         = aderdgSolver->getMinPredictorTimeStepSize();
+    logDebug("reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(...)","stableTimeStepSize="<<std::setprecision(12)<<aderdgSolver->getMinNextPredictorTimeStepSize());
+    logDebug("reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(...)","usedTimeStepSize="  <<std::setprecision(12)<<aderdgSolver->getMinPredictorTimeStepSize());
 
     if (tarch::la::equals(usedTimeStepSize,0.0)) {
       usedTimeStepSize = stableTimeStepSize;
     }
 
-    bool useTimeStepSizeWasInstable = usedTimeStepSize > stableTimeStepSize;
+    bool usedTimeStepSizeWasInstable = usedTimeStepSize > stableTimeStepSize;
+    aderdgSolver->setStabilityConditionWasViolated(usedTimeStepSizeWasInstable);
 
-    if (useTimeStepSizeWasInstable) {
-      state.setStabilityConditionOfOneSolverWasViolated(true);
-
-      const double timeStepSizeWeight = state.getTimeStepSizeWeightForPredictionRerun();
+    const double timeStepSizeWeight = exahype::State::getTimeStepSizeWeightForPredictionRerun();
+    if (usedTimeStepSizeWasInstable) {
       aderdgSolver->updateMinNextPredictorTimeStepSize(
           timeStepSizeWeight * stableTimeStepSize);
       aderdgSolver->setMinPredictorTimeStepSize(
           timeStepSizeWeight * stableTimeStepSize); // This will be propagated to the corrector
-                                                    // after startNewTimeStep() is invoked on the solver.
+
+      logDebug("reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(...)","[instable] updatedTimeStepSize="<<aderdgSolver->getMinNextPredictorTimeStepSize());
     } else {
       aderdgSolver->updateMinNextPredictorTimeStepSize(
-          0.5 * (stableTimeStepSize + usedTimeStepSize));
+          0.5 * (usedTimeStepSize + timeStepSizeWeight * stableTimeStepSize));
+
+      logDebug("reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(...)","[stable] updatedTimeStepSize="<<std::setprecision(12)<<aderdgSolver->getMinNextPredictorTimeStepSize());
     }
   }
 }
@@ -191,51 +191,59 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
     exahype::State& state) {
   logTraceInWith1Argument("endIteration(State)", state);
 
-  int solverNumber=0;
-  for (auto solver : exahype::solvers::RegisteredSolvers) {
-    assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
-    assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
+  for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+    auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+    if (solver->isComputing(_localState.getAlgorithmSection())) {
+      logDebug("endIteration(state)","_minCellSizes[solverNumber]="<<_minCellSizes[solverNumber]<<
+          ",_minCellSizes[solverNumber]="<<_maxCellSizes[solverNumber]);
+      assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
+      assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
 
-    logDebug("endIteration(state)","_minCellSizes[solverNumber]="<<_minCellSizes[solverNumber]<<
-             ",_minCellSizes[solverNumber]="<<_maxCellSizes[solverNumber]);
+      solver->updateNextMinCellSize(_minCellSizes[solverNumber]);
+      solver->updateNextMaxCellSize(_maxCellSizes[solverNumber]);
+      solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
 
-    solver->updateNextMinCellSize(_minCellSizes[solverNumber]);
-    solver->updateNextMaxCellSize(_maxCellSizes[solverNumber]);
+      if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
+        assertion4(solver->getNextMinCellSize()<std::numeric_limits<double>::max(),
+            solver->getNextMinCellSize(),_minCellSizes[solverNumber],solver->toString(),
+            exahype::records::State::toString(_localState.getAlgorithmSection()));
+        assertion4(solver->getNextMaxCellSize()>0,
+            solver->getNextMaxCellSize(),_maxCellSizes[solverNumber],solver->toString(),
+            exahype::records::State::toString(_localState.getAlgorithmSection()));
+      }
 
-    if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()) {
-      assertion2(solver->getNextMinCellSize()<std::numeric_limits<double>::max(),solver->getNextMinCellSize(),_minCellSizes[solverNumber]);
-      assertion3(solver->getNextMaxCellSize()>0,solver->getNextMaxCellSize(),_maxCellSizes[solverNumber],_minCellSizes[solverNumber]);
+      if (exahype::State::fuseADERDGPhases()
+      #ifdef Parallel
+      && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
+      #endif
+      && !VetoFusedTimeSteppingTimeStepSizeReinitialisation) {
+        reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(state,solver);
+      }
+      solver->startNewTimeStep();
+
+      if (_localState.getAlgorithmSection()==exahype::records::State::TimeStepping) {
+        solver->setNextMeshUpdateRequest();
+        solver->setNextAttainedStableState();
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->setNextLimiterDomainChange();
+          assertion(
+              static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->getLimiterDomainChange()
+              !=exahype::solvers::LimiterDomainChange::IrregularRequiringMeshUpdate ||
+              solver->getMeshUpdateRequest());
+        }
+      }
+
+      if (!exahype::State::fuseADERDGPhases()) {
+        reconstructStandardTimeSteppingData(solver);
+      }
+
+      logDebug("endIteration(state)","updatedTimeStepSize="<<solver->getMinTimeStepSize());
     }
-
-    solver->updateMinNextTimeStepSize(_minTimeStepSizes[solverNumber]);
-
-    if (exahype::State::fuseADERDGPhases()
-        #ifdef Parallel
-        && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
-        #endif
-        && !VetoFusedTimeSteppingTimeStepSizeReinitialisation
-    ) {
-      state.setStabilityConditionOfOneSolverWasViolated(false);
-      reinitialiseTimeStepDataIfLastPredictorTimeStepSizeWasInstable(state,solver);
-    }
-
-    if (state.reinitTimeStepData()) { // TODO(Dominic): Assesss. Might not be necessary for original time stepping scheme.
-      solver->reinitialiseTimeStepData();
-    }
-
-    solver->startNewTimeStep();
-
-    if (!exahype::State::fuseADERDGPhases()) {
-      reconstructStandardTimeSteppingData(solver);
-    }
-
-    ++solverNumber;
   }
 
   VetoFusedTimeSteppingTimeStepSizeReinitialisation = false;
 
   exahype::solvers::deleteTemporaryVariables(_temporaryVariables);
-
   logTraceOutWith1Argument("endIteration(State)", state);
 }
 
@@ -273,27 +281,28 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
     const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined18);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[solverNumber];
-      int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
-          fineGridCell.getCellDescriptionsIndex(),solverNumber);
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+      if (solver->isComputing(_localState.getAlgorithmSection())) {
+        const int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
+            fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
-      if (element!=exahype::solvers::Solver::NotFound) {
-        double admissibleTimeStepSize =
-            solver->startNewTimeStep(
-                fineGridCell.getCellDescriptionsIndex(),element,
-                _temporaryVariables._tempEigenValues[solverNumber]);
+        if (element!=exahype::solvers::Solver::NotFound) {
+          double admissibleTimeStepSize =
+              solver->startNewTimeStep(
+                  fineGridCell.getCellDescriptionsIndex(),element,
+                  _temporaryVariables._tempEigenValues[solverNumber]);
 
-        if (!exahype::State::fuseADERDGPhases()) {
-          reconstructStandardTimeSteppingData(solver,fineGridCell.getCellDescriptionsIndex(),element);
+          if (!exahype::State::fuseADERDGPhases()) {
+            reconstructStandardTimeSteppingData(solver,fineGridCell.getCellDescriptionsIndex(),element);
+          }
+
+          _minTimeStepSizes[solverNumber] = std::min(
+              admissibleTimeStepSize, _minTimeStepSizes[solverNumber]);
+          _minCellSizes[solverNumber] = std::min(
+              fineGridVerticesEnumerator.getCellSize()[0],_minCellSizes[solverNumber]);
+          _maxCellSizes[solverNumber] = std::max(
+              fineGridVerticesEnumerator.getCellSize()[0],_maxCellSizes[solverNumber]);
         }
-
-        _minTimeStepSizes[solverNumber] = std::min(
-            admissibleTimeStepSize, _minTimeStepSizes[solverNumber]);
-        _minCellSizes[solverNumber] = std::min(
-            fineGridVerticesEnumerator.getCellSize()[0],_minCellSizes[solverNumber]);
-        _maxCellSizes[solverNumber] = std::max(
-            fineGridVerticesEnumerator.getCellSize()[0],_maxCellSizes[solverNumber]);
       }
     endpfor
     grainSize.parallelSectionHasTerminated();

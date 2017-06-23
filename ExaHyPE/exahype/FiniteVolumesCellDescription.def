@@ -75,7 +75,7 @@ class exahype::records::FiniteVolumesCellDescription {
    * These flags indicate on which face a Riemann solve has already been
    * performed.
    */
-  parallelise persistent bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
+  parallelise persistent bool neighbourMergePerformed[DIMENSIONS_TIMES_TWO];
   
   /**
    * These flags indicate which face of a cell is inside the domain.
@@ -140,10 +140,8 @@ class exahype::records::FiniteVolumesCellDescription {
   enum Type {
     Erased,
     Ancestor,
-    EmptyAncestor,
     Cell,
-    Descendant,
-    EmptyDescendant
+    Descendant
   };
 
   /**

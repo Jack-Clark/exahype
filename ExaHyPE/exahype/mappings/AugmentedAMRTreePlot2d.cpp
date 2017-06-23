@@ -20,7 +20,7 @@
 
 #include "tarch/la/VectorScalarOperations.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
 
 #ifdef Parallel
 #include "tarch/parallel/Node.h"
@@ -34,45 +34,45 @@ double exahype::mappings::AugmentedAMRTreePlot2d::SqueezeZAxis         = 4.0;
 double exahype::mappings::AugmentedAMRTreePlot2d::TreeConnectionsValue = -100.0;
 
 peano::CommunicationSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::communicationSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::communicationSpecification() const {
   return peano::CommunicationSpecification::getPessimisticSpecification(true);
 }
 
 peano::MappingSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::touchVertexLastTimeSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::touchVertexFirstTimeSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,
                                      peano::MappingSpecification::Serial,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::enterCellSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::enterCellSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,
                                      peano::MappingSpecification::Serial,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::leaveCellSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::ascendSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 
 peano::MappingSpecification
-exahype::mappings::AugmentedAMRTreePlot2d::descendSpecification() {
+exahype::mappings::AugmentedAMRTreePlot2d::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
@@ -96,7 +96,11 @@ exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d()
       _cellDescriptionIndexWriter(0),
       _cellRefinementEventWriter(0),
       _cellDataWriter(0),
+      _augmentationStatusWriter(0),
+      _helperStatusWriter(0),
       _limiterStatusWriter(0),
+      _previousLimiterStatusWriter(0),
+      _isAugmentedWriter(0),
       _cellCounter(0) {}
 
 exahype::mappings::AugmentedAMRTreePlot2d::~AugmentedAMRTreePlot2d() {}
@@ -112,7 +116,11 @@ exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d(
       _cellDescriptionIndexWriter(masterThread._cellDescriptionIndexWriter),
       _cellRefinementEventWriter(masterThread._cellRefinementEventWriter),
       _cellDataWriter(masterThread._cellDataWriter),
+      _augmentationStatusWriter(masterThread._augmentationStatusWriter),
+      _helperStatusWriter(masterThread._helperStatusWriter),
       _limiterStatusWriter(masterThread._limiterStatusWriter),
+      _previousLimiterStatusWriter(masterThread._previousLimiterStatusWriter),
+      _isAugmentedWriter(masterThread._isAugmentedWriter),
       _cellCounter(0) {}
 
 void exahype::mappings::AugmentedAMRTreePlot2d::mergeWithWorkerThread(
@@ -333,7 +341,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-#if DIMENSIONS == 2
+    #if DIMENSIONS == 2
     double offsetZ = coarseGridVerticesEnumerator.getLevel()+1;
 
     int vertexIndex[TWO_POWER_D];
@@ -376,8 +384,11 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
               cellIndex,
               2 * static_cast<int>(pFine.getSolution() > -1) +
                   static_cast<int>(pFine.getExtrapolatedPredictor() > -1));
-          _limiterStatusWriter->plotCell(
-              cellIndex, static_cast<int>(pFine.getLimiterStatus()));
+          _augmentationStatusWriter->plotCell(cellIndex,pFine.getAugmentationStatus());
+          _helperStatusWriter->plotCell(cellIndex,pFine.getHelperStatus());
+          _limiterStatusWriter->plotCell(cellIndex,pFine.getLimiterStatus());
+          _previousLimiterStatusWriter->plotCell(cellIndex,pFine.getPreviousLimiterStatus());
+          _isAugmentedWriter->plotCell(cellIndex,pFine.getIsAugmented() ? 1 : 0);
           solverFound = true;
         }
       }
@@ -386,7 +397,11 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
         _cellTypeWriter->plotCell(cellIndex, -1);
         _cellRefinementEventWriter->plotCell(cellIndex, -1);
         _cellDataWriter->plotCell(cellIndex, 0);
+        _augmentationStatusWriter->plotCell(cellIndex,-1);
+        _helperStatusWriter->plotCell(cellIndex,-1);
         _limiterStatusWriter->plotCell(cellIndex, -1);
+        _previousLimiterStatusWriter->plotCell(cellIndex,-1);
+        _isAugmentedWriter->plotCell(cellIndex,0);
       }
 
     } else {
@@ -395,11 +410,15 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
           static_cast<int>(fineGridCell.getCellDescriptionsIndex()));
       _cellRefinementEventWriter->plotCell(cellIndex, -1);
       _cellDataWriter->plotCell(cellIndex, 0);
+      _augmentationStatusWriter->plotCell(cellIndex,-1);
+      _helperStatusWriter->plotCell(cellIndex,-1);
       _limiterStatusWriter->plotCell(cellIndex, -1);
+      _previousLimiterStatusWriter->plotCell(cellIndex,-1);
+      _isAugmentedWriter->plotCell(cellIndex,0);
     }
 
     _cellCounter++;
-#endif
+    #endif
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::leaveCell(
@@ -423,8 +442,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
 
   _cellNumberWriter = _vtkWriter->createCellDataWriter("cell-number", 1);
   _cellTypeWriter   = _vtkWriter->createCellDataWriter(
-      "cell-type(NoPatch=-1,Erased=0,Ancestor=1,EmptyAncestor=2,Cell=3,"
-      "Descendant=4,EmptyDescendant=5)",
+      "cell-type(NoPatch=-1,Erased=0,Ancestor=1,Cell=2,"
+      "Descendant=3)",
       1);
   _cellDescriptionIndexWriter =
       _vtkWriter->createCellDataWriter("NoPatch=-1,ValidPatch>=0", 1);
@@ -432,13 +451,20 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
       "refinement-event(NoPatch=-1,None=0,ErasingChildrenReq=1,"
       "ErasingChildren=2,ChangeToDescendantsReq=3,"
       "ChangeToDescendants=4,RefReq=5,Ref=6,"
-      "DeaugChildrenReq=7,DeaugChildren=8,"
-      "AugReq=9,Aug=10)"
-      ,1);
+      "DeaugChildrenReqTrig=7,"
+      "DeaugChildrenReq=8,DeaugChildren=9,"
+      "AugReq=10,Aug=11)",1);
   _cellDataWriter = _vtkWriter->createCellDataWriter(
       "Data-on-Patch(None=0,OnlyFaceData=1,VolumeAndFaceData=3)", 1);
+  _augmentationStatusWriter = _vtkWriter->createCellDataWriter(
+      "AugmentationsStatus", 1);
+  _helperStatusWriter = _vtkWriter->createCellDataWriter(
+        "HelperStatus", 1);
   _limiterStatusWriter = _vtkWriter->createCellDataWriter(
-      "Limiter-Status(Ok=0,NeighbourOfNeighbourOfTroubled=1,NeighbourOfTroubled=2,Troubled=3)", 1);
+      "Limiter-Status(Ok=0,DGNeighbourOfTroubled=1..2,NeighbourOfTroubled=1..2,Troubled=5)", 1);
+  _previousLimiterStatusWriter = _vtkWriter->createCellDataWriter(
+      "Previous-Limiter-Status(Ok=0,DGNeighbourOfTroubled=1..2,NeighbourOfTroubled=1..2,Troubled=5)", 1);
+  _isAugmentedWriter = _vtkWriter->createCellDataWriter("isAugmented(Yes=1,No=0)", 1);
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
@@ -450,7 +476,11 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   _cellDescriptionIndexWriter->close();
   _cellRefinementEventWriter->close();
   _cellDataWriter->close();
+  _augmentationStatusWriter->close();
+  _helperStatusWriter->close();
   _limiterStatusWriter->close();
+  _previousLimiterStatusWriter->close();
+  _isAugmentedWriter->close();
   _cellNumberWriter->close();
 
   delete _vertexWriter;
@@ -461,23 +491,32 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   delete _cellRefinementEventWriter;
   delete _cellNumberWriter;
   delete _cellDataWriter;
+  delete _augmentationStatusWriter;
+  delete _helperStatusWriter;
   delete _limiterStatusWriter;
+  delete _previousLimiterStatusWriter;
+  delete _isAugmentedWriter;
 
-  _vertexWriter = 0;
-  _cellWriter = 0;
+  _vertexWriter = nullptr;
+  _cellWriter = nullptr;
 
-  _cellNumberWriter = 0;
-  _cellTypeWriter = 0;
-  _cellDescriptionIndexWriter = 0;
-  _cellRefinementEventWriter = 0;
-  _cellDataWriter = 0;
+  _cellNumberWriter            = nullptr;
+  _cellTypeWriter              = nullptr;
+  _cellDescriptionIndexWriter  = nullptr;
+  _cellRefinementEventWriter   = nullptr;
+  _cellDataWriter              = nullptr;
+  _augmentationStatusWriter    = nullptr;
+  _helperStatusWriter          = nullptr;
+  _limiterStatusWriter         = nullptr;
+  _previousLimiterStatusWriter = nullptr;
+  _isAugmentedWriter = nullptr;
 
   std::ostringstream snapshotFileName;
   snapshotFileName << "tree"
 #ifdef Parallel
                    << "-rank-" << tarch::parallel::Node::getInstance().getRank()
 #endif
-                   << "-" << _snapshotCounter << ".vtk";
+                   << "-" << _snapshotCounter;
   _vtkWriter->writeToFile(snapshotFileName.str());
 
   _snapshotCounter++;
@@ -485,7 +524,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   _vertex2IndexMap.clear();
 
   delete _vtkWriter;
-  _vtkWriter = 0;
+  _vtkWriter = nullptr;
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::descend(

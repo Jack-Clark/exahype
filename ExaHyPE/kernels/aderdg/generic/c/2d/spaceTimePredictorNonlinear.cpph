@@ -44,7 +44,7 @@ template <bool useSource, bool useFlux, bool useNCP, typename SolverType>
 void aderPicardLoopNonlinear(SolverType& solver,
                              const double* luh, const double dt,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                             double* lQi, double* lQi_old, double* rhs, double* rhs_0,
+                             double* lQi, double* lQi_old, double* rhs,
                              double* lFi, double* gradQ, double* BGradQ) {
   constexpr int numberOfVariables  = SolverType::NumberOfVariables;
   constexpr int numberOfParameters = SolverType::NumberOfParameters;
@@ -77,31 +77,12 @@ void aderPicardLoopNonlinear(SolverType& solver,
   endpfor
   grainSizeTrivialGuess.parallelSectionHasTerminated();
   
-
-  // 2. Compute the contribution of the initial condition uh to the time update
-  idx4 idx_rhs(basisSize, basisSize, basisSize, numberOfVariables); // idx_rhs(t,y,x,nVar)
-  
-  auto grainSizeComputeOldSolutionsImpactOnRhs = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsComputeOldSolutionsImpactOnRhs);
-  //for (int j = 0; j < basisSize; j++) { // j == y
-  pfor(j,0,basisSize,grainSizeComputeOldSolutionsImpactOnRhs.getGrainSize())
-    for (int k = 0; k < basisSize; k++) { // k == x
-      const double weight = 
-          kernels::gaussLegendreWeights[order][j] *
-          kernels::gaussLegendreWeights[order][k];
-      for (int l = 0; l < numberOfVariables; l++) {  // l == numberOfVariables
-        for (int m = 0; m < basisSize; m++) { // m == time
-          rhs_0[idx_rhs(m, j, k, l)] =
-              weight * kernels::F0[order][m] * luh[idx_luh(j, k, l)];
-        }
-      }
-    }
-  endpfor
-  grainSizeComputeOldSolutionsImpactOnRhs.parallelSectionHasTerminated();
-
-  
   // 3. Discrete Picard iterations
   constexpr int MaxIterations = 2 * (order + 1);
 
+  // right-hand side
+  idx4 idx_rhs(basisSize, basisSize, basisSize, numberOfVariables); // idx_rhs(t,y,x,nVar)
+  
   // spatial gradient of q
   idx5 idx_gradQ(basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables); // idx_gradQ(y,x,t,nDim,nVar)
 
@@ -127,14 +108,16 @@ void aderPicardLoopNonlinear(SolverType& solver,
       endpfor
       grainSizeFluxSourceNCPLoop.parallelSectionHasTerminated();
 
-
-      // Copy rhs0 -> rhs
+      // 2. Compute the contribution of the initial condition uh to the right-hand side (rhs0)
       auto grainSizeCopyRhs = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(basisSize,sharedmemorylabels::GenericKernelsCopyRhs);
       //for (int k = 0; k < basisSize; k++) { // y
       pfor(k,0,basisSize,grainSizeCopyRhs.getGrainSize())
         for (int l = 0; l < basisSize; l++) { // x
+          const double weight = 
+              kernels::gaussLegendreWeights[order][k] *
+              kernels::gaussLegendreWeights[order][l];
           for (int m = 0; m < numberOfVariables; m++) {
-            rhs[idx_rhs(i, k, l, m)] = rhs_0[idx_rhs(i, k, l, m)];
+            rhs[idx_rhs(i, k, l, m)] = weight * kernels::F0[order][i] * luh[idx_luh(k, l, m)];
           }
         }
       endpfor
@@ -620,7 +603,6 @@ void spaceTimePredictorNonlinear(
   double* lQi     = tempSpaceTimeUnknowns[0];
   double* lQi_old = tempSpaceTimeUnknowns[1];
   double* rhs     = tempSpaceTimeUnknowns[2];
-  double* rhs_0   = tempSpaceTimeUnknowns[3];
 
   // if fluxes are not computed, make sure wrong access patterns result in a crash, thus
   // the nullptr:
@@ -631,11 +613,11 @@ void spaceTimePredictorNonlinear(
 
   double* lFhi    = tempFluxUnknowns;
   
-  double *BGradQ  = tempStateSizedVector; // size: numberOfVariables // TODO: Remove, no more used.
+  double *BGradQ = tempStateSizedVector; // size: numberOfVariables // TODO: Remove, no more used.
 
   aderPicardLoopNonlinear<useSource, useFlux, useNCP, SolverType>(
         solver, luh, dt, dx,
-        lQi, lQi_old, rhs, rhs_0, lFi, gradQ, BGradQ);
+        lQi, lQi_old, rhs, lFi, gradQ, BGradQ);
   
   aderPredictorNonlinear<useSource, useFlux, useNCP, numberOfVariables, numberOfParameters, basisSize>(
         lQi, lFi, lQhi,

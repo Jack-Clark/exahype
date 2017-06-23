@@ -15,7 +15,8 @@ tarch::logging::Log  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSiz
 
 const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_InitialRelativeAccuracy(1e-2);
 const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_MaxAccuracy( 1.0 );
-const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_WideningFactor( 0.9 );
+const double   sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_WideningFactor( 1.1 );
+const int      sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_MinimumNumberOfMeasurmentsBeforeWeSpeakAboutAccurateValues = 4;
 
 
 bool                                 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_hasLearnedSinceLastQuery( false );
@@ -25,12 +26,14 @@ tarch::multicore::BooleanSemaphore   sharedmemoryoracles::OracleForOnePhaseWithS
 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(
   bool learn,
   bool restart,
-  SelectNextStudiedMeasureTraceStrategy selectNextStudiedMeasureTraceStrategy
+  SelectNextStudiedMeasureTraceStrategy selectNextStudiedMeasureTraceStrategy,
+  int persistentSubtrees
 ):
   _activeMethodTrace(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling),
   _learn(learn && tarch::multicore::Core::getInstance().getNumberOfThreads()>1),
   _restart(restart),
   _selectNextStudiedMeasureTraceStrategy(selectNextStudiedMeasureTraceStrategy),
+  _persistentSubtrees(persistentSubtrees),
   _measurements() {
   for (int i=0; i<static_cast<int>(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling); i++) {
     peano::datatraversal::autotuning::MethodTrace askingMethod = peano::datatraversal::autotuning::toMethodTrace(i);
@@ -126,7 +129,20 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry  sha
 
 
 peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelise(int problemSize, peano::datatraversal::autotuning::MethodTrace askingMethod) {
-  // tarch::multicore::Lock lock(_semaphore);
+  if (
+    askingMethod==peano::datatraversal::autotuning::MethodTrace::HoldPersistentRegularSubgrid
+    &&
+    problemSize > _persistentSubtrees
+  ) {
+    return peano::datatraversal::autotuning::GrainSize(
+      1,
+      false,
+      problemSize,
+      askingMethod, this
+    );
+  }
+
+
   if ( problemSize==1 ) {
     return peano::datatraversal::autotuning::GrainSize(
       0,
@@ -138,7 +154,6 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
   else if (
     _activeMethodTrace==askingMethod
   ) {
-    // @todo Das eigentliche Oracle
     assertion( askingMethod != peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling );
     assertion(askingMethod!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
     assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
@@ -167,8 +182,14 @@ peano::datatraversal::autotuning::GrainSize  sharedmemoryoracles::OracleForOnePh
     if (trackTime) {
       assertion( hasDatabaseEntry(problemSize, askingMethod) );
 
-      const int EveryXthIsSerialMeasurement = databaseEntry.getBiggestProblemSize() / databaseEntry.getCurrentGrainSize();
-      const bool passedGrainSize            = rand()%EveryXthIsSerialMeasurement==0 ? 0 : chosenParallelGrainSize;
+      bool passedGrainSize = -1;
+      if (databaseEntry.canRelyOnValidSerialMeasurement()) {
+        passedGrainSize = rand()%_MinimumNumberOfMeasurmentsBeforeWeSpeakAboutAccurateValues==0 ? 0 : chosenParallelGrainSize;
+      }
+      else {
+        passedGrainSize = 0;
+      }
+
       return peano::datatraversal::autotuning::GrainSize(
         passedGrainSize,
         trackTime,
@@ -248,7 +269,6 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasure
       _activeMethodTrace             = peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling;
 
       while ( _measurements.count(_activeMethodTrace)==0 ) {
-//        xxx Kann das ne Endlosschleife geben?
         _activeMethodTrace = peano::datatraversal::autotuning::toMethodTrace( rand() % (int)(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling) );
         if (
           remainingTriesToFindSearchingTrace>0
@@ -317,7 +337,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasure
   assertion(_measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0);
   assertion(_activeMethodTrace!=peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling);
 
-  logInfo(
+  logDebug(
     "changeMeasuredMethodTrace()", "next active method trace " << toString(_activeMethodTrace) << " after " <<
     ((int)(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)-remainingTriesToFindSearchingTrace) <<
     " search iterations to identify next analysed method trace. Is already known to oracle=" << ( _measurements.count(_activeMethodTrace)>0 )
@@ -344,6 +364,11 @@ bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
         _numberOfSerialMeasurements > 0 &&
         (_accumulatedParallelMeasurement/_numberOfParallelMeasurements) < (_accumulatedParallelMeasurement/_numberOfParallelMeasurements)
       );
+}
+
+
+bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::canRelyOnValidSerialMeasurement() const {
+  return _numberOfSerialMeasurements>_numberOfParallelMeasurements;
 }
 
 
@@ -379,12 +404,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
     logInfo( "learn()", "found better scaling parameter choice/serial runtime for " << toString() );
 
     while ( _currentGrainSize - _searchDelta <= 0 && _searchDelta>0 ) {
-      if (_currentGrainSize>tarch::multicore::Core::getInstance().getNumberOfThreads()*2) {
-        _searchDelta--;
-      }
-      else {
-        _searchDelta /= 2;
-      }
+      _searchDelta--;
     }
 
     if (_searchDelta>0) {
@@ -459,10 +479,9 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
     delta = _accumulatedParallelMeasurement   / _numberOfParallelMeasurements - oldParallelTime;
   }
 
-  const double averageTime = 0.5 * (_accumulatedSerialMeasurement   / _numberOfSerialMeasurements + _accumulatedParallelMeasurement / _numberOfParallelMeasurements);
-  _measurementsAreAccurate  = delta / (averageTime) < _accuracy
-                           && _numberOfSerialMeasurements   > 10
-                           && _numberOfParallelMeasurements > 10;
+  _measurementsAreAccurate  = (delta*delta < _accuracy*_accuracy)
+                           && (_numberOfSerialMeasurements   > _MinimumNumberOfMeasurmentsBeforeWeSpeakAboutAccurateValues)
+                           && (_numberOfParallelMeasurements > _MinimumNumberOfMeasurmentsBeforeWeSpeakAboutAccurateValues);
 }
 
 
@@ -472,8 +491,11 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry
 
 
 bool sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::widenAccuracy() {
-  _accuracy /= _WideningFactor;
-  return _accuracy < 1.0;
+  if (_accuracy<_InitialRelativeAccuracy) {
+    _accuracy *= _WideningFactor;
+    return true;
+  }
+  else return false;
 }
 
 
@@ -642,6 +664,9 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::DatabaseEntry::Dat
   leftToken   = rightString.substr( 0, rightString.find(",") );
   rightString = rightString.substr( leftToken.size()+1 );
   _accuracy = std::stof(leftToken);
+  if (_accuracy>_InitialRelativeAccuracy) {
+    _accuracy = _InitialRelativeAccuracy;
+  }
   logDebug( "DatabaseEntry(std::string)", "accuracy is " <<  _accuracy);
 
   leftToken   = rightString.substr( 0, rightString.find(",") );
@@ -764,6 +789,14 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistic
         << ": " << _measurements[askingMethod].rbegin()->toString()
       );
     }
+
+    bool oneEntryDidScale = false;
+    for (auto& p: _measurements[askingMethod]) {
+      if (oneEntryDidScale && !p.isScaling() && !p.isSearching()) {
+        p.restart();
+      }
+      oneEntryDidScale |= (!p.isSearching() && p.isScaling());
+    }
   }
 
   assertion( _measurements.count(peano::datatraversal::autotuning::MethodTrace::NumberOfDifferentMethodsCalling)==0 );
@@ -775,7 +808,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::~OracleForOnePhase
 
 
 peano::datatraversal::autotuning::OracleForOnePhase* sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::createNewOracle() const {
-  return new OracleForOnePhaseWithShrinkingGrainSize(_learn,_restart,_selectNextStudiedMeasureTraceStrategy);
+  return new OracleForOnePhaseWithShrinkingGrainSize(_learn,_restart,_selectNextStudiedMeasureTraceStrategy, _persistentSubtrees);
 }
 
 

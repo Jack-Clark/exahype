@@ -89,21 +89,21 @@ static void sendEmptySolverDataToNeighbour(
   /**
    * Run through whole tree. Run serial since we allocate additional memory.
    */
-  static peano::MappingSpecification enterCellSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
-  static peano::MappingSpecification leaveCellSpecification();
-  static peano::MappingSpecification ascendSpecification();
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
+  peano::MappingSpecification leaveCellSpecification(int level) const;
+  peano::MappingSpecification ascendSpecification(int level) const;
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**
    * Minimum communication specification.
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
     * Nop.

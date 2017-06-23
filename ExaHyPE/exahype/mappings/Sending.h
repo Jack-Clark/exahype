@@ -107,14 +107,14 @@ public:
  *
  * \note Not thread-safe.
  */
-static void sendSolverDataToNeighbour(
+void sendSolverDataToNeighbour(
     const int                                    toRank,
     const tarch::la::Vector<DIMENSIONS,int>&     src,
     const tarch::la::Vector<DIMENSIONS,int>&     dest,
     const int                                    srcCellDescriptionIndex,
     const int                                    destCellDescriptionIndex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
-    const int                                    level);
+    const int                                    level) const;
 
 /**
  * Loop over all the solvers and check
@@ -123,28 +123,28 @@ static void sendSolverDataToNeighbour(
  *
  * \note Not thread-safe.
  */
-static void sendEmptySolverDataToNeighbour(
+void sendEmptySolverDataToNeighbour(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS,int>&      src,
     const tarch::la::Vector<DIMENSIONS,int>&      dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level);
+    const int                                     level) const;
 #endif
 
  public:
   /**
    * Run through whole tree. Run concurrently on fine grid.
    */
-  static peano::MappingSpecification enterCellSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
-  static peano::MappingSpecification leaveCellSpecification();
-  static peano::MappingSpecification ascendSpecification();
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
+  peano::MappingSpecification leaveCellSpecification(int level) const;
+  peano::MappingSpecification ascendSpecification(int level) const;
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**
    * The global time step computation does synchronise the individual cells
@@ -159,7 +159,7 @@ static void sendEmptySolverDataToNeighbour(
    * in the Riemann solver, i.e. before enterCell---we can send back data as
    * soon as the traversal operation leaves the local subtree.
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
     * Nop.

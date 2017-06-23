@@ -1,71 +1,71 @@
 #include "exahype/adapters/SolutionUpdate.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::SolutionUpdate::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::SolutionUpdate::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::communicationSpecification()
-   & exahype::mappings::SolutionUpdate::communicationSpecification()
-   & exahype::mappings::PostProcessing::communicationSpecification()
+    &  _map2PreProcessing.communicationSpecification()
+    &  _map2SolutionUpdate.communicationSpecification()
+    &  _map2PostProcessing.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::SolutionUpdate::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::SolutionUpdate::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::touchVertexLastTimeSpecification()
-   & exahype::mappings::SolutionUpdate::touchVertexLastTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexLastTimeSpecification()
+    &  _map2PreProcessing.touchVertexLastTimeSpecification(level)
+    &  _map2SolutionUpdate.touchVertexLastTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::SolutionUpdate::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::SolutionUpdate::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::touchVertexFirstTimeSpecification()
-   & exahype::mappings::SolutionUpdate::touchVertexFirstTimeSpecification()
-   & exahype::mappings::PostProcessing::touchVertexFirstTimeSpecification()
+    &  _map2PreProcessing.touchVertexFirstTimeSpecification(level)
+    &  _map2SolutionUpdate.touchVertexFirstTimeSpecification(level)
+    &  _map2PostProcessing.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::SolutionUpdate::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::SolutionUpdate::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::enterCellSpecification()
-   & exahype::mappings::SolutionUpdate::enterCellSpecification()
-   & exahype::mappings::PostProcessing::enterCellSpecification()
+    &  _map2PreProcessing.enterCellSpecification(level)
+    &  _map2SolutionUpdate.enterCellSpecification(level)
+    &  _map2PostProcessing.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::SolutionUpdate::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::SolutionUpdate::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::leaveCellSpecification()
-   & exahype::mappings::SolutionUpdate::leaveCellSpecification()
-   & exahype::mappings::PostProcessing::leaveCellSpecification()
+    &  _map2PreProcessing.leaveCellSpecification(level)
+    &  _map2SolutionUpdate.leaveCellSpecification(level)
+    &  _map2PostProcessing.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::SolutionUpdate::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::SolutionUpdate::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::ascendSpecification()
-   & exahype::mappings::SolutionUpdate::ascendSpecification()
-   & exahype::mappings::PostProcessing::ascendSpecification()
+    &  _map2PreProcessing.ascendSpecification(level)
+    &  _map2SolutionUpdate.ascendSpecification(level)
+    &  _map2PostProcessing.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::SolutionUpdate::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::SolutionUpdate::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::PreProcessing::descendSpecification()
-   & exahype::mappings::SolutionUpdate::descendSpecification()
-   & exahype::mappings::PostProcessing::descendSpecification()
+    &  _map2PreProcessing.descendSpecification(level)
+    &  _map2SolutionUpdate.descendSpecification(level)
+    &  _map2PostProcessing.descendSpecification(level)
 
   ;
 }

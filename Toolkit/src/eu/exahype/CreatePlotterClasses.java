@@ -11,6 +11,7 @@ import eu.exahype.node.APlotSolution;
 import eu.exahype.node.AProject;
 import eu.exahype.io.FileSearch;
 import eu.exahype.io.IOUtils;
+import eu.exahype.io.SourceTemplate;
 
 public class CreatePlotterClasses extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -60,108 +61,76 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
   
   private void writePlotterHeader( java.io.BufferedWriter writer, int unknowns, String plotterName ) throws java.io.IOException {
   eu.exahype.solvers.Helpers.writeHeaderCopyright(writer);
-  writer.write( "#include \"exahype/plotters/Plotter.h\"\n" );
-  if (_isForLimitingADERDGSolver) {
-    writer.write( "#include \"exahype/solvers/LimitingADERDGSolver.h\"\n" );
-  }
-  
-    writer.write( "namespace " + _projectName + "{\n");
-    writer.write( "  class " + plotterName + ";\n");
-  if (!_isForLimitingADERDGSolver) {
-    writer.write( "\n" );
-    writer.write( "  /**\n" );
-    writer.write( "   * Forward declaration\n" );
-    writer.write( "   */\n" );
-    writer.write( "  class " + _solverName + ";\n" );
-  }
-    writer.write("}\n\n\n");
-    writer.write( "\n" );
-    writer.write( "\n" );
-    writer.write( "class " + _projectName + "::" + plotterName + ": public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{\n" );
-    writer.write( "  public:\n" );
-    if (!_isForLimitingADERDGSolver) {
-      writer.write( "  " + plotterName + "(" + _solverName + "&  solver);\n" );
-    } else {
-      writer.write( "  " + plotterName + "(exahype::solvers::LimitingADERDGSolver&  solver);\n" );
+    SourceTemplate content = SourceTemplate.fromRessourceContent(
+        "eu/exahype/plotters/templates/UserOnTheFlyPostProcessingHeader.template");
+
+    content.put("Project", _projectName);
+    content.put("plotterName", plotterName);
+
+    String FurtherIncludes = "";
+    String FurtherClasses = "";
+    String PlotterConstructorSignature = "";
+    if (_isForLimitingADERDGSolver) {
+      FurtherIncludes += "#include \"exahype/solvers/LimitingADERDGSolver.h\"\n";
     }
-    writer.write( "  virtual ~" + plotterName + "();\n" );
-    writer.write( "  void startPlotting(double time) override;\n");
-    writer.write( "  void finishPlotting() override;\n");
-    writer.write( "  void mapQuantities(\n" );
-    writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,\n" );
-    writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,\n" );
-    writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& x,\n" );
-    writer.write( "    const tarch::la::Vector<DIMENSIONS, int>&    pos,\n" );
-    writer.write( "    double* Q,\n" );
-    writer.write( "    double* outputQuantities,\n" );
-    writer.write( "    double timeStamp) override;\n" );
-    writer.write( "};\n" );
+    if (!_isForLimitingADERDGSolver) {
+      FurtherClasses += "/* Forward declaration: */\n";
+      FurtherClasses += "class "+_solverName+"; \n";
+      FurtherClasses += "\n";
+    }
+    if (!_isForLimitingADERDGSolver) {
+       PlotterConstructorSignature = _solverName + "&  solver";
+    } else {
+      PlotterConstructorSignature = "exahype::solvers::LimitingADERDGSolver&  solver";
+    }
+    content.put("FurtherIncludes", FurtherIncludes);
+    content.put("FurtherClasses", FurtherClasses);
+    content.put("PlotterConstructorSignature", PlotterConstructorSignature);
+
+    writer.write(content.toString());
   }
  
   private void writePlotterImplementation( java.io.BufferedWriter writer, int unknowns, String plotterName ) throws java.io.IOException {
-    writer.write( "#include \"" + plotterName + ".h\"\n" );
-    writer.write( "\n" );
-    writer.write( "\n" );
+    SourceTemplate content = SourceTemplate.fromRessourceContent(
+        "eu/exahype/plotters/templates/UserOnTheFlyPostProcessingImplementation.template");
+
+    content.put("Project", _projectName);
+    content.put("plotterName", plotterName);
+
+    // ExaHyPE toolkit authors never heard of https://en.wikipedia.org/wiki/Don%27t_repeat_yourself
+    String PlotterConstructorSignature = "";
     if (!_isForLimitingADERDGSolver) {
-      writer.write( _projectName + "::" + plotterName + "::" + plotterName + "(" + _solverName + "&  solver) {\n" );
+       PlotterConstructorSignature = _solverName + "&  solver";
     } else {
-      writer.write( _projectName + "::" + plotterName + "::" + plotterName + "(exahype::solvers::LimitingADERDGSolver&  solver) {\n" );
+      PlotterConstructorSignature = "exahype::solvers::LimitingADERDGSolver&  solver";
     }
-    writer.write( "  // @todo Please insert your code here\n" );
-    writer.write( "}\n" );
-    writer.write( "\n" );
-    writer.write( "\n" );
-    writer.write( _projectName + "::" + plotterName + "::~" + plotterName + "() {\n" );
-    writer.write( "  // @todo Please insert your code here\n" );
-    writer.write( "}\n" );
-    writer.write( "\n" );
-    writer.write( "\n" );
-    writer.write( "void " + _projectName + "::" + plotterName + "::startPlotting(double time) {\n" );
-    writer.write( "  // @todo Please insert your code here\n" );
-    writer.write( "}\n" );
-    writer.write( "\n" );
-    writer.write( "\n" );
-    writer.write( "void " + _projectName + "::" + plotterName + "::finishPlotting() {\n" );
-    writer.write( "  // @todo Please insert your code here\n" );
-    writer.write( "}\n" );
-    writer.write( "\n" );
-    writer.write( "\n" );
-    writer.write( "void " + _projectName + "::" + plotterName + "::mapQuantities(\n" );
-    writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,\n" );
-    writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,\n" );
-    writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& x,\n" );
-    writer.write( "    const tarch::la::Vector<DIMENSIONS, int>&    pos,\n" );
-    writer.write( "    double* Q,\n" );
-    writer.write( "    double* outputQuantities,\n" );
-    writer.write( "    double timeStamp\n" );
-    writer.write( ") {\n" );
-    writer.write( "  for (int i=0; i<" + unknowns + "; i++){ \n" );
-    writer.write( "    outputQuantities[i] = Q[i];\n" );
-    writer.write( "  }\n" );
-    writer.write( "}\n" );
-    writer.write( "\n" );
-    writer.write( "\n" );
+    content.put("PlotterConstructorSignature", PlotterConstructorSignature);
+    content.put("writtenUnknowns", Integer.toString(unknowns));
+
+    writer.write(content.toString());
   }
   
   private void tryWriteDeviceHeader(Writer headerWriter,String plotterName) throws IOException {
-    String content = IOUtils.convertRessourceContentToString(
+    SourceTemplate content = SourceTemplate.fromRessourceContent(
         "eu/exahype/plotters/templates/UserDefinedDeviceHeader.template");
-    content = content.replaceAll("\\{\\{Project\\}\\}",_projectName);
-    content = content.replaceAll("\\{\\{Device\\}\\}",plotterName);
-    content = content.replaceAll("\\{\\{SolverType\\}\\}",_solverType);
-    headerWriter.write(content);
+
+    content.put("Project", _projectName);
+    content.put("Device", plotterName);
+    content.put("SolverType", _solverType);
+    headerWriter.write(content.toString());
     
     System.out.println("create header file for abstract solver superclass Abstract" + plotterName + " ... ok");
     headerWriter.close();
   }
   
   private void tryWriteDeviceImplementation(Writer deviceWriter,String plotterName) throws IOException {
-    String content = IOUtils.convertRessourceContentToString(
-        "eu/exahype/plotters/templates/UserDefinedDeviceImplementation.template");
-    content = content.replaceAll("\\{\\{Project\\}\\}",_projectName);
-    content = content.replaceAll("\\{\\{Device\\}\\}",plotterName);
-    content = content.replaceAll("\\{\\{SolverType\\}\\}",_solverType);
-    deviceWriter.write(content);
+    SourceTemplate content = SourceTemplate.fromRessourceContent(
+       "eu/exahype/plotters/templates/UserDefinedDeviceImplementation.template");
+
+    content.put("Project", _projectName);
+    content.put("Device", plotterName);
+    content.put("SolverType", _solverType);
+    deviceWriter.write(content.toString());
     
     System.out.println("create implementation file for user defined plotter " + plotterName + " ... ok");
     deviceWriter.close();

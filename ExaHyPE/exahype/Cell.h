@@ -73,21 +73,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   Cell(const Base::PersistentCell& argument);
 
   /**
-   * Returns if the face is inside. Inside for
-   * a face means that at least one vertex
-   * of the 2^{d-1} vertices building up
-   * the face must be inside of the domain.
-   *
-   * Otherwise the face might be on the
-   * boundary of the domain or outside of
-   * the domain.
-   */
-  static bool isFaceInside(
-      const int faceIndex,
-      exahype::Vertex* const verticesAroundCell,
-      const peano::grid::VertexEnumerator& verticesEnumerator);
-
-  /**
    * TODO(Dominic): Revise this docu.
    * Here we reset helper variables that play a role in
    * the neighbour merge methods.
@@ -120,7 +105,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
       exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
     for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-      cellDescription.setRiemannSolvePerformed(faceIndex,false);
+      cellDescription.setNeighbourMergePerformed(faceIndex,false);
 
       #ifdef Parallel
       int listingsOfRemoteRank =
@@ -135,19 +120,23 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
     }
   }
 
-  template <class CellDescription>
-  static void determineInsideAndOutsideFaces(
-      CellDescription& cellDescription,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
-    for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
-      // TODO(Dominic): Normally, isFaceInside has not to be called everytime here
-      // but only once when the cell is initialised. Problem: Call addNewCellDescr.. from  merge..DueToForkOrJoin(...),
-      // where no vertices are given. [Solved] - We send out the cellDescriptions from
-      // the ADERDG/FV cell descr. heaps.
-      cellDescription.setIsInside(faceIndex,isFaceInside(faceIndex,fineGridVertices,fineGridVerticesEnumerator));
-    }
-  }
+  /**
+   * Determine inside and outside faces of a cell.
+   * A face is considered inside if at least
+   * one of its vertices is inside.
+   *
+   * <h2>Issues with AMR</h2>
+   * Use this function only for cells
+   * on the coarsest mesh level per solver.
+   *
+   * If the computational domain
+   * is anisotropic and we perform adaptive refinement.
+   * Then, fine grid cells might suddenly get neighbours and thus
+   * their vertices are not outside anymore.
+   */
+  static std::bitset<DIMENSIONS_TIMES_TWO> determineInsideAndOutsideFaces(
+        const exahype::Vertex* const verticesAroundCell,
+        const peano::grid::VertexEnumerator& verticesEnumerator);
 
   #ifdef Parallel
   /**

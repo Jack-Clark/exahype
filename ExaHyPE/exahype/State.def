@@ -41,6 +41,7 @@ class exahype::dastgen::State {
      * a reduction-broadcast operation.
      */
     BroadcastAndMergeTimeStepData,
+    
     /**
      * This is one of the modes
      * for the standard time stepping
@@ -53,10 +54,16 @@ class exahype::dastgen::State {
      * direct neighbour communication.
      * However if we consider adaptive meshes,
      * face data exchange also includes
-     * as master-worker and worker-master
+     * master-worker and worker-master
      * communication.
      */
     MergeFaceData,
+    
+    /**
+     * Drop face data.
+     */
+    DropFaceData,
+    
     /**
      * This is the default mode if you use
      * fused time stepping.
@@ -65,7 +72,14 @@ class exahype::dastgen::State {
      * time step as well as
      * face data.
      */
-    BroadcastAndMergeTimeStepDataAndMergeFaceData
+    BroadcastAndMergeTimeStepDataAndMergeFaceData,
+    
+    /**
+     * Broadcast time step data from the 
+     * master to the workers 
+     * and drop face data.
+     */
+    BroadcastAndMergeTimeStepDataAndDropFaceData
   };
 
   parallelise persistent MergeMode mergeMode;
@@ -137,49 +151,91 @@ class exahype::dastgen::State {
   parallelise persistent SendMode sendMode;
   
   /**
-   * If this flag is set, the solvers
-   * are notified that they might need
-   * to reinitialise their time step sizes 
-   * and time stamps before a new time step
-   * is started.
-   * 
-   * This is usually the case if the
-   * mesh has been updated after the computation
-   * of the last solution. 
-   * 
-   * The ADER-DG solver, e.g., needs then to 
-   * overwrite the predictor time step size 
-   * of as well as the predictor time stamp
-   * before startNewTimeStep() is called for the solver
-   * since both will be used as corrector quantities in the next iteration.
+   * This flag influences the behaviour of the Predictor,
+   * TimeStepSizeComputation, SolutionUpdate, Merging and
+   * Sending mappings by selecting only the solvers that
+   * are active in the given algorithmic section.
    */
-  persistent bool reinitTimeStepData;
-  
-  /**
-   * This flag indicates if at least one solver
-   * has performed a time step with an 
-   * instable (too large) time step size and
-   * thus needs to be recomputed.
-   * This can happen when we run the fused ADER-DG
-   * variant. 
-   * 
-   * Needs to be reset after the affected
-   * solvers have been rerun with a
-   * stable time step size.
-   * 
-   * <h2>MPI</h2>
-   * This flag does not need to be parallelised since
-   * we use it only for the global master rank.
-   */
-  persistent bool stabilityConditionOfOneSolverWasViolated;
-  
-  /**
-   * A factor in the range (0,1] that
-   * is used for reseting the time step sizes
-   * of an ADER-DG solver.
-   * 
-   * The reset corrector and predictor time step sizes
-   * are reset to a stable time step size times this factor. 
-   */
-  persistent double timeStepSizeWeightForPredictionRerun;
+  enum AlgorithmSection {
+   	/*
+   	 * The runner is currently 
+   	 * performing a normal ADER-DG time step.
+   	 */
+   	TimeStepping,
+   	
+   	/*
+   	 * The runner is currently 
+   	 * performing limiter status spreading.
+   	 * All those LimitingADERDGSolvers become
+   	 * active that have either requested a mesh update
+   	 * or a local or global recomputation.
+   	 */
+   	LimiterStatusSpreading,
+   	
+   	/**
+   	 * The runner performs mesh refinement according to the
+   	 * user's refinement criterion or the regular limiter status
+   	 * flagging, i.e. the LimiterStatus updates caused by a 
+   	 * regularly moving limiter domain or since
+   	 * a global recomputation is necessary.
+   	 */
+   	MeshRefinement,
+   	
+   	/**
+   	 * In this section, the runner overlaps the 
+   	 * operations that must be performed after the
+   	 * mesh refinement with operations that
+   	 * must be performed for a local or global
+   	 * recomputation. 
+   	 */
+   	MeshRefinementOrLocalOrGlobalRecomputation,
+   	
+    /**
+     * This marks an end point of the side branch.
+     * It is sure here that no solver performs
+     * a global recomputation or has performed mesh refinement
+     * 
+     * Triggers a send for all registered solvers.
+     */
+    LocalRecomputationAllSend,
+    
+    /**
+     * In this section, the  runner
+     * triggers operations for solvers that
+     * have performed mesh refinement or
+     * which perform a global recomputation.
+     */
+    MeshRefinementOrGlobalRecomputation,
+   	
+    /**
+     * This marks an end point of the side branch.
+     * It is sure here that no solver performs
+     * a global recomputation.
+     * 
+     * Triggers a send for all registered solvers.
+     */
+    MeshRefinementAllSend,
+    
+   	/**
+   	 * In this section, solvers finalise their 
+   	 * global recomputation by doing a complete
+   	 * ADERDGTimeStep. Furthermore
+   	 * since this is the last adapter call
+   	 * in the side branch, all solvers are ask
+   	 * to send out data.
+   	 */
+   	GlobalRecomputationAllSend,
+   	
+   	/**
+   	 * In this section, all solver have to drop
+   	 * their messages. Then, the ADER-DG solvers which
+   	 * have violated the CFL condition with their
+   	 * estimated time step size are required
+   	 * to reurn the prediction.
+   	 * Finally, all solvers send out again their
+   	 * face data.
+   	 */
+   	PredictionRerunAllSend
+  };
+  parallelise persistent AlgorithmSection _algorithmSection;
 };

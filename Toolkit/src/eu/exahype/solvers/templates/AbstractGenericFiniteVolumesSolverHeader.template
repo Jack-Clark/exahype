@@ -32,6 +32,13 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     static constexpr int PatchSize          = {{PatchSize}};
     static constexpr int GhostLayerWidth    = {{GhostLayerWidth}};
     static constexpr double CFL             = 0.9;
+    
+    // virtual getters for the constexpr's
+    int constexpr_getNumberOfVariables()  const override { return NumberOfVariables; };
+    int constexpr_getNumberOfParameters() const override { return NumberOfParameters; };
+    int constexpr_getPatchSize()          const override { return PatchSize; };
+    int constexpr_getGhostLayerWidth()    const override { return GhostLayerWidth; }
+    double constexpr_getCFLNumber()       const override { return CFL; };
   
     class Variables;
     class ReadOnlyVariables;
@@ -40,7 +47,7 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     class VariableNames;
 {{NamingSchemes}}
     
-    Abstract{{Solver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
+    Abstract{{Solver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,exahype::solvers::Solver::TimeStepping timeStepping{{AbstractSolverConstructorSignatureExtension}});
     
     void solutionUpdate(double* luhNew,const double* luh,double** tempStateSizedArrays,double** tempUnknowns,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt,double& maxAdmissibleDt) override;
     
@@ -53,7 +60,7 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     void boundaryConditions(double* stateOut,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) override;
 
     /// Apr 18, Coding Week: Riemann Solvers in FV. Hopefully inlined as evaluated point wise.
-    virtual double riemannSolver(double* fL, double *fR, const double* qL, const double* qR, int normalNonZero);
+    double riemannSolver(double* fL, double *fR, const double* qL, const double* qR, int normalNonZero) override;
 
     static void constantsToString(std::ostream& os);
     static void abortWithMsg(const char* const msg);
@@ -61,26 +68,35 @@ class {{Project}}::Abstract{{Solver}} : public exahype::solvers::FiniteVolumesSo
     /**
      * Please overwrite in user's solver. See superclass for documentation.
      */
-    virtual bool useAdjustSolution(
+    bool useAdjustSolution(
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
       const double t,
-      const double dt) const {return false;}
+      const double dt) const override {return false;}
 
-    virtual bool useSource()                 const { return false; }
-    virtual bool useNonConservativeProduct() const { return false; }
-    virtual bool useConservativeFlux()       const { return true; }
+    bool useAlgebraicSource()        const override { return false; }
+    
+    /**
+     * Note that our FV kernels do not have the point sources included yet,
+     * as far as I know (Sven).
+     **/
+    bool usePointSource()            const override { return false; }
+    bool useNonConservativeProduct() const override { return false; }
+    bool useConservativeFlux()       const override { return true; }
 
     /**
      * Please overwrite in user's solver. See superclass for documentation.
      */
 
     /* New April 2017 API changes */
-    virtual void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ);
-    virtual void coefficientMatrix(const double* const Q,const int d,double* Bn);
-    virtual void algebraicSource(const double* const Q,double* S);
-    virtual void fusedSource(const double* const Q, const double* const gradQ, double* S);
-    virtual void flux(const double* const Q,double** F);
+    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
+    void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
+    void algebraicSource(const double* const Q,double* S) override;
+    void fusedSource(const double* const Q, const double* const gradQ, double* S) override;
+    void flux(const double* const Q,double** F) override;
+    
+    /* New May 2017 API changes */
+    void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) override;
 };
 
 

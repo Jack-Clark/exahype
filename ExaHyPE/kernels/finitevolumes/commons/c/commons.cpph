@@ -196,14 +196,15 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
     kernels::idx3 idx_bnd_x(patchSize,ghostLayerWidth,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
-      xOutside[0] = cellCentre[0] - 0.5 * cellSize[0] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
+      const int K=ghostLayerWidth-k-1; // mirror
+      xOutside[0] = cellCentre[0] - 0.5 * cellSize[0] * ( 1.0 + K*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5 and big "K"
 
       for (int i = 0; i < patchSize; ++i) {
         const double q = (2.0*i+1.0)/(2.0*patchSize); //linspace
         xOutside[1] = cellCentre[1] + cellSize[1] * (q - 0.5);
 
         solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-            stateIn + idx_bnd_x(i,k,0),stateOut + idx_bnd_x(i,k,0));
+            stateIn + idx_bnd_x(i,K,0),stateOut + idx_bnd_x(i,k,0));
       }
     }
   }
@@ -212,14 +213,15 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
     kernels::idx3 idx_bnd_x(patchSize,ghostLayerWidth,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
-      xOutside[0] = cellCentre[0] + 0.5 * cellSize[0] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
+      const int K=ghostLayerWidth-k-1; // mirror
+      xOutside[0] = cellCentre[0] + 0.5 * cellSize[0] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5 and small "k"
 
       for (int i = 0; i < patchSize; ++i) {
         const double q = (2.0*i+1.0)/(2.0*patchSize); //linspace
         xOutside[1] = cellCentre[1] + cellSize[1] * (q - 0.5);
 
         solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-            stateIn + idx_bnd_x(i,k,0),stateOut + idx_bnd_x(i,k,0));
+            stateIn + idx_bnd_x(i,K,0),stateOut + idx_bnd_x(i,k,0));
       }
     }
   }
@@ -228,14 +230,15 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
     kernels::idx3 idx_bnd_y(ghostLayerWidth,patchSize,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
-      xOutside[1] = cellCentre[1] - 0.5 * cellSize[1] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
+      const int K=ghostLayerWidth-k-1; // mirror
+      xOutside[1] = cellCentre[1] - 0.5 * cellSize[1] * ( 1.0 + K*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5 and big "K"
 
       for (int i = 0; i < patchSize; ++i) {
         const double q = (2.0*i+1.0)/(2.0*patchSize); //linspace
         xOutside[0] = cellCentre[0] + cellSize[0] * (q - 0.5);
 
         solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-            stateIn + idx_bnd_y(k,i,0),stateOut + idx_bnd_y(k,i,0));
+            stateIn + idx_bnd_y(K,i,0),stateOut + idx_bnd_y(k,i,0));
       }
     }
   }
@@ -244,14 +247,15 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
     kernels::idx3 idx_bnd_y(ghostLayerWidth,patchSize,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
-      xOutside[1] = cellCentre[1] + 0.5 * cellSize[1] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
+      const int K=ghostLayerWidth-k-1; // mirror
+      xOutside[1] = cellCentre[1] + 0.5 * cellSize[1] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5 and small "k"
 
       for (int i = 0; i < patchSize; ++i) {
         const double q = (2.0*i+1.0)/(2.0*patchSize); //linspace
         xOutside[0] = cellCentre[0] + cellSize[0] * (q - 0.5);
 
         solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-            stateIn + idx_bnd_y(k,i,0),stateOut + idx_bnd_y(k,i,0));
+            stateIn + idx_bnd_y(K,i,0),stateOut + idx_bnd_y(k,i,0));
       }
     }
   } else {
@@ -744,7 +748,8 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
     kernels::idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
-      xOutside[0] = cellCentre[0] - 0.5 * cellSize[0] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
+      const int K=ghostLayerWidth-k-1; // mirror
+      xOutside[0] = cellCentre[0] - 0.5 * cellSize[0] * ( 1.0 + K*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5 and big "K"
 
       for (int j = 0; j < patchSize; ++j) {
         for (int i = 0; i < patchSize; ++i) {
@@ -754,7 +759,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[1] = cellCentre[1] + cellSize[1] * (qi - 0.5);
 
           solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-              stateIn + idx_bnd_x(j,i,k,0),stateOut + idx_bnd_x(j,i,k,0)); // TODO: suboptimal memory layout
+              stateIn + idx_bnd_x(j,i,K,0),stateOut + idx_bnd_x(j,i,k,0)); // TODO: suboptimal memory layout
         }
       }
     }
@@ -764,7 +769,8 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
     kernels::idx4 idx_bnd_x(patchSize,patchSize,ghostLayerWidth,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
-      xOutside[0] = cellCentre[0] + 0.5 * cellSize[0] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
+      const int K=ghostLayerWidth-k-1; // mirror
+      xOutside[0] = cellCentre[0] + 0.5 * cellSize[0] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5 and small "k"
 
       for (int j = 0; j < patchSize; ++j) {
         for (int i = 0; i < patchSize; ++i) {
@@ -774,7 +780,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[1] = cellCentre[1] + cellSize[2] * (qi - 0.5);
 
           solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-              stateIn + idx_bnd_x(j,i,k,0),stateOut + idx_bnd_x(j,i,k,0));
+              stateIn + idx_bnd_x(j,i,K,0),stateOut + idx_bnd_x(j,i,k,0));
         }
       }
     }
@@ -784,7 +790,8 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
     kernels::idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
-      xOutside[1] = cellCentre[1] - 0.5 * cellSize[1] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
+      const int K=ghostLayerWidth-k-1; // mirror
+      xOutside[1] = cellCentre[1] - 0.5 * cellSize[1] * ( 1.0 + K*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5 and big "K"
 
       for (int j = 0; j < patchSize; ++j) {
         for (int i = 0; i < patchSize; ++i) {
@@ -794,7 +801,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
           solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-              stateIn + idx_bnd_y(j,k,i,0),stateOut + idx_bnd_y(j,k,i,0));
+              stateIn + idx_bnd_y(j,K,i,0),stateOut + idx_bnd_y(j,k,i,0));
         }
       }
     }
@@ -804,7 +811,8 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
     kernels::idx4 idx_bnd_y(patchSize,ghostLayerWidth,patchSize,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
-      xOutside[1] = cellCentre[1] + 0.5 * cellSize[1] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
+      const int K=ghostLayerWidth-k-1; // mirror
+      xOutside[1] = cellCentre[1] + 0.5 * cellSize[1] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5 and small "k"
 
       for (int j = 0; j < patchSize; ++j) {
         for (int i = 0; i < patchSize; ++i) {
@@ -814,7 +822,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
           solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-              stateIn + idx_bnd_y(j,k,i,0),stateOut + idx_bnd_y(j,k,i,0));
+              stateIn + idx_bnd_y(j,K,i,0),stateOut + idx_bnd_y(j,k,i,0));
         }
       }
     }
@@ -824,7 +832,8 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
     kernels::idx4 idx_bnd_z(ghostLayerWidth,patchSize,patchSize,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
-      xOutside[2] = cellCentre[2] - 0.5 * cellSize[2] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
+      const int K=ghostLayerWidth-k-1; // mirror
+      xOutside[2] = cellCentre[2] - 0.5 * cellSize[2] * ( 1.0 + K*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5 and big "K"
 
       for (int j = 0; j < patchSize; ++j) {
         for (int i = 0; i < patchSize; ++i) {
@@ -834,7 +843,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
           solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-              stateIn + idx_bnd_z(k,j,i,0),stateOut + idx_bnd_z(k,j,i,0));
+              stateIn + idx_bnd_z(K,j,i,0),stateOut + idx_bnd_z(k,j,i,0));
         }
       }
     }
@@ -844,7 +853,8 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
     kernels::idx4 idx_bnd_z(ghostLayerWidth,patchSize,patchSize,numberOfData);
 
     for (int k = 0; k < ghostLayerWidth; ++k) {
-      xOutside[2] = cellCentre[2] + 0.5 * cellSize[2] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5
+      const int K=ghostLayerWidth-k-1; // mirror
+      xOutside[2] = cellCentre[2] + 0.5 * cellSize[2] * ( 1.0 + k*1.0/(2.0*patchSize) ); // !!! be aware of sign in front of 0.5 and small "k"
 
       for (int j = 0; j < patchSize; ++j) {
         for (int i = 0; i < patchSize; ++i) {
@@ -854,7 +864,7 @@ void kernels::finitevolumes::commons::c::boundaryConditions(SolverType& solver,
           xOutside[0] = cellCentre[0] + cellSize[0] * (qi - 0.5);
 
           solver.boundaryValues(xOutside,t,dt,faceIndex,normalNonZero,
-              stateIn + idx_bnd_z(k,j,i,0),stateOut + idx_bnd_z(k,j,i,0));
+              stateIn + idx_bnd_z(K,j,i,0),stateOut + idx_bnd_z(k,j,i,0));
         }
       }
     }

@@ -45,7 +45,10 @@ ifeq ($(BOUNDARYCONDITIONS),)
 	BOUNDARYCONDITIONS=None
 endif
 
-
+ifeq ($(call tolower,$(GPROF)),on)
+	COMPILER_CFLAGS += -pg 
+	COMPILER_LFLAGS += -pg 
+endif
 # ************************************************
 #
 #Set compiler and linker flags for the different Debug/Release modes
@@ -56,7 +59,7 @@ endif
 ifeq ($(call tolower,$(MODE)),release)
 	# Settings for the Release mode
 	# ----------------------------------------------
-	COMPILER_CFLAGS += 
+	COMPILER_CFLAGS +=
 	COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),peanoprofile)
@@ -106,7 +109,7 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	else
 	  CC=$(EXAHYPE_CC)
 	endif
-	ifndef $(EXAHYPE_FC)
+	ifndef EXAHYPE_FC
 	  ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	    FC=mpiifort
 	  else
@@ -155,11 +158,13 @@ ifeq ($(call tolower,$(COMPILER)),intel)
 	  COMPILER_LFLAGS += -mmic
 	else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
 	  COMPILER_CFLAGS += -xMIC-AVX512 -fma
-      FCOMPILER_CFLAGS += -xMIC-AVX512 -fma
+      #FCOMPILER_CFLAGS += -xMIC-AVX512 -fma
+	  #TODO SVENK: make fortran code compatible with these flags
       COMPILER_LFLAGS += -xMIC-AVX512 -fma
     else ifeq ($(call tolower,$(ARCHITECTURE)),hsw)
-	  COMPILER_CFLAGS += -xCORE-AVX2 -fma
-	  FCOMPILER_CFLAGS += -xCORE-AVX2 -fma
+      COMPILER_CFLAGS += -xCORE-AVX2 -fma
+      #FCOMPILER_CFLAGS += -xCORE-AVX2 -fma 
+	  #TODO SVENK: make fortran code compatible with these flags
       COMPILER_LFLAGS += -xCORE-AVX2 -fma
     else
       $(error Unknown option for variable [ARCHITECTURE])
@@ -177,7 +182,7 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	else
 	  CC=$(EXAHYPE_CC)
 	endif
-	ifndef $(EXAHYPE_FC)
+	ifndef EXAHYPE_FC
 	ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	    FC=mpifort
 	  else
@@ -187,23 +192,26 @@ else ifeq ($(call tolower,$(COMPILER)),gnu)
 	  FC=$(EXAHYPE_FC)
 	endif
 	
-	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp
+	FCOMPILER_CFLAGS  += -fdefault-real-8 -fdefault-double-8 -ffree-line-length-none -cpp -Wall -Wno-tabs -Wno-unused-variable
 	# REMOVING "-O3"  as it creates compiler bugs!
 	LINK_FORTRAN      += -lgfortran
 
 	COMPILER_CFLAGS   += -std=c++11 -pedantic -Wall -Drestrict=__restrict__ -pipe -D__assume_aligned=__builtin_assume_aligned -Wstrict-aliasing 
-	COMPILER_LFLAGS   += 
+	COMPILER_LFLAGS   += -lm -lstdc++
 	
 	ifeq ($(call tolower,$(MODE)),debug)
-	  COMPILER_CFLAGS   += -O0 -ggdb
+	  COMPILER_CFLAGS  += -O0 -ggdb
+          FCOMPILER_CFLAGS += -ggdb
 	else ifeq ($(call tolower,$(MODE)),asserts)
-      COMPILER_CFLAGS += -g3
-      COMPILER_LFLAGS += -g3
+          COMPILER_CFLAGS += -g3
+          COMPILER_LFLAGS += -g3
+          FCOMPILER_CFLAGS += -g3
 	else ifeq ($(call tolower,$(MODE)),profile)
-      COMPILER_CFLAGS += -p -pg -g3 -O3
-      COMPILER_LFLAGS += -p -pg
+          COMPILER_CFLAGS += -p -pg -g3 -O3
+          COMPILER_LFLAGS += -p -pg
 	else
 	  COMPILER_CFLAGS   += -O3
+          FCOMPILER_CFLAGS  += -O3
 	endif
 
 	ifeq ($(call tolower,$(SHAREDMEM)),tbb)
@@ -357,8 +365,13 @@ buildinfo:
 		"PROJECT_PATH = $(PROJECT_PATH)" \
 		"PEANO_KERNEL_PEANO_PATH = $(PEANO_KERNEL_PEANO_PATH)" \
 		"PEANO_KERNEL_TARCH_PATH = $(PEANO_KERNEL_TARCH_PATH)" \
+		"------" \
+		"PROJECT_CFLAGS = $(PROJECT_CFLAGS)" \
+		"PROJECT_LFLAGS = $(PROJECT_LFLAGS)" \
 		> $(PROJECT_PATH)/buildinfo.h
-
+#	touch the file which loads the buildinfo in order to have the most recent ones
+	touch $(EXAHYPE_PATH)/exahype/Version.cpp
+	
 		
 cfiles.mk:
 	touch cfiles.mk

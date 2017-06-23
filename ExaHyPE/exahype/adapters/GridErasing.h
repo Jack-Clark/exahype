@@ -18,7 +18,7 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/DropIncomingMPIMessages.h"
+ #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/GridErasing.h"
 
 
@@ -39,21 +39,21 @@ namespace exahype {
  */
 class exahype::adapters::GridErasing {
   private:
-    typedef mappings::DropIncomingMPIMessages Mapping0;
+    typedef mappings::Merging Mapping0;
     typedef mappings::GridErasing Mapping1;
 
-     Mapping0  _map2DropIncomingMPIMessages;
+     Mapping0  _map2Merging;
      Mapping1  _map2GridErasing;
 
 
   public:
-    static peano::MappingSpecification         touchVertexLastTimeSpecification();
-    static peano::MappingSpecification         touchVertexFirstTimeSpecification();
-    static peano::MappingSpecification         enterCellSpecification();
-    static peano::MappingSpecification         leaveCellSpecification();
-    static peano::MappingSpecification         ascendSpecification();
-    static peano::MappingSpecification         descendSpecification();
-    static peano::CommunicationSpecification   communicationSpecification();
+    peano::MappingSpecification         touchVertexLastTimeSpecification(int level) const;
+    peano::MappingSpecification         touchVertexFirstTimeSpecification(int level) const;
+    peano::MappingSpecification         enterCellSpecification(int level) const;
+    peano::MappingSpecification         leaveCellSpecification(int level) const;
+    peano::MappingSpecification         ascendSpecification(int level) const;
+    peano::MappingSpecification         descendSpecification(int level) const;
+    peano::CommunicationSpecification   communicationSpecification() const;
 
     GridErasing();
 

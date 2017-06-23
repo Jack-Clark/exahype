@@ -23,30 +23,12 @@
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
 namespace exahype {
-  /**
-   * We abuse this heap to send and receive metadata from one MPI rank to the other.
-   * We never actually store data on this heap.
-   * TODO(Dominic): Change to RLEIntegerHeap that compresses data.
-   */
-  typedef peano::heap::PlainIntegerHeap  MetadataHeap; // TODO(Dominic): Migrate to Vertex.
-
   class Vertex;
 
   /**
    * Forward declaration
    */
   class VertexOperations;
-
-  /**
-   * Defines an invalid metadata entry.
-   */
-  const int InvalidMetadataEntry = -1;
-
-  /**
-   * Defines the length of the metadata
-   * we send out per sovler.
-   */
-  const int MetadataPerSolver = 1;
 }
 
 /**
@@ -66,8 +48,12 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   typedef class peano::grid::Vertex<exahype::records::Vertex> Base;
 
   friend class VertexOperations;
- public:
 
+  /**
+   * The log device of this class.
+   */
+  static tarch::logging::Log _log;
+ public:
   /**
    * Default Constructor
    *
@@ -100,30 +86,22 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    */
   tarch::la::Vector<TWO_POWER_D, int> getCellDescriptionsIndex() const;
 
-//  struct Face {
-//    int normalDirection;
-//    int faceIndex1;
-//    int faceIndex2
-//  } typedef Face;
-//
-//  static Face computeFaceIndices(
-//      const tarch::la::Vector<DIMENSIONS,int>& pos1,
-//      const tarch::la::Vector<DIMENSIONS,int>& pos2) {
-//    assertion(tarch::la::countEqualEntries(pos1,pos2)==DIMENSIONS-1);
-//    assertion(tarch::la::equalsReturnIndex(pos1, pos2)<DIMENSIONS);
-//    Face face;
-//
-//    face.normalDirection = tarch::la::equalsReturnIndex(pos1, pos2);
-//    assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-//    face.faceIndex1 = 2 * face.normalDirection +
-//        (pos2(face.normalDirection) > pos1(face.normalDirection) ? 1 : 0); // !!! Be aware of the ">" !!!
-//    face.faceIndex2      = 2 * face.normalDirection +
-//        (pos1(face.normalDirection) > pos2(face.normalDirection) ? 1 : 0); // !!! Be aware of the ">" !!!
-//
-//    assertion(face.normalDirection<DIMENSIONS);
-//    assertion(std::abs(face.faceIndex1-face.faceIndex2)==1);
-//    return face;
-//  }
+
+  /**
+   * Loop over all neighbouring cells and merge
+   * the metadata of cell descriptions in neighbouring
+   * cells which are owned by the same solver.
+   *
+   * \note Since this function sets the
+   * neighbourMergePerformed flags, do never
+   * use it in combination with the Merging mapping.
+   */
+  void mergeOnlyMetadata(const exahype::records::State::AlgorithmSection& section);
+
+  /**
+   * Merge metadata at a hanging node.
+   */
+  void mergeOnlyMetadataAtHangingNode(const exahype::records::State::AlgorithmSection& section);
 
   /**
    * Checks if the cell descriptions at the indices corresponding
@@ -135,11 +113,13 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    * into the solvers. I need to discuss this with Tobias.
    */
   bool hasToMergeNeighbours(
-        const tarch::la::Vector<DIMENSIONS,int>& pos1,
-        const tarch::la::Vector<DIMENSIONS,int>& pos2) const;
+      const tarch::la::Vector<DIMENSIONS,int>& pos1,
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>& pos2,
+      const int pos2Scalar) const;
 
   /**
-   * Checks if the cell description at the indices corresponding
+   * Checks if the cell descriptions at the indices corresponding
    * to \p pos1 and \p pos2 need to be merged with each other.
    *
    * TODO(Dominic): The idea is to store purely geometry based information
@@ -148,8 +128,21 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    * into the solvers. I need to discuss this with Tobias.
    */
   bool hasToMergeWithBoundaryData(
-        const tarch::la::Vector<DIMENSIONS,int>& pos1,
-        const tarch::la::Vector<DIMENSIONS,int>& pos2) const;
+      const tarch::la::Vector<DIMENSIONS,int>& pos1,
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>& pos2,
+      const int pos2Scalar) const;
+
+  /**
+   * Checks if the cell description at one of the indices corresponding
+   * to \p pos1 and \p pos2 need to merge their metadata at
+   * a empty cell, i.e. there is a hanging node within the domain.
+   */
+  bool hasToMergeWithEmptyCell(
+      const tarch::la::Vector<DIMENSIONS,int>& pos1,
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>& pos2,
+      const int pos2Scalar) const;
 
   /**
    * Sets a flag on the cell descriptions at the indices corresponding
@@ -168,83 +161,7 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
 
 
 #ifdef Parallel
-  /**
-   * Encodes the metadata as integer sequence.
-   *
-   * The first element refers to the number of
-   * ADERDGCellDescriptions associated with this cell (nADERG).
-   * The next 2*nADERG elements store a pair of
-   * solver number, and cell description type (encoded as int)
-   * for each ADERDGCellDescription associated with this cell (description).
-   *
-   * The element 1+2*nADERDG refers to the number of
-   * FiniteVolumesCellDescriptions associated with this cell (nFV).
-   * The remaining 2*nFV elements store a pair of
-   * solver number, and cell description type (encoded as int)
-   * for each FiniteVolumesCellDescription associated with this cell
-   * (description).
-   *
-   * @developers:
-   * TODO(Dominic): Does it make sense to also encode the
-   *                refinement event?
-   * TODO(Dominic): Not directly associated with a cell. Consider
-   * to move this function somewhere else.
-   */
-  static exahype::MetadataHeap::HeapEntries encodeMetadata(const int cellDescriptionsIndex);
 
-  /**
-   * Creates a sequence of \p InvalidMetadataEntry with length
-   * exahype::solvers::RegisteredSolvers.size()*MetadataPerSolver.
-   */
-  static exahype::MetadataHeap::HeapEntries createEncodedMetadataSequenceWithInvalidEntries();
-
-  /**
-   * Checks if all the entries of \p sequence are set to
-   * \p InvalidMetadataEntry.
-   */
-  static bool isEncodedMetadataSequenceWithInvalidEntries(exahype::MetadataHeap::HeapEntries& sequence);
-
-  /**
-   * Send metadata to rank \p toRank.
-   */
-  static void sendEncodedMetadata(
-      const int                                   toRank,
-      const int                                   cellDescriptionsIndex,
-      const peano::heap::MessageType&             messageType,
-      const tarch::la::Vector<DIMENSIONS,double>& x,
-      const int                                   level) {
-    MetadataHeap::HeapEntries encodedMetadata =
-        encodeMetadata(cellDescriptionsIndex);
-    MetadataHeap::getInstance().sendData(
-        encodedMetadata,toRank,x,level,messageType);
-  }
-
-  /**
-   * Send a metadata sequence filled with InvalidMetadataEntry
-   * to rank \p toRank.
-   */
-  static void sendEncodedMetadataSequenceWithInvalidEntries(
-      const int                                   toRank,
-      const peano::heap::MessageType&             messageType,
-      const tarch::la::Vector<DIMENSIONS,double>& x,
-      const int                                   level) {
-    MetadataHeap::HeapEntries encodedMetadata =
-        createEncodedMetadataSequenceWithInvalidEntries();
-    MetadataHeap::getInstance().sendData(
-        encodedMetadata,toRank,x,level,messageType);
-  }
-
-  /**
-   * Drop metadata sent by rank \p fromRank.
-   */
-  static void dropMetadata(
-      const int                                   fromRank,
-      const peano::heap::MessageType&             messageType,
-      const tarch::la::Vector<DIMENSIONS,double>& x,
-      const int                                   level) {
-    MetadataHeap::getInstance().receiveData(
-        fromRank,x,level,messageType);
-  }
 
   /**
    * Returns if this vertex needs to send a metadata message to a remote rank \p toRank.
@@ -277,17 +194,16 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   bool hasToSendMetadata(
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
-      const int toRank);
+      const int toRank) const;
 
   /**
-   * Similar to hasToSendMetadata. However ignores
-   * that the dest rank in the adjacency information
-   * might be a forking/joining one.
+   * TODO(Dominic): Add docu
    */
-  bool hasToSendMetadataIgnoreForksJoins(
-      const tarch::la::Vector<DIMENSIONS,int>& src,
-      const tarch::la::Vector<DIMENSIONS,int>& dest,
-      const int toRank);
+  void sendOnlyMetadataToNeighbour(
+      const int toRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const tarch::la::Vector<DIMENSIONS, double>& h,
+      int level) const;
 
   /**
    * Returns if this vertex needs to receive a metadata message from a remote rank \p fromRank.
@@ -321,19 +237,35 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   bool hasToReceiveMetadata(
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
-      const int fromRank);
+      const int fromRank) const;
 
   /**
-   * Similar to hasToReceiveMetadata. However ignores
-   * that the src rank in the adjacency information
-   * might be a forking/joining one.
+   * Receive metadata from neighbouring ranks
+   * and merge the solvers with it.
+   *
+   * \note Since this function sets the
+   * neighbourMergePerformed flags, do never
+   * use it in combination with the Merging mapping.
    */
-  bool hasToReceiveMetadataIgnoreForksJoins(
-      const tarch::la::Vector<DIMENSIONS,int>& src,
-      const tarch::la::Vector<DIMENSIONS,int>& dest,
-      const int fromRank);
+  void mergeOnlyWithNeighbourMetadata(
+      const int fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      const int level,
+      const exahype::records::State::AlgorithmSection& section) const;
 
-
+  /**
+   * Drops the metadata received from neighbouring ranks.
+   *
+   * \note Since this function sets the
+   * neighbourMergePerformed flags, do never
+   * use it in combination with the Merging mapping.
+   */
+  void dropNeighbourMetadata(
+      const int fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      const int level) const;
 
   /**
    * Checks for all cell descriptions (ADER-DG, FV, ...)
@@ -452,4 +384,4 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
 #endif
 };
 
-#endif
+#endif // _EXAHYPE_VERTEX_H

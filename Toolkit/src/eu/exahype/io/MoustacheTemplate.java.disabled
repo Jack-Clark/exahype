@@ -1,0 +1,53 @@
+package eu.exahype.io;
+
+import eu.exahype.io.SourceTemplate;
+
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.MustacheFactory;
+
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+
+
+/**
+ * A template instance using Moustache-java.
+ *
+ * We use the minimal 99kB Mustache implementation available at
+ * https://github.com/spullara/mustache.java
+ * Obtaining a JAR file is a real pain as all depends on Maven.
+ * I had success after cloning the repo locally with
+ *   mvn -DskipTests clean install
+ *
+ * <h3>Downsides of the Mustache templating language</h3>
+ * The language is logic-less, so exactly misses what we urgently
+ * need at code generation.
+ *
+ *
+ * TODO: Check all templates on syntactical correctness at compile
+ *       time of toolkit.
+ **/
+public class MoustacheTemplate extends SourceTemplate {
+  Mustache mustache;
+  Map<String,Object> values;
+
+  public MoustacheTemplate(String inline_template) {
+     values = new HashMap<String,Object>();
+     MustacheFactory mf = new DefaultMustacheFactory();
+     // "example" is used as file name when compilation failed.
+     // TODO: Pass actual template filename here.
+     mustache = mf.compile(new StringReader(inline_template), "example");
+  }
+
+  public void put(String key, Object value) {
+    values.put(key, value);
+  }
+
+  public String toString() {
+    StringWriter sw = new StringWriter();
+    mustache.execute(sw, values);
+    return sw.toString();
+  }
+}

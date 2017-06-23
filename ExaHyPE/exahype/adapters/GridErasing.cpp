@@ -1,64 +1,64 @@
 #include "exahype/adapters/GridErasing.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::GridErasing::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::GridErasing::communicationSpecification() const {
   return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::communicationSpecification()
-   & exahype::mappings::GridErasing::communicationSpecification()
+    &  _map2Merging.communicationSpecification()
+    &  _map2GridErasing.communicationSpecification()
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::touchVertexLastTimeSpecification()
-   & exahype::mappings::GridErasing::touchVertexLastTimeSpecification()
+    &  _map2Merging.touchVertexLastTimeSpecification(level)
+    &  _map2GridErasing.touchVertexLastTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::GridErasing::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::touchVertexFirstTimeSpecification()
-   & exahype::mappings::GridErasing::touchVertexFirstTimeSpecification()
+    &  _map2Merging.touchVertexFirstTimeSpecification(level)
+    &  _map2GridErasing.touchVertexFirstTimeSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::enterCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::enterCellSpecification()
-   & exahype::mappings::GridErasing::enterCellSpecification()
+    &  _map2Merging.enterCellSpecification(level)
+    &  _map2GridErasing.enterCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::leaveCellSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::leaveCellSpecification()
-   & exahype::mappings::GridErasing::leaveCellSpecification()
+    &  _map2Merging.leaveCellSpecification(level)
+    &  _map2GridErasing.leaveCellSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::ascendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::ascendSpecification()
-   & exahype::mappings::GridErasing::ascendSpecification()
+    &  _map2Merging.ascendSpecification(level)
+    &  _map2GridErasing.ascendSpecification(level)
 
   ;
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridErasing::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::GridErasing::descendSpecification(int level) const {
   return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::mappings::DropIncomingMPIMessages::descendSpecification()
-   & exahype::mappings::GridErasing::descendSpecification()
+    &  _map2Merging.descendSpecification(level)
+    &  _map2GridErasing.descendSpecification(level)
 
   ;
 }
@@ -74,7 +74,7 @@ exahype::adapters::GridErasing::~GridErasing() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::adapters::GridErasing::GridErasing(const GridErasing&  masterThread):
-  _map2DropIncomingMPIMessages(masterThread._map2DropIncomingMPIMessages) , 
+  _map2Merging(masterThread._map2Merging) , 
   _map2GridErasing(masterThread._map2GridErasing) 
 
 {
@@ -82,7 +82,7 @@ exahype::adapters::GridErasing::GridErasing(const GridErasing&  masterThread):
 
 
 void exahype::adapters::GridErasing::mergeWithWorkerThread(const GridErasing& workerThread) {
-  _map2DropIncomingMPIMessages.mergeWithWorkerThread(workerThread._map2DropIncomingMPIMessages);
+  _map2Merging.mergeWithWorkerThread(workerThread._map2Merging);
   _map2GridErasing.mergeWithWorkerThread(workerThread._map2GridErasing);
 
 }
@@ -98,7 +98,7 @@ void exahype::adapters::GridErasing::createHangingVertex(
       exahype::Cell&       coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMessages.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2Merging.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GridErasing.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 
@@ -114,7 +114,7 @@ void exahype::adapters::GridErasing::destroyHangingVertex(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMessages.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2Merging.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GridErasing.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
@@ -129,7 +129,7 @@ void exahype::adapters::GridErasing::createInnerVertex(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMessages.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2Merging.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GridErasing.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
@@ -144,7 +144,7 @@ void exahype::adapters::GridErasing::createBoundaryVertex(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMessages.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2Merging.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GridErasing.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
@@ -159,7 +159,7 @@ void exahype::adapters::GridErasing::destroyVertex(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMessages.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2Merging.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GridErasing.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
@@ -174,7 +174,7 @@ void exahype::adapters::GridErasing::createCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  _map2DropIncomingMPIMessages.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2Merging.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GridErasing.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
@@ -189,7 +189,7 @@ void exahype::adapters::GridErasing::destroyCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  _map2DropIncomingMPIMessages.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2Merging.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GridErasing.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
@@ -204,7 +204,7 @@ void exahype::adapters::GridErasing::mergeWithNeighbour(
   const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
   int                                           level
 ) {
-   _map2DropIncomingMPIMessages.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
+   _map2Merging.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2GridErasing.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
 
 }
@@ -217,7 +217,7 @@ void exahype::adapters::GridErasing::prepareSendToNeighbour(
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
-   _map2DropIncomingMPIMessages.prepareSendToNeighbour( vertex, toRank, x, h, level );
+   _map2Merging.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2GridErasing.prepareSendToNeighbour( vertex, toRank, x, h, level );
 
 }
@@ -230,7 +230,7 @@ void exahype::adapters::GridErasing::prepareCopyToRemoteNode(
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
-   _map2DropIncomingMPIMessages.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
+   _map2Merging.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2GridErasing.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
 
 }
@@ -243,7 +243,7 @@ void exahype::adapters::GridErasing::prepareCopyToRemoteNode(
       const tarch::la::Vector<DIMENSIONS,double>&   h,
       int                                           level
 ) {
-   _map2DropIncomingMPIMessages.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
+   _map2Merging.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2GridErasing.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
 
 }
@@ -257,7 +257,7 @@ void exahype::adapters::GridErasing::mergeWithRemoteDataDueToForkOrJoin(
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
-   _map2DropIncomingMPIMessages.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
+   _map2Merging.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2GridErasing.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
 
 }
@@ -271,7 +271,7 @@ void exahype::adapters::GridErasing::mergeWithRemoteDataDueToForkOrJoin(
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
-   _map2DropIncomingMPIMessages.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
+   _map2Merging.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2GridErasing.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
 
 }
@@ -288,7 +288,7 @@ bool exahype::adapters::GridErasing::prepareSendToWorker(
   int                                                                  worker
 ) {
   bool result = false;
-   result |= _map2DropIncomingMPIMessages.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
+   result |= _map2Merging.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2GridErasing.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
 
   return result;
@@ -304,7 +304,7 @@ void exahype::adapters::GridErasing::prepareSendToMaster(
   const exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-   _map2DropIncomingMPIMessages.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+   _map2Merging.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2GridErasing.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
@@ -325,7 +325,7 @@ void exahype::adapters::GridErasing::mergeWithMaster(
     const exahype::State&          workerState,
   exahype::State&                masterState
 ) {
-   _map2DropIncomingMPIMessages.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
+   _map2Merging.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2GridErasing.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
 
 }
@@ -343,7 +343,7 @@ void exahype::adapters::GridErasing::receiveDataFromMaster(
       exahype::Cell&                        workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
-   _map2DropIncomingMPIMessages.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
+   _map2Merging.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2GridErasing.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
 
 }
@@ -356,7 +356,7 @@ void exahype::adapters::GridErasing::mergeWithWorker(
   const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
   int                                          level
 ) {
-   _map2DropIncomingMPIMessages.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
+   _map2Merging.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2GridErasing.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
 
 }
@@ -369,7 +369,7 @@ void exahype::adapters::GridErasing::mergeWithWorker(
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
-   _map2DropIncomingMPIMessages.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
+   _map2Merging.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2GridErasing.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
 
 }
@@ -385,7 +385,7 @@ void exahype::adapters::GridErasing::touchVertexFirstTime(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMessages.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2Merging.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GridErasing.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
@@ -400,7 +400,7 @@ void exahype::adapters::GridErasing::touchVertexLastTime(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  _map2DropIncomingMPIMessages.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2Merging.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GridErasing.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
@@ -415,7 +415,7 @@ void exahype::adapters::GridErasing::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  _map2DropIncomingMPIMessages.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2Merging.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GridErasing.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
@@ -430,7 +430,7 @@ void exahype::adapters::GridErasing::leaveCell(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  _map2DropIncomingMPIMessages.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2Merging.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GridErasing.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
@@ -439,7 +439,7 @@ void exahype::adapters::GridErasing::leaveCell(
 void exahype::adapters::GridErasing::beginIteration(
   exahype::State&  solverState
 ) {
-  _map2DropIncomingMPIMessages.beginIteration( solverState );
+  _map2Merging.beginIteration( solverState );
   _map2GridErasing.beginIteration( solverState );
 
 }
@@ -448,7 +448,7 @@ void exahype::adapters::GridErasing::beginIteration(
 void exahype::adapters::GridErasing::endIteration(
   exahype::State&  solverState
 ) {
-  _map2DropIncomingMPIMessages.endIteration( solverState );
+  _map2Merging.endIteration( solverState );
   _map2GridErasing.endIteration( solverState );
 
 }
@@ -464,7 +464,7 @@ void exahype::adapters::GridErasing::descend(
   const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
   exahype::Cell&                 coarseGridCell
 ) {
-  _map2DropIncomingMPIMessages.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2Merging.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2GridErasing.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }
@@ -478,7 +478,7 @@ void exahype::adapters::GridErasing::ascend(
   const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
   exahype::Cell&           coarseGridCell
 ) {
-  _map2DropIncomingMPIMessages.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2Merging.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2GridErasing.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }

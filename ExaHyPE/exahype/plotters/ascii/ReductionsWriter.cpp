@@ -4,6 +4,7 @@
 #include "tarch/parallel/NodePool.h" 
 #include "tarch/logging/Log.h"
 
+static tarch::logging::Log _log("exahype::plotters::ascii::ReductionsWriter");
 
 exahype::plotters::ascii::ReductionsWriter::ReductionsWriter(
     	const std::string _filenamebase,
@@ -39,7 +40,6 @@ exahype::plotters::ascii::ReductionsWriter::~ReductionsWriter() {
 }
 
 void exahype::plotters::ascii::ReductionsWriter::openFile() {
-	static tarch::logging::Log _log("ReductionsWriter");
 	// compose filename
 
 	if(parallel && !globalReductions) {
@@ -81,7 +81,6 @@ void exahype::plotters::ascii::ReductionsWriter::openFile() {
 
 void exahype::plotters::ascii::ReductionsWriter::writeRow() {
 	if(asc == NULL) {
-		static tarch::logging::Log _log("ReductionsWriter");
 		logError("writeRow()", "Oh no.");
 		exit(-1);
 	}

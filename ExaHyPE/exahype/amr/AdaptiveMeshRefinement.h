@@ -70,14 +70,15 @@ namespace amr {
    * If none of the previous is the case, this function returns
    * AugmentationControl::Default.
    */
-  template<class CellDescription,class CellDescriptionsHeap>
-  exahype::solvers::Solver::AugmentationControl
-  augmentationCriterion(
-      const int solverNumber,
-      const typename CellDescription::Type type,
-      const int level,
-      const tarch::la::Vector<THREE_POWER_D, int>&
-      neighbourCellDescriptionsIndices);
+  // TODO(Dominic): Not needed anymore. Keep a while for reference.
+//  template<class CellDescription,class CellDescriptionsHeap>
+//  exahype::solvers::Solver::AugmentationControl
+//  augmentationCriterion(
+//      const int solverNumber,
+//      const typename CellDescription::Type type,
+//      const int level,
+//      const tarch::la::Vector<THREE_POWER_D, int>&
+//      neighbourCellDescriptionsIndices);
 
   /*
    * Change the erasing request to a change to descendant request if the coarse grid Cell

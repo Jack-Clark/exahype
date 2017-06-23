@@ -271,7 +271,6 @@ class mpibalancing::FairNodePoolStrategy: public tarch::parallel::NodePoolStrate
      * @see super class
      */
     virtual bool hasIdleNode(int forMaster) const;
-    virtual int removeNextIdleNode();
 };
 
 #endif

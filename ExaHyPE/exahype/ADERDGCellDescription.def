@@ -10,6 +10,7 @@ Packed-Type: int hint-size 32;
 
 Constant: DIMENSIONS hint-value 3;
 Constant: DIMENSIONS_TIMES_TWO hint-value 6;
+Constant: THREE_POWER_D hint-value 27;
 
 class exahype::records::ADERDGCellDescription {
   /**
@@ -22,10 +23,10 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent int solverNumber;
 
   /**
-   * These flags indicate on which face a Riemann solve has already been
+   * These flags indicate on which face a neighbour merge, e.g. a Riemann solve or metadata merge, has already been
    * performed during the current traversal.
    */
-  parallelise persistent packed bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
+  parallelise persistent packed bool neighbourMergePerformed[DIMENSIONS_TIMES_TWO];
   
   /**
    * These flags indicate which face of a cell is inside the domain.
@@ -53,24 +54,6 @@ class exahype::records::ADERDGCellDescription {
    parallelise persistent packed bool adjacentToRemoteRank;
   
   /**
-   * If a neighbouring cell belonging to another rank
-   * functions as a compute cell for the same solver (Type::Cell)
-   * that this cell description is associated with and this
-   * cell description is further a helper cell description (Type::Ancestor/EmptyAncestor/
-   * Descendant/EmptyDescendany), this helper cell description needs to store data.
-   * This flag is used to indicate these scenarios.
-   *
-   * \note This flag should be only set in MarkingForAugmentation::mergeWithNeighbour(...).
-   * It should be read and be reset afterwards in MarkingForAugmentation::enterCell(...).
-   * 
-   * In contrast to hasToHoldDataForMasterWorkerCommunication,
-   * it is updated in every grid setup iteration.
-   * Flag hasToHoldDataForMasterWorkerCommunication is only
-   * updated after a fork or join event.
-   */
-  parallelise persistent packed bool hasToHoldDataForNeighbourCommunication;
-  
-  /**
    * This flag is set just before a cell description is sent to a new
    * worker. 
    * 
@@ -96,7 +79,9 @@ class exahype::records::ADERDGCellDescription {
    * this ADERDGCellDescription or "-1" if no parent is specified.
    */
   parallelise persistent int parentIndex;
-
+  
+  persistent bool isAugmented;
+ 
   /**
    * Type of a cell description.
    * Cell descriptions of type \p Cell hold cell and face data,
@@ -124,10 +109,8 @@ class exahype::records::ADERDGCellDescription {
   enum Type {
     Erased,
     Ancestor,
-    EmptyAncestor,
     Cell,
-    Descendant,
-    EmptyDescendant
+    Descendant
   };
   
   /**
@@ -400,40 +383,120 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent int solutionMin;
   parallelise persistent int solutionMax;
   
+  /**
+   * \see augmentationStatus
+   */
+  parallelise persistent int facewiseAugmentationStatus[DIMENSIONS_TIMES_TWO];
+
+  /**
+   * Another diffused status flag that controls how many
+   * cell descriptions of type Cell in vicinity of
+   * a helper cell description of type Ancestor are
+   * augmented with Descendant cells.
+   */
+  parallelise persistent int augmentationStatus;
+  
+  
+  /**
+   * \see helperStatus
+   */
+  parallelise persistent int facewiseHelperStatus[DIMENSIONS_TIMES_TWO];
+  
+  /**
+   * Status of a helper cell description (Descendant,Ancestor)
+   * which is diffused similarly to the limiter status.
+   * 
+   * Cell description of type Cell write the maximum value 
+   * on the boundary. Descendant and Ancestor cell descriptions
+   * will merge and diffuse the value and allocate 
+   * or deallocate memory according the converged value.
+   * 
+   * Usually, the cell descriptions which are direct
+   * neighbours to a cell description of type Cell
+   * allocate memory and the others don't.
+   * 
+   * We write the maximum value of the facewiseHelperStatus flags
+   * to this field in each limiter status merging iteration.
+   */
+  parallelise persistent int helperStatus;
+  
   enum LimiterStatus {
     /**
      * A cell holds a physically admissible ADER-DG solution
      * that satisfies a discrete maximum principle.
+     * 
+     * This cell's dominant solver is ADER-DG solver
      */
     Ok,
-    /**
-     * A cell can obtain this status only during the limiter
-     * status spreading stage. It indicates that the cell
-     * is direct neighbour to the neighbour of a troubled cell. 
+    /** 
+     * This cell's dominant solver is ADER-DG solver.
      */
-    NeighbourIsNeighbourOfTroubledCell,
+    NeighbourOfTroubled4,
     /**
-     * A cell can obtain this status only during the limiter
-     * status spreading stage. It indicates that the cell
-     * is direct neighbour to a troubled cell. 
+     * This cell's dominant solver is ADER-DG solver.
      */
-    NeighbourIsTroubledCell,
+    NeighbourOfTroubled3,
     /**
-     * A cell (still) holds a physically wrong ADER-DG solution. 
+     * This cell's dominant solver is the FV solver. 
+     */
+    NeighbourOfTroubled2,
+    /**
+     * This cell's dominant solver is the FV solver. 
+     */
+    NeighbourOfTroubled1,
+    /**
+     * A cell (still) holds a physically wrong ADER-DG solution.
+     * 
+     * This cell's dominant solver is the FV solver. 
      */
     Troubled
   };
   
   /**
-   * The cell descriptions limiter status.
+   * \see limiterStatus
    */
-  parallelise persistent LimiterStatus limiterStatus;
+  parallelise persistent int facewiseLimiterStatus[DIMENSIONS_TIMES_TWO];
   
   /**
-   * Here, we store the results of the limiter status merging.
+   * The cell descriptions limiter status which
+   * is a reduction of the facewiseLimiterStatus elements.
+   *
+   * This value only corresponds on the finest level to 
+   * a limiter status enum.
    */
-  parallelise persistent LimiterStatus mergedLimiterStatus[DIMENSIONS_TIMES_TWO];
+  parallelise persistent int limiterStatus;
+  
+  /**
+   * The cell descriptions previous limiter status.
+   * 
+   * This field is only need for the troubled cell recomputation
+   * which must be performed after a irregular limiter domain
+   * change has occured, i.e. cells outside of the first(!) FV
+   * helper cell layer have been marked as troubled.
+   
+   * This value only corresponds on the finest level to 
+   * a limiter status enum.
+   */
+  parallelise persistent int previousLimiterStatus;
 
+  
+  /**
+   * A counter holding the number of iterations to
+   * cure a troubled cell.
+   * This counter will be initialised to a certain
+   * (user-dependent?) value if a cell is flagged as troubled.
+   * 
+   * If the cell is not troubled for one iteration, the counter is
+   * decreased until it reaches 0. Then, the
+   * cell is considered as cured.
+   * Note that the counter can be reset to the maximum value
+   * in the meantime if the cell is marked again as troubled.
+   * 
+   * This counter prevents that a cell is toggling between
+   * troubled and Ok (cured).
+   */
+  parallelise persistent int iterationsToCureTroubledCell;
+  
   enum CompressionState {
     Uncompressed,
     CurrentlyProcessed,

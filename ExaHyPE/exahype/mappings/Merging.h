@@ -9,6 +9,8 @@
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
+ *
+ * @author Dominic E. Charrier, Tobias Weinzierl
  **/
 
 #ifndef EXAHYPE_MAPPINGS_Merging_H_
@@ -41,12 +43,6 @@ namespace exahype {
  * @todo Dominic, bitte ordentlich dokumentieren, was hier wann, wo und warum passiert.
  * Bitte auch dokumentieren, falls Du was mal probiert hast und es nicht funktioniert hat.
  *
- * <h2>State flags</h2>
- * TODO Currently, this mapping is using the state flag MergeMode
- * We should decompose this mapping into the mappings MergeTimeStepData,
- * and MergeTimeStepAndFaceData in order to minimise the necessity of
- * synchronisation with the global master.
- *
  * <h2>Synchronisation in multi-rank environment</h2>
  *
  * The individual Riemann solves have to have knowledge about
@@ -60,6 +56,9 @@ namespace exahype {
  * This mapping is used to synchronise the compute cell time step sizes
  * with the solver ones. It further is used to reset the Riemann
  * solve flags on compute and helper cells.
+ *
+ * <h2>State flags</h2>
+ * This mapping's behaviour depends on the state flag MergeMode.
  *
  * @author Dominic E. Charrier and Tobias Weinzierl
  */
@@ -83,6 +82,10 @@ private:
 
   #ifdef Debug // TODO(Dominic): Exclude shared memory etc.
   /*
+   *  Counter for the boundary face solves for debugging purposes.
+   */
+  int _remoteBoundaryFaceMerges;
+  /*
    *  Counter for the interior face solves for debugging purposes.
    */
   int _interiorFaceMerges;
@@ -91,6 +94,35 @@ private:
    */
   int _boundaryFaceMerges;
   #endif
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void mergeNeighboursDataAndMetadata(
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS,int>& pos1,
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>& pos2,
+      const int pos2Scalar);
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void mergeWithBoundaryDataAndMetadata(exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS,int>&  pos1,
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>&  pos2,
+      const int pos2Scalar);
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void mergeWithBoundaryOrEmptyCellMetadata(
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS,int>&  pos1,
+      const int pos1Scalar,
+      const tarch::la::Vector<DIMENSIONS,int>&  pos2,
+      const int pos2Scalar);
 
   #ifdef Parallel
   /**
@@ -117,7 +149,7 @@ private:
    *
    * \note Not thread-safe.
    */
-  static void dropNeighbourData(
+  void dropNeighbourData(
       const int fromRank,
       const int srcCellDescriptionIndex,
       const int destCellDescriptionIndex,
@@ -162,30 +194,30 @@ public:
    * finds the riemannSolvePerfomed flags set and does nothing in
    * our current implementation.
    */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification enterCellSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
    * Nop
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
   /**
    * Nop
    */
-  static peano::MappingSpecification leaveCellSpecification();
+  peano::MappingSpecification leaveCellSpecification(int level) const;
 
   /**
    * Nop
    */
-  static peano::MappingSpecification ascendSpecification();
+  peano::MappingSpecification ascendSpecification(int level) const;
 
   /**
    * Nop
    */
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**.
    * The mapping does synchronise through synchroniseTimeStepping() invoked
@@ -198,7 +230,7 @@ public:
    *
    * Further let Peano handle heap data exchange internally.
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
    * Solve Riemann problems on all interior faces that are adjacent

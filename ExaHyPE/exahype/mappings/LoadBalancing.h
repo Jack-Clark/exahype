@@ -58,35 +58,35 @@ class exahype::mappings::LoadBalancing {
     /**
      * Nothing to be done
      */
-    static peano::MappingSpecification   touchVertexLastTimeSpecification();
+    peano::MappingSpecification   touchVertexLastTimeSpecification(int level) const;
     /**
      * Nothing to be done
      */
-    static peano::MappingSpecification   touchVertexFirstTimeSpecification();
+    peano::MappingSpecification   touchVertexFirstTimeSpecification(int level) const;
 
     /**
      * Operation degenerates to nop if we translate without MPI.
      *
      * @see enterCell() where we clear the workload flags
      */
-    static peano::MappingSpecification   enterCellSpecification();
+    peano::MappingSpecification   enterCellSpecification(int level) const;
 
     /**
      * Operation degenerates to nop if we translate without MPI.
      *
      * @see leaveCell() for a discussion of the restriction mechanism.
      */
-    static peano::MappingSpecification   leaveCellSpecification();
+    peano::MappingSpecification   leaveCellSpecification(int level) const;
 
     /**
      * Nothing to be done
      */
-    static peano::MappingSpecification   ascendSpecification();
+    peano::MappingSpecification   ascendSpecification(int level) const;
 
     /**
      * Nothing to be done
      */
-    static peano::MappingSpecification   descendSpecification();
+    peano::MappingSpecification   descendSpecification(int level) const;
 
     /**
      * The load balancing does rely on an analysed tree grammar, i.e.
@@ -98,7 +98,7 @@ class exahype::mappings::LoadBalancing {
      * But in general, we do not enforce and worker-master synchronisation at
      * all.
      */
-    static peano::CommunicationSpecification   communicationSpecification();
+    peano::CommunicationSpecification   communicationSpecification() const;
 
     /**
      * TODO(Tobias): Add docu.

@@ -16,7 +16,7 @@ exahype::mappings::LoadBalancing::LoadBalancingAnalysis exahype::mappings::LoadB
 }
 
 
-peano::CommunicationSpecification   exahype::mappings::LoadBalancing::communicationSpecification() {
+peano::CommunicationSpecification   exahype::mappings::LoadBalancing::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
@@ -28,16 +28,16 @@ peano::CommunicationSpecification   exahype::mappings::LoadBalancing::communicat
 /**
  * All empty
  */
-peano::MappingSpecification   exahype::mappings::LoadBalancing::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::mappings::LoadBalancing::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
-peano::MappingSpecification   exahype::mappings::LoadBalancing::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::mappings::LoadBalancing::touchVertexFirstTimeSpecification(int level) const { 
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
-peano::MappingSpecification   exahype::mappings::LoadBalancing::ascendSpecification() {
+peano::MappingSpecification   exahype::mappings::LoadBalancing::ascendSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
-peano::MappingSpecification   exahype::mappings::LoadBalancing::descendSpecification() {
+peano::MappingSpecification   exahype::mappings::LoadBalancing::descendSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 
@@ -46,7 +46,7 @@ peano::MappingSpecification   exahype::mappings::LoadBalancing::descendSpecifica
 /**
  * All is done cell-wisely.
  */
-peano::MappingSpecification   exahype::mappings::LoadBalancing::enterCellSpecification() {
+peano::MappingSpecification   exahype::mappings::LoadBalancing::enterCellSpecification(int level) const {
   #ifdef Parallel
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
   #else
@@ -55,7 +55,7 @@ peano::MappingSpecification   exahype::mappings::LoadBalancing::enterCellSpecifi
 }
 
 
-peano::MappingSpecification   exahype::mappings::LoadBalancing::leaveCellSpecification() {
+peano::MappingSpecification   exahype::mappings::LoadBalancing::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 

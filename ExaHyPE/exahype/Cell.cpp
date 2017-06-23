@@ -14,15 +14,16 @@
 #include "exahype/Cell.h"
 #include "exahype/State.h"
 
-#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
-
 #include "tarch/la/ScalarOperations.h"
 
 #include "peano/utils/Loop.h"
 
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
 #include "kernels/KernelCalls.h"
 
-#include "exahype/records/ADERDGCellDescription.h"
+#include "exahype/solvers/ADERDGSolver.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
 
 tarch::logging::Log exahype::Cell::_log("exahype::Cell");
 
@@ -43,19 +44,27 @@ exahype::Cell::Cell(const Base::PersistentCell& argument) : Base(argument) {
   // Do not use it. This would overwrite persistent data.
 }
 
-bool exahype::Cell::isFaceInside(
-    const int faceIndex,
-    exahype::Vertex* const verticesAroundCell,
-    const peano::grid::VertexEnumerator& verticesEnumerator) {
-  const int f = faceIndex % 2;   // "0" indicates a left face, "1" indicates a right face.
-  const int d = (faceIndex-f)/2; // The normal direction: 0: x, 1: y, 1: z.
+std::bitset<DIMENSIONS_TIMES_TWO> exahype::Cell::determineInsideAndOutsideFaces(
+        const exahype::Vertex* const verticesAroundCell,
+        const peano::grid::VertexEnumerator& verticesEnumerator) {
+  std::bitset<DIMENSIONS_TIMES_TWO> isInside;
 
-  dfor2(v) // Loop over vertices.
-    if (v(d) == f && verticesAroundCell[ verticesEnumerator(v) ].isInside()) {
-      return true;
+  for (int direction=0; direction<DIMENSIONS; direction++) {
+    for (int orientation=0; orientation<2; orientation++) {
+      const int faceIndex = 2*direction+orientation;
+      isInside[faceIndex]=false;
+
+      dfor2(v) // Loop over vertices.
+        if (v(direction) == orientation) {
+          isInside[faceIndex] =
+              isInside[faceIndex] ||
+              verticesAroundCell[ verticesEnumerator(v) ].isInside();
+        }
+      enddforx // v
     }
-  enddforx // v
-  return false;
+  }
+
+  return isInside;
 }
 
 #ifdef Parallel
@@ -121,6 +130,7 @@ void exahype::Cell::setupMetaData() {
   assertion1(!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(_cellData.getCellDescriptionsIndex()),toString());
 
   const int cellDescriptionIndex = exahype::solvers::ADERDGSolver::Heap::getInstance().createData(0, 0);
+  assertion2(!exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionIndex),cellDescriptionIndex,toString());
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().createDataForIndex(cellDescriptionIndex,0,0);
 
   _cellData.setCellDescriptionsIndex(cellDescriptionIndex);
@@ -170,42 +180,10 @@ void exahype::Cell::addNewCellDescription(
     setupMetaData();
   }
 
-  assertion1(
-    exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(
-      _cellData.getCellDescriptionsIndex()
-    ),
-    toString());
-
-  assertion2(static_cast<unsigned int>(solverNumber) <
-                 solvers::RegisteredSolvers.size(),
-             solverNumber, exahype::solvers::RegisteredSolvers.size());
-
-//  const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
-//  assertion(solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes);
-
-  exahype::records::FiniteVolumesCellDescription newCellDescription;
-  newCellDescription.setSolverNumber(solverNumber);
-
-  // Default AMR settings
-  newCellDescription.setType(cellType);
-  newCellDescription.setLevel(level);
-  newCellDescription.setRefinementEvent(refinementEvent);
-
-  // Pass geometry information to the cellDescription description
-  newCellDescription.setSize(cellSize);
-  newCellDescription.setOffset(cellOffset);
-
-  // Initialise helper variables
-//  newCellDescription.setHelperCellNeedsToStoreFaceData(false); // TODO(Dominic): Add to FV cell descr.
-
-  // Default field data indices
-  newCellDescription.setSolution(-1);
-  newCellDescription.setPreviousSolution(-1);
-
-  exahype::solvers::FiniteVolumesSolver::Heap::getInstance()
-      .getData(_cellData.getCellDescriptionsIndex())
-      .push_back(newCellDescription);
-
+  exahype::solvers::FiniteVolumesSolver::addNewCellDescription(
+      _cellData.getCellDescriptionsIndex(),solverNumber,
+      cellType,refinementEvent,
+      level,parentIndex,cellSize,cellOffset);
 }
 
 
@@ -221,78 +199,10 @@ void exahype::Cell::addNewCellDescription(
     setupMetaData();
   }
 
-  assertion1(
-    exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(
-      _cellData.getCellDescriptionsIndex()
-    ),
-    toString());
-
-  assertion2(parentIndex == -1 ||
-             parentIndex != _cellData.getCellDescriptionsIndex(),
-             parentIndex, _cellData.getCellDescriptionsIndex());
-
-  assertion2(parentIndex != _cellData.getCellDescriptionsIndex(),
-             parentIndex, _cellData.getCellDescriptionsIndex());
-
-  assertion2(static_cast<unsigned int>(solverNumber) <
-                 solvers::RegisteredSolvers.size(),
-             solverNumber, exahype::solvers::RegisteredSolvers.size());
-
-//  const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
-//  assertion(solver->getType()==exahype::solvers::Solver::Type::ADER_DG);
-
-  exahype::records::ADERDGCellDescription newCellDescription;
-  newCellDescription.setSolverNumber(solverNumber);
-
-  // Default AMR settings
-  newCellDescription.setType(cellType);
-  newCellDescription.setParentIndex(parentIndex);
-  newCellDescription.setLevel(level);
-  newCellDescription.setRefinementEvent(refinementEvent);
-
-  std::bitset<DIMENSIONS_TIMES_TWO>
-      riemannSolvePerformed;  // default construction: no bit set
-  newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
-
-  // Pass geometry information to the cellDescription description
-  newCellDescription.setSize(cellSize);
-  newCellDescription.setOffset(cellOffset);
-
-  // Initialise MPI helper variables
-  #ifdef Parallel
-  newCellDescription.setHasToHoldDataForNeighbourCommunication(false);
-  newCellDescription.setHasToHoldDataForMasterWorkerCommunication(false);
-  for (int faceIndex = 0; faceIndex < DIMENSIONS_TIMES_TWO; faceIndex++) {
-    newCellDescription.setFaceDataExchangeCounter(faceIndex,TWO_POWER_D);
-  }
-  #endif
-
-  // Default field data indices
-  newCellDescription.setSolution(-1);
-  newCellDescription.setUpdate(-1);
-  newCellDescription.setExtrapolatedPredictor(-1);
-  newCellDescription.setFluctuation(-1);
-
-  // Limiter meta data (oscillations identificator)
-  newCellDescription.setLimiterStatus(exahype::records::ADERDGCellDescription::LimiterStatus::Ok); // implicit conversion.
-  newCellDescription.setSolutionMin(-1);
-  newCellDescription.setSolutionMax(-1);
-
-  // Compression
-  newCellDescription.setCompressionState(exahype::records::ADERDGCellDescription::CompressionState::Uncompressed);
-  newCellDescription.setSolutionAverages(-1);
-  newCellDescription.setUpdateAverages(-1);
-  newCellDescription.setExtrapolatedPredictorAverages(-1);
-  newCellDescription.setFluctuationAverages(-1);
-
-  newCellDescription.setSolutionCompressed(-1);
-  newCellDescription.setUpdateCompressed(-1);
-  newCellDescription.setExtrapolatedPredictorCompressed(-1);
-  newCellDescription.setFluctuationCompressed(-1);
-
-  exahype::solvers::ADERDGSolver::Heap::getInstance()
-      .getData(_cellData.getCellDescriptionsIndex())
-      .push_back(newCellDescription);
+  exahype::solvers::ADERDGSolver::addNewCellDescription(
+        _cellData.getCellDescriptionsIndex(),solverNumber,
+        cellType,refinementEvent,
+        level,parentIndex,cellSize,cellOffset);
 }
 
 int exahype::Cell::getNumberOfADERDGCellDescriptions() const {

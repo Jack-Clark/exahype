@@ -53,14 +53,14 @@ class exahype::mappings::GridErasing {
      *
      * @see peano::MappingSpecification for information on thread safety.
      */
-    static peano::MappingSpecification   touchVertexLastTimeSpecification();
-    static peano::MappingSpecification   touchVertexFirstTimeSpecification();
-    static peano::MappingSpecification   enterCellSpecification();
-    static peano::MappingSpecification   leaveCellSpecification();
-    static peano::MappingSpecification   ascendSpecification();
-    static peano::MappingSpecification   descendSpecification();
+    peano::MappingSpecification   touchVertexLastTimeSpecification(int level) const;
+    peano::MappingSpecification   touchVertexFirstTimeSpecification(int level) const;
+    peano::MappingSpecification   enterCellSpecification(int level) const;
+    peano::MappingSpecification   leaveCellSpecification(int level) const;
+    peano::MappingSpecification   ascendSpecification(int level) const;
+    peano::MappingSpecification   descendSpecification(int level) const;
 
-    static peano::CommunicationSpecification   communicationSpecification();
+    peano::CommunicationSpecification   communicationSpecification() const;
 
 
     /**

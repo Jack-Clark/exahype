@@ -70,21 +70,15 @@ class exahype::repositories::Repository {
      * Switch to another event handle.
      */
     virtual void switchToMeshRefinement() = 0;    
-    virtual void switchToPlotAugmentedAMRGrid() = 0;    
-    virtual void switchToInitialConditionAndTimeStepSizeComputation() = 0;    
     virtual void switchToPredictionAndFusedTimeSteppingInitialisation() = 0;    
     virtual void switchToPredictionAndFusedTimeSteppingInitialisationAndPlot() = 0;    
     virtual void switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d() = 0;    
     virtual void switchToGridErasing() = 0;    
     virtual void switchToADERDGTimeStep() = 0;    
     virtual void switchToPlotAndADERDGTimeStep() = 0;    
-    virtual void switchToPredictionRerun() = 0;    
     virtual void switchToLimiterStatusSpreading() = 0;    
-    virtual void switchToLimiterStatusSpreadingFusedTimeStepping() = 0;    
-    virtual void switchToLimiterStatusMergingAndSpreadingMPI() = 0;    
-    virtual void switchToLimiterStatusMergingMPI() = 0;    
     virtual void switchToReinitialisation() = 0;    
-    virtual void switchToSolutionRecomputationAndTimeStepSizeComputation() = 0;    
+    virtual void switchToLocalRecomputationAndTimeStepSizeComputation() = 0;    
     virtual void switchToNeighbourDataMerging() = 0;    
     virtual void switchToSolutionUpdate() = 0;    
     virtual void switchToTimeStepSizeComputation() = 0;    
@@ -92,25 +86,20 @@ class exahype::repositories::Repository {
     virtual void switchToPredictionAndPlot() = 0;    
     virtual void switchToPredictionAndPlot2d() = 0;    
     virtual void switchToFinaliseMeshRefinementAndTimeStepSizeComputation() = 0;    
-    virtual void switchToTimeStepDataMerging() = 0;    
-    virtual void switchToTimeStepDataMergingAndDropIncomingMPIMessages() = 0;    
+    virtual void switchToMergeTimeStepData() = 0;    
+    virtual void switchToMergeTimeStepDataDropFaceData() = 0;    
+    virtual void switchToFinaliseMeshRefinementAndReinitialisation() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
-    virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
-    virtual bool isActiveAdapterInitialConditionAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisation() const = 0;
     virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot() const = 0;
     virtual bool isActiveAdapterPredictionAndFusedTimeSteppingInitialisationAndPlot2d() const = 0;
     virtual bool isActiveAdapterGridErasing() const = 0;
     virtual bool isActiveAdapterADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterPlotAndADERDGTimeStep() const = 0;
-    virtual bool isActiveAdapterPredictionRerun() const = 0;
     virtual bool isActiveAdapterLimiterStatusSpreading() const = 0;
-    virtual bool isActiveAdapterLimiterStatusSpreadingFusedTimeStepping() const = 0;
-    virtual bool isActiveAdapterLimiterStatusMergingAndSpreadingMPI() const = 0;
-    virtual bool isActiveAdapterLimiterStatusMergingMPI() const = 0;
     virtual bool isActiveAdapterReinitialisation() const = 0;
-    virtual bool isActiveAdapterSolutionRecomputationAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterLocalRecomputationAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterNeighbourDataMerging() const = 0;
     virtual bool isActiveAdapterSolutionUpdate() const = 0;
     virtual bool isActiveAdapterTimeStepSizeComputation() const = 0;
@@ -118,8 +107,9 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterPredictionAndPlot() const = 0;
     virtual bool isActiveAdapterPredictionAndPlot2d() const = 0;
     virtual bool isActiveAdapterFinaliseMeshRefinementAndTimeStepSizeComputation() const = 0;
-    virtual bool isActiveAdapterTimeStepDataMerging() const = 0;
-    virtual bool isActiveAdapterTimeStepDataMergingAndDropIncomingMPIMessages() const = 0;
+    virtual bool isActiveAdapterMergeTimeStepData() const = 0;
+    virtual bool isActiveAdapterMergeTimeStepDataDropFaceData() const = 0;
+    virtual bool isActiveAdapterFinaliseMeshRefinementAndReinitialisation() const = 0;
 
 
     /**

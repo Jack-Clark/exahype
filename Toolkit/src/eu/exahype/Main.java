@@ -43,7 +43,7 @@ public class Main {
 
     if (args.length != 1 && args.length != 2) {
       System.err.println("ERROR: Please provide input file as argument");
-      return;
+      System.exit(-1);
     };
 
     if (args.length == 2 && args[0].compareTo("--not-interactive") != 0
@@ -51,7 +51,7 @@ public class Main {
       System.err.println(
           "ERROR: First optional argument has to be --not-interactive or --interactive. Received \""
           + args[0] + "\"");
-      return;
+      System.exit(-2);
     };
 
     boolean interactive = args.length == 1 || args[0].compareTo("--interactive") == 0;
@@ -82,7 +82,7 @@ public class Main {
       System.out.println(".. failed ");
       System.out.println("\n\n\n\n");
       System.out.println("ERROR: " + e.toString());
-      return;
+      System.exit(-3);
     }
 
     DirectoryAndPathChecker directoryAndPathChecker = null;
@@ -99,14 +99,14 @@ public class Main {
       if (!directoryAndPathChecker.valid) {
         System.err.println("ERROR: Some directories did not exist and/or could not be created");
         System.err.println("ExaHyPE script failed ");
-        return;
+        System.exit(-4);
       }
       System.out.println("validated and configured pathes ... ok");
       waitForInteraction(interactive);
     } catch (Exception e) {
       System.out.println("ERROR: " + e.toString());
       System.err.println("ExaHyPE script failed ");
-      return;
+      System.exit(-5);
     }
 
     // Create the solvers
@@ -119,7 +119,7 @@ public class Main {
       if (!createSolverClasses.valid) {
         System.err.println("ERROR: Could not create application's solver classes");
         System.err.println("ExaHyPE script failed ");
-        return;
+        System.exit(-6);
       }
       System.out.println("generate application-specific solver classes ... ok");
       waitForInteraction(interactive);
@@ -128,7 +128,7 @@ public class Main {
       // @tood remove later again
       e.printStackTrace();
       System.err.println("ExaHyPE script failed ");
-      return;
+      System.exit(-7);
     }
 
     // Create the plotters
@@ -141,7 +141,7 @@ public class Main {
       if (!createPlotterClasses.valid) {
         System.err.println("ERROR: Could not create application's plotter classes");
         System.err.println("ExaHyPE script failed ");
-        return;
+        System.exit(-8);
       }
       System.out.println("generate application-specific plotter classes ... ok");
       waitForInteraction(interactive);
@@ -149,7 +149,7 @@ public class Main {
       System.out.println("ERROR: " + e.toString());
       System.err.println("ExaHyPE script failed ");
       e.printStackTrace();
-      return;
+      System.exit(-9);
     }
 
     // Create the kernel calls
@@ -163,7 +163,7 @@ public class Main {
       if (!generateKernelCalls.valid) {
         System.err.println("ERROR: Could not create ExaHyPE's kernel calls");
         System.err.println("ExaHyPE script failed ");
-        return;
+        System.exit(-10);
       }
       System.out.println("generate computational kernel calls ... ok");
       waitForInteraction(interactive);
@@ -171,7 +171,7 @@ public class Main {
       System.out.println("ERROR: " + e.toString());
       System.err.println("ExaHyPE script failed ");
       e.printStackTrace();
-      return;
+      System.exit(-11);
     }
 
     //
@@ -187,7 +187,7 @@ public class Main {
       if (!setupBuildEnvironment.valid) {
         System.err.println("ERROR: Could not create ExaHyPE's build environment");
         System.err.println("ExaHyPE script failed ");
-        return;
+        System.exit(-12);
       }
       System.out.println("setup build environment ... ok");
       waitForInteraction(interactive);
@@ -195,7 +195,7 @@ public class Main {
       System.out.println("ERROR: " + e.toString());
       System.err.println("ExaHyPE script failed ");
       e.printStackTrace();
-      return;
+      System.exit(-13);
     }
   }
 }

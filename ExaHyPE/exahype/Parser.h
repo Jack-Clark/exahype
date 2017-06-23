@@ -120,6 +120,12 @@ class exahype::Parser {
 
   std::vector<std::string> _tokenStream;
 
+  /**
+   * Takes certain parameters from the
+   * token stream and checks their validity.
+   */
+  void checkValidity();
+
   /*
    * Helper map for converting strings to types.
    */
@@ -200,13 +206,6 @@ class exahype::Parser {
 
   tarch::la::Vector<DIMENSIONS, double> getDomainSize() const;
 
-  /**
-   * @return Bounding box size. If the user has specified a non-cubical domain,
-   *         then the bounding box still is cubical and all of its entries are
-   *         the biggest dimension along one coordinate axis.
-   */
-  tarch::la::Vector<DIMENSIONS, double> getBoundingBoxSize() const;
-
   tarch::la::Vector<DIMENSIONS, double> getOffset() const;
 
   std::string getMulticorePropertiesFile() const;
@@ -217,6 +216,8 @@ class exahype::Parser {
   std::string getMPIConfiguration() const;
   int getMPIBufferSize() const;
   int getMPITimeOut() const;
+  bool getMPIMasterWorkerCommunication() const;
+  bool getMPINeighbourCommunication() const;
 
   double getSimulationEndTime() const;
 
@@ -281,6 +282,15 @@ class exahype::Parser {
   double getMaximumMeshSize(int solverNumber) const;
 
   /**
+   * \return The maximum adaptive mesh depth as specified
+   * by the user.
+   *
+   * \note I fthe user has not specified an adaptive
+   * mesh depth, 0 is returned.
+   */
+  double getMaximumMeshDepth(int solverNumber) const;
+
+  /**
    * Prints a summary of the parameters read in for a solver.
    */
   void logSolverDetails(int solverNumber) const;
@@ -301,6 +311,8 @@ class exahype::Parser {
   exahype::solvers::Solver::TimeStepping getTimeStepping(
       int solverNumber) const;
 
+  bool hasOptimisationSegment() const;
+
   /**
    * \return The relaxation parameter used for the discrete maximum principle (DMP).
    *
@@ -316,6 +328,25 @@ class exahype::Parser {
    * a limiting ADER-DG solver.
    */
   double getDMPDifferenceScaling(int solverNumber) const;
+
+  /**
+   * \return The number of observables that should be considered
+   * within the discrete maximum principle.
+   *
+   * \note This value can only be read in if the solver \p solverNumber is
+   * a limiting ADER-DG solver.
+   */
+  int getDMPObservables(int solverNumber) const;
+
+  /**
+   * \return The minimum number of steps we keep a cell troubled after it has been
+   * considered as cured by the discrete maximum principle (DMP) and the
+   * physical admissibility detection (PAD).
+   *
+   * \note This value can only be read in if the solver \p solverNumber is
+   * a limiting ADER-DG solver.
+   */
+  int getStepsTillCured(int solverNumber) const;
 
   /**
    * In the ExaHyPE specification file, a plotter configuration has

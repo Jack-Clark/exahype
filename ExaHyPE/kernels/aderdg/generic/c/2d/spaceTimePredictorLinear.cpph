@@ -124,8 +124,10 @@ void spaceTimePredictorLinear(SolverType& solver,
 
 
   double* lFi = tempSpaceTimeFluxUnknowns[0]; // size: basisSize3 * DIMENSIONS * numberOfVariables
-  std::fill_n(lFi+basisSize3*DIMENSIONS*numberOfVariables, basisSize3*numberOfVariables, 0.0); // zero out sources
-  idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables);
+  
+  //  std::fill_n(lFi+basisSize3*DIMENSIONS*numberOfVariables, basisSize3*numberOfVariables, 0.0); // zero out sources
+  std::fill_n(lFi,basisSize3*( 2*DIMENSIONS+1)* numberOfVariables, 0.0); // set everyting to zero
+  idx5 idx_lFi(basisSize, basisSize, basisSize, 2*DIMENSIONS+1, numberOfVariables);
   
   // spatial gradient of q (space-time flux degrees of freedom)
   double* gradQ = tempSpaceTimeFluxUnknowns[1]; // size: basisSize3 * DIMENSIONS * numberOfVariables
@@ -176,9 +178,51 @@ void spaceTimePredictorLinear(SolverType& solver,
 					&lFi[idx_lFi(i, k, l, 0, 0)]); // gradQ(..,..,0,0) and Fi(..,..,0,0) 3xnVar tensors
 	}
       }
+    }
+    // }else{
+    //   std::fill_n(&lFi[idx_lFi(i, 0, 0, 0, 0)],basisSize*basisSize*DIMENSIONS*numberOfVariables, 0); // zero out 
+    // }
 
+    if(useFlux){
+      for (int k = 0; k < basisSize; k++) {
+    	for (int l = 0; l < basisSize; l++) {
+    	  double* F[2]; 
+          F[0]      = lFi + idx_lFi(i, k, l, 2, 0);
+          F[1]      = lFi + idx_lFi(i, k, l, 3, 0);
+    	  solver.flux( lQi + idx_lQi(i, k, l, 0), F );
+    	}
+      }
 
-   }
+      //B dQdx + dflux1 dx
+      for (int k = 0; k < basisSize; k++) {
+	for (int l = 0; l < basisSize; l++) {
+	  // lQi(:,l,k,i+1) -= SUM(lFi(:,1:nDim,l,k,i), dim=2)
+	  //        for (int m = 0; m < DIMENSIONS; m++) {
+	  for (int m = 0; m < numberOfVariables/* skip parameters */; m++) {
+	    for (int n = 0; n < basisSize; n++) {
+	      lFi[idx_lFi(i, k, l, 0, m)] += lFi[idx_lFi(i, k, n, 2, m)]*
+		kernels::dudx[order][l][n] * 1.0 / dx[0] ;
+	      
+	    }
+	  }
+	}
+      }
+
+      //B dQdy + dflux2 dy
+      for (int k = 0; k < basisSize; k++) {
+	for (int l = 0; l < basisSize; l++) {
+	  // lQi(:,l,k,i+1) -= SUM(lFi(:,1:nDim,l,k,i), dim=2)
+	  //        for (int m = 0; m < DIMENSIONS; m++) {
+	  for (int m = 0; m < numberOfVariables/* skip parameters */; m++) {
+	    for (int n = 0; n < basisSize; n++) {
+	      lFi[idx_lFi(i, l, k, 1, m)] += lFi[idx_lFi(i, n, k, 3, m)]*
+		kernels::dudx[order][l][n] * 1.0 / dx[1] ;
+	    }
+	  }
+	}
+      }
+    }
+
 
     for (int k = 0; k < basisSize; k++) {
       for (int l = 0; l < basisSize; l++) {

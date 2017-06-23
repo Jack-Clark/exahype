@@ -99,7 +99,6 @@ class GenericFiniteVolumesInC implements Solver {
     if (_hasConstants) {
        SolverInitCallExtension = ", constants";
     }
-    
     content.put("SolverInitCallExtension",SolverInitCallExtension);
 
     String eigenvalues = "";
@@ -174,13 +173,21 @@ class GenericFiniteVolumesInC implements Solver {
 
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
+    String AbstractSolverConstructorArgumentExtension = "";
+    String AbstractSolverConstructorSignatureExtension = "";
     if (_enableProfiler) {
       profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
+      solverConstructorSignatureExtension         += ", std::unique_ptr<exahype::profilers::Profiler> profiler"; 
+      AbstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
+    }
+    if (_hasConstants) {
+      solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants";
     }
 
     content.put("ProfilerInclude",profilerInclude);
     content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
+    content.put("AbstractSolverConstructorArgumentExtension", AbstractSolverConstructorArgumentExtension);
+    content.put("AbstractSolverConstructorSignatureExtension", AbstractSolverConstructorSignatureExtension);
     
     content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
     content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
@@ -211,10 +218,14 @@ class GenericFiniteVolumesInC implements Solver {
     String profilerInclude                     = "";
     String solverConstructorSignatureExtension = "";
     String solverConstructorArgumentExtension  = "";
+    String AbstractSolverConstructorSignatureExtension = "";
+    String AbstractSolverConstructorArgumentExtension = "";
     if (_enableProfiler) {
-      profilerInclude                        = "#include \"exahype/profilers/Profiler.h\"";
-      solverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
-      solverConstructorArgumentExtension  += ", std::move(profiler)";
+      profilerInclude                      = "#include \"exahype/profilers/Profiler.h\"";
+      solverConstructorSignatureExtension         += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
+      AbstractSolverConstructorSignatureExtension += ", std::unique_ptr<exahype::profilers::Profiler> profiler";
+      solverConstructorArgumentExtension          += ", std::move(profiler)";
+      AbstractSolverConstructorArgumentExtension  += ", std::move(profiler)";
     }
     if (_hasConstants) {
       solverConstructorSignatureExtension += ", exahype::Parser::ParserView constants"; // TODO(Dominic): Why pass by value? 
@@ -222,9 +233,15 @@ class GenericFiniteVolumesInC implements Solver {
     content.put("ProfilerInclude",profilerInclude);
     content.put("SolverConstructorSignatureExtension", solverConstructorSignatureExtension);
     content.put("SolverConstructorArgumentExtension", solverConstructorArgumentExtension);
+    content.put("AbstractSolverConstructorSignatureExtension", AbstractSolverConstructorSignatureExtension);
+    content.put("AbstractSolverConstructorArgumentExtension", AbstractSolverConstructorArgumentExtension);
     //
     content.put("NumberOfVariables", String.valueOf(_numberOfVariables));
     content.put("NumberOfParameters",String.valueOf( _numberOfParameters));
+    
+    String SolverInitCallExtension = _hasConstants ? ",constants" : "";
+    content.put("SolverInitCallExtension", SolverInitCallExtension);
+
 
     // TODO(Dominic): Add profilers
     

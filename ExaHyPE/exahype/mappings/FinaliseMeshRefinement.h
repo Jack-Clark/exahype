@@ -48,18 +48,23 @@ class exahype::mappings::FinaliseMeshRefinement {
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
+
+  /**
+   * Local copy of the state.
+   */
+  exahype::State _localState;
  public:
   /* Nop */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
 
 
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
-  static peano::MappingSpecification enterCellSpecification();
-  static peano::MappingSpecification leaveCellSpecification();
-  static peano::MappingSpecification ascendSpecification();
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
+  peano::MappingSpecification enterCellSpecification(int level) const;
+  peano::MappingSpecification leaveCellSpecification(int level) const;
+  peano::MappingSpecification ascendSpecification(int level) const;
+  peano::MappingSpecification descendSpecification(int level) const;
 
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
    * Finalise the synchronous sending operations started in the
@@ -71,7 +76,16 @@ class exahype::mappings::FinaliseMeshRefinement {
   void beginIteration(exahype::State& solverState);
 
   /**
-   * Nop
+   * Sets the MeshRefinement::IsInitialMeshRefinement status to false.
+   * MeshRefinement::IsInitialMeshRefinement is set in Runner::run.
+   */
+  void endIteration(exahype::State& solverState);
+
+  /**
+   * Call the solvers finaliseStateUpdates functions.
+   * Furhter, compute the min and max if a solver is of type
+   * LimitingADERDG and there is a patch allocated
+   * in the \p fineGridCell for this solver.
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -80,11 +94,6 @@ class exahype::mappings::FinaliseMeshRefinement {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop
-   */
-  FinaliseMeshRefinement();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -104,6 +113,11 @@ class exahype::mappings::FinaliseMeshRefinement {
    */
   void mergeWithWorkerThread(const FinaliseMeshRefinement& workerThread);
 #endif
+
+  /**
+   * Nop
+   */
+  FinaliseMeshRefinement();
 
   /**
    * Nop
@@ -190,8 +204,8 @@ class exahype::mappings::FinaliseMeshRefinement {
 
 #ifdef Parallel
   /**
-   * Drop messages containing meta data associated with the local cells that are adjacent to this vertex
-   * sent to those adjacent remote cells that share a complete face
+   * Drop messages containing meta data associated with the local cells that are
+   * adjacent to this vertex sent to those adjacent remote cells that share a complete face
    * with the local cells.
    */
   void mergeWithNeighbour(exahype::Vertex& vertex,
@@ -346,11 +360,6 @@ class exahype::mappings::FinaliseMeshRefinement {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop
-   */
-  void endIteration(exahype::State& solverState);
 
   /**
    * Nop

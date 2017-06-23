@@ -65,44 +65,58 @@ private:
   static tarch::logging::Log _log;
 
   /**
+   * Local copy of the state which
+   * is used to determine if a solver
+   * is active in the current algorithm section.
+   * (See exahype::runners::Runner for locations
+   * where the algorithm section is set. The new
+   * state is then broadcasted by Peano to all other ranks.)
+   */
+   exahype::State _localState;
+
+  /**
    * A bunch of temporary variables for performing a solution
    * update.
    */
   exahype::solvers::SolutionUpdateTemporaryVariables _temporaryVariables;
 
+  /**
+   * Per solver a flag, indicating if has requested
+   * a mesh update request or a limiter domain change.
+   */
   exahype::solvers::SolverFlags _solverFlags;
 
  public:
   /**
    * Run through the whole tree. Run concurrently on the fine grid.
    */
-  static peano::MappingSpecification enterCellSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification leaveCellSpecification();
+  peano::MappingSpecification leaveCellSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification ascendSpecification();
+  peano::MappingSpecification ascendSpecification(int level) const;
   /**
    * Nop.
    */
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**
    * No data needs to be synchronised between masters and workers.
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
    * If the fine grid cell functions as compute cell for a solver,
@@ -130,7 +144,12 @@ private:
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * Prepares the temporary variables.
+   * Prepares the temporary variables and copies
+   * the state.
+   *
+   * Resets the next mesh update request flag to false and
+   * the next limiter domain change to Regular
+   * using the "setNext..." methods.
    */
   void beginIteration(exahype::State& solverState);
 

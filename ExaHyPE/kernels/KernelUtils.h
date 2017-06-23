@@ -14,7 +14,9 @@
 #ifndef _EXAHYPE_KERNELS_KERNEL_UTILS_H_
 #define _EXAHYPE_KERNELS_KERNEL_UTILS_H_
 
-#include "../../Peano/tarch/Assertions.h"
+#include "tarch/Assertions.h"
+#include "tarch/la/Vector.h"
+#include "peano/utils/Globals.h"
 
 #include <sstream>
 
@@ -44,6 +46,8 @@ struct index {
 		b5(1),
 		size(j0*j1*j2*j3*j4*j5) {}
 	
+	index(const index&) = default; // implicit trivial copy constructor
+	
 	/**
 	 * Compute a single index ("superindex", global index, ...) from the tuples.
 	 **/
@@ -55,6 +59,34 @@ struct index {
 		assertion2(j4 < i4, j5, i5);
 		
 		return j0 * b0 + j1 * b1 + j2 * b2 + j3 * b3 + j4 * b4 + j5 * b5;
+	}
+	
+	/**
+	 * A nice feature for the Peano likers.
+	 * Usage for instance:
+	 * <pre>
+	 *    tarch::la::Vector<DIMENSIONS,int> foo(1,2,3);
+	 *    idxinstance.get(foo);
+	 * </pre>
+	 * 
+	 * Note the ordering of the vectors which is similar to as dfor in Peano/utils/Loop.h
+	 * works. Using these getters here you save a lood of headarche in dimension agnostic
+	 * codes.
+	 * 
+	 * Note that dfor does rowMajor while colMajor is something probably interesting for
+	 * you if you deal with Fortran arrays or different ordering of your loops.
+	 **/
+	int rowMajor(const tarch::la::Vector<2,int>& j, int j2=0, int j3=0, int j4=0, int j5=0) const {
+		return get(j(1), j(0), j2, j3, j4, j5);
+	}
+	int colMajor(const tarch::la::Vector<2,int>& j, int j2=0, int j3=0, int j4=0, int j5=0) const {
+		return get(j(0), j(1), j2, j3, j4, j5);
+	}
+	int rowMajor(const tarch::la::Vector<3,int>& j, int j3=0, int j4=0, int j5=0) const {
+		return get(j(2), j(1), j(0), j3, j4, j5);
+	}
+	int colMajor(const tarch::la::Vector<3,int>& j, int j3=0, int j4=0, int j5=0) const {
+		return get(j(0), j(1), j(2), j3, j4, j5);
 	}
 	
 	/**
@@ -99,13 +131,6 @@ struct index {
 	 * not enabled. Can be handy to check access to variables.
 	 **/
 	bool check(int j0=0, int j1=0, int j2=0, int j3=0, int j4=0, int j5=0) const {
-		// assertion way
-		assertion2(j0 < i0, j1, i1);
-		assertion2(j1 < i1, j2, i2);
-		assertion2(j2 < i2, j3, i3);
-		assertion2(j3 < i3, j4, i4);
-		assertion2(j4 < i4, j5, i5);
-		// non-assertion way:
 		return (j0 < i0) && (j1 < i1) && (j2 < i2) && (j3 < i3) && (j4 < i4) && (j5 < i5);
 	}
 	
@@ -139,6 +164,23 @@ struct index {
 	std::string toString() const {
 		return strIndex(/*min*/ +1, i0,i1,i2,i3,i4,i5);
 	}
+};
+
+/**
+ * Returns conveniently an index with DIMENSIONS entries, each the argument `max`.
+ * 
+ * For convenience of the author, this works only for DIMENSIONS == 2 and 3. Such as ExaHyPE.
+ **/
+struct dindex : public index {
+	dindex(int max, int jN1=1, int jN2=1, int jN3=1	) :
+	#if DIMENSIONS == 2
+	kernels::index(max, max, jN1, jN2, jN3)
+	#elif DIMENSIONS == 3
+	kernels::index(max, max, max, jN1, jN2, jN3)
+	#else
+	#error "ExaHyPE doesnt support chosen dimension. Only 2d and 3d are available"
+	#endif
+	{}
 };
 
 /**

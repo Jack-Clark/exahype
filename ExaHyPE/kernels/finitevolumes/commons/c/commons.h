@@ -58,7 +58,10 @@ void boundaryLayerExtraction(
     const tarch::la::Vector<DIMENSIONS,int>& boundaryPosition);
 
 /**
- * todo docu
+ * Impose boundary conditions.
+ *
+ * \note We mirror the inside values at
+ * boundary face.
  */
 template <typename SolverType>
 void boundaryConditions(

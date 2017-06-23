@@ -10,15 +10,22 @@
 // ========================
 
 #include <ostream>
+#include <algorithm>
 
 #include "exahype/solvers/ADERDGSolver.h"
 #include "kernels/aderdg/optimised/Kernels.h"
+
+/**
+ * We include Peano's assertion collection here.
+ */
+#include "tarch/Assertions.h"
+
 
 {{ProfilerInclude}}
 
 namespace {{Project}}{
   class {{Solver}};
-  class {{AbstractSolver}};
+  class Abstract{{Solver}};
 }
 
 class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
@@ -27,24 +34,142 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     static constexpr int NumberOfParameters = kernels::aderdg::optimised::getNumberOfParameter();
     static constexpr int Order              = kernels::aderdg::optimised::getBasisSize() -1;
     static constexpr int Dimensions         = kernels::aderdg::optimised::getDimension();
-	
+    static constexpr double CFL             = 0.9;
+    
+    // virtual getters for the constexpr's
+    int constexpr_getNumberOfVariables()  const override { return NumberOfVariables; };
+    int constexpr_getNumberOfParameters() const override { return NumberOfParameters; };
+    int constexpr_getOrder()              const override { return Order; };
+    double constexpr_getCFLNumber()       const override { return CFL; };
+  
     class Variables;
     class ReadOnlyVariables;
     class Fluxes;
+    class VariableShortcuts;
+    class VariableNames;
     {{NamingSchemes}}
-  
-    {{AbstractSolver}}(double maximumMeshSize,exahype::solvers::Solver::TimeStepping timeStepping{{SolverConstructorSignatureExtension}});
+    
+    {{AbstractSolver}}(double maximumMeshSize,int maximumAdaptiveMeshDepth,int DMPObservables,exahype::solvers::Solver::TimeStepping timeStepping{{AbstractSolverConstructorSignatureExtension}});
 
-    //default useX implementation, can be overriden in the user solver
-    virtual bool useAlgebraicSource()        const {return true;}
-    virtual bool useNonConservativeProduct() const {return true;}
+    /**
+     * Default implementation, can/should be overwritten by user's solver. See superclass for documentation
+     */
+    AdjustSolutionValue useAdjustSolution( const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt ) const override {return AdjustSolutionValue::No;}
+
+    /**
+     * Option implementation in accordance with the specification file. See superclass for documentation
+     */
+    bool useConservativeFlux()       const override {return {{useFlux}};}
+
+    /**
+     * This operation should be overwritten in your application-specific 
+     * solver. Alternatively, make your own subclass useConservativeFlux()
+     * return false.
+     */
+    void flux(const double* const Q,double** F) override;
+
+    /**
+     * Option implementation in accordance with the specification file. See superclass for documentation
+     */
+    bool useAlgebraicSource()        const override {return {{useSource}};}
+
+    /**
+     * Default implementation, functionality not implemented. See superclass for documentation
+     */
+    bool usePointSource()            const override {return false;}
+
+    /**
+     * Option implementation in accordance with the specification file. See superclass for documentation
+     */
+    bool useNonConservativeProduct() const override {return {{useNCP}};}
+    
+        
+    /**
+     * Default implementation. Has to be be overwritten by user's solver if you 
+     * make the corresponding use operation activate the feature.
+     *
+     * See superclass for function's semantics.
+     */
+    void algebraicSource(const double* const Q,double* S) override;
+        
+    /**
+     * Default implementation. Has to be be overwritten by user's solver if you 
+     * make the corresponding use operation activate the feature.
+     *
+     * See superclass for function's semantics.
+     */
+    void nonConservativeProduct(const double* const Q,const double* const gradQ,double* BgradQ) override;
+        
+    /**
+     * Default implementation. Has to be be overwritten by user's solver if you 
+     * make the corresponding use operation activate the feature.
+     *
+     * See superclass for function's semantics.
+     */
+    void coefficientMatrix(const double* const Q,const int d,double* Bn) override;
+        
+    /**
+     * Default implementation. Has to be be overwritten by user's solver if you 
+     * make the corresponding use operation activate the feature.
+     *
+     * See superclass for function's semantics.
+     */
+    void pointSource(const double* const x,const double t,const double dt, double* forceVector, double* x0) override;
+       
+    /**
+     * Default implementation. Has to be be overwritten by user's solver if you 
+     * make the corresponding use operation activate the feature.
+     *
+     * See superclass for function's semantics.
+     */
+    void adjustPointSolution(const double* const x,const double w,const double t,const double dt,double* Q) override;
     
     
+    void adjustPatchSolution(
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      const double t,
+      const double dt,
+      double* luh) override;
+
+    /**
+     * The fused source combines the algebraic Source and the NCP as source contribution. By default,
+     * if not implemented, it falls back to the different functions algebraicSource() and
+     * nonConservativeProduct(). Users can implement it to provide a faster implementation.
+     *
+     * That means, the kernels never call the algebraicSource() and 
+     * nonConservativeProduct() directly but delegate source handling through this function.
+     */
+    void fusedSource(const double* const Q, const double* const gradQ, double* S) override;
+
+    /**
+     * Default implementation. Please overwrite.
+     *
+     * See superclass for function's semantics.
+     */
+    bool isPhysicallyAdmissible(
+      const double* const solution,
+      const double* const observablesMin,const double* const observablesMax,const int numberOfObservables,
+      const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx,
+      const double t, const double dt) const override { return true; }
+
+    /**
+     * Default implementation. Please overwrite.
+     *
+	 * See superclass for function's semantics.
+	 */
+    void mapDiscreteMaximumPrincipleObservables(double* observables,const int numberOfObservables,const double* const Q) const override {
+      if (numberOfObservables>0) {
+      	std::copy_n(Q,numberOfObservables,observables);
+      }
+  	}
+
+    void pointSource(const double t,const double dt, const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx, double* tempForceVector) override; 
     void spaceTimePredictor(double* lQhbnd,double* lFhbnd,double** tempSpaceTimeUnknowns,double** tempSpaceTimeFluxUnknowns,double* tempUnknowns,double* tempFluxUnknowns,double* tempStateSizedVectors,const double* const luh,const tarch::la::Vector<DIMENSIONS,double>& dx,const double dt, double* pointForceSources) override; 
     void solutionUpdate(double* luh,const double* const lduh,const double dt) override;
     void volumeIntegral(double* lduh,const double* const lFhi,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
     void surfaceIntegral(double* lduh,const double* const lFhbnd,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
-    void riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex) override;
+    void riemannSolver(double* FL,double* FR,const double* const QL,const double* const QR,double* tempFaceUnknownsArray,double** tempStateSizedVectors,double** tempStateSizedSquareMatrices,const double dt,const int normalNonZeroIndex, bool isBoundaryFace) override;
     void boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS,double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) override;
     double stableTimeStepSize(const double* const luh,double* tempEigenvalues,const tarch::la::Vector<DIMENSIONS,double>& dx) override;
     void adjustSolution(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,const double t,const double dt) override;
@@ -53,6 +178,9 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     void volumeUnknownsProlongation(double* luhFine,const double* luhCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
     void volumeUnknownsRestriction(double* luhCoarse,const double* luhFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
+    static void constantsToString(std::ostream& os);
+    static void abortWithMsg(const char* const msg);
+    
     //padded array size, override default ADERDGSolver values
     int getTempSpaceTimeUnknownsSize()     const {return kernels::aderdg::optimised::getTempSpaceTimeUnknownsSize();    }
     int getTempSpaceTimeFluxUnknownsSize() const {return kernels::aderdg::optimised::getTempSpaceTimeFluxUnknownsSize();}
@@ -69,7 +197,6 @@ class {{Project}}::{{AbstractSolver}}: public exahype::solvers::ADERDGSolver {
     bool usePaddedData_nVar() const {return true;}
     bool usePaddedData_nDoF() const {return true;}
     
-    static void constantsToString(std::ostream& os);
 };
 
-#endif // __{{AbstractSolver}}_CLASS_HEADER__
+#endif // __{{Solver}}_CLASS_HEADER__

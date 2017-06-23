@@ -14,8 +14,9 @@ namespace exahype {
 	 *                    used for beautiful output.
 	 * @param out         is the strem where to print to, default stdout.
 	 * 
+	 * This function is implemented in Version.cpp
 	 **/
-	void version(const std::string& programname, std::ostream& out=std::cout);
+	std::string version(const std::string& programname="");
 	
 	/**
 	 * Prints a help message how to use the ExaHyPE executable to stdout.

@@ -29,7 +29,7 @@
 #include "peano/utils/UserInterface.h"
 
 peano::CommunicationSpecification
-exahype::mappings::Prediction::communicationSpecification() {
+exahype::mappings::Prediction::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
@@ -37,13 +37,13 @@ exahype::mappings::Prediction::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::Prediction::enterCellSpecification() {
+exahype::mappings::Prediction::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::Prediction::leaveCellSpecification() {
+exahype::mappings::Prediction::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
@@ -51,25 +51,25 @@ exahype::mappings::Prediction::leaveCellSpecification() {
 
 // The remainder specs all are nop
 peano::MappingSpecification
-exahype::mappings::Prediction::touchVertexLastTimeSpecification() {
+exahype::mappings::Prediction::touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::Prediction::touchVertexFirstTimeSpecification() {
+exahype::mappings::Prediction::touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::Prediction::ascendSpecification() {
+exahype::mappings::Prediction::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::Prediction::descendSpecification() {
+exahype::mappings::Prediction::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
@@ -85,7 +85,8 @@ exahype::mappings::Prediction::~Prediction() {
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::Prediction::Prediction(const Prediction& masterThread) {
+exahype::mappings::Prediction::Prediction(const Prediction& masterThread)
+  : _localState(masterThread._localState) {
   exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 }
 
@@ -96,6 +97,8 @@ void exahype::mappings::Prediction::mergeWithWorkerThread(
 
 void exahype::mappings::Prediction::beginIteration(
     exahype::State& solverState) {
+  _localState = solverState;
+
   exahype::solvers::initialiseTemporaryVariables(_temporaryVariables);
 }
 
@@ -152,27 +155,31 @@ void exahype::mappings::Prediction::enterCell(
 
         switch (exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]->getType()) {
           case exahype::solvers::Solver::Type::ADERDG: {
-            exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+            auto* solver = static_cast<exahype::solvers::ADERDGSolver*>(
                 exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
-            solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
+
             solver->prepareNextNeighbourMerging(
                 fineGridCell.getCellDescriptionsIndex(),i,
                 fineGridVertices,fineGridVerticesEnumerator);
 
-            performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+            if (solver->isComputing(_localState.getAlgorithmSection())) {
+              solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);
+              performPredictionAndVolumeIntegral(solver,cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+            }
           } break;
           case exahype::solvers::Solver::Type::LimitingADERDG: {
-            exahype::solvers::LimitingADERDGSolver* solver = static_cast<exahype::solvers::LimitingADERDGSolver*>(
+            auto* solver = static_cast<exahype::solvers::LimitingADERDGSolver*>(
                 exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
-            solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i); // Time step synchr. might be done multiple times per traversal; but this is no issue.
+
             solver->prepareNextNeighbourMerging(
                 fineGridCell.getCellDescriptionsIndex(),i,
                 fineGridVertices,fineGridVerticesEnumerator);
 
-            if (cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Ok
-                || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsTroubledCell
-                || cellDescription.getLimiterStatus()==exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::NeighbourIsNeighbourOfTroubledCell) {
-              performPredictionAndVolumeIntegral(solver->getSolver().get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+            if (solver->isComputing(_localState.getAlgorithmSection())) {
+              solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),i);
+              if (cellDescription.getLimiterStatus()!=exahype::solvers::ADERDGSolver::CellDescription::LimiterStatus::Troubled) {
+                performPredictionAndVolumeIntegral(solver->getSolver().get(),cellDescription,fineGridVertices,fineGridVerticesEnumerator);
+              }
             }
           } break;
           default:

@@ -34,8 +34,8 @@ public:
 {{VariableShortcuts}}
 
   static const int* asArray() { return _Q; }
-  const int operator [] (int index) const { return _Q[index]; }
-  const int operator () (int index) const { return _Q[index]; }
+  int operator [] (int index) const { return _Q[index]; }
+  int operator () (int index) const { return _Q[index]; }
 }; // end of VariableShortcuts
 
 /**

@@ -25,6 +25,10 @@
 #include "tarch/plotter/griddata/unstructured/vtk/VTUBinaryFileWriter.h"
 
 
+#include "tarch/plotter/griddata/blockstructured/PeanoTextPatchFileWriter.h"
+#include "tarch/plotter/griddata/blockstructured/PeanoHDF5PatchFileWriter.h"
+
+
 #include "kernels/DGBasisFunctions.h"
 
 
@@ -34,7 +38,7 @@ std::string exahype::plotters::ADERDG2CartesianVerticesPeanoFileFormatAscii::get
 
 
 exahype::plotters::ADERDG2CartesianVerticesPeanoFileFormatAscii::ADERDG2CartesianVerticesPeanoFileFormatAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-  ADERDG2CartesianPeanoFileFormat(postProcessing,false) {
+  ADERDG2CartesianPeanoFileFormat(postProcessing,false,PlotterType::Text) {
 }
 
 
@@ -44,14 +48,45 @@ std::string exahype::plotters::ADERDG2CartesianCellsPeanoFileFormatAscii::getIde
 
 
 exahype::plotters::ADERDG2CartesianCellsPeanoFileFormatAscii::ADERDG2CartesianCellsPeanoFileFormatAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-  ADERDG2CartesianPeanoFileFormat(postProcessing,true) {
+  ADERDG2CartesianPeanoFileFormat(postProcessing,true,PlotterType::Text) {
 }
 
 
-exahype::plotters::ADERDG2CartesianPeanoFileFormat::ADERDG2CartesianPeanoFileFormat(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool plotCells):
+
+
+
+
+
+
+std::string exahype::plotters::ADERDG2CartesianVerticesPeanoFileFormatHDF5::getIdentifier() {
+  return "Peano::Cartesian::vertices::hdf5";
+}
+
+
+exahype::plotters::ADERDG2CartesianVerticesPeanoFileFormatHDF5::ADERDG2CartesianVerticesPeanoFileFormatHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+  ADERDG2CartesianPeanoFileFormat(postProcessing,false,PlotterType::Hdf5) {
+}
+
+
+std::string exahype::plotters::ADERDG2CartesianCellsPeanoFileFormatHDF5::getIdentifier() {
+  return "Peano::Cartesian::cells::hdf5";
+}
+
+
+exahype::plotters::ADERDG2CartesianCellsPeanoFileFormatHDF5::ADERDG2CartesianCellsPeanoFileFormatHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+  ADERDG2CartesianPeanoFileFormat(postProcessing,true,PlotterType::Hdf5) {
+}
+
+
+exahype::plotters::ADERDG2CartesianPeanoFileFormat::ADERDG2CartesianPeanoFileFormat(
+  exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing,
+  bool plotCells,
+  PlotterType type
+):
   Device(postProcessing),
   _fileCounter(-1),
   _plotCells(plotCells),
+  _plotType(type),
   _order(-1),
   _solverUnknowns(-1),
   _writtenUnknowns(-1),
@@ -100,12 +135,24 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::init(
 
 
 void exahype::plotters::ADERDG2CartesianPeanoFileFormat::startPlotting( double time ) {
-  _fileCounter++;
-
   assertion( _writer==nullptr );
 
   if (_writtenUnknowns>0) {
-    _writer = new tarch::plotter::griddata::blockstructured::PeanoPatchFileWriter(DIMENSIONS,_order);
+    switch (_plotType) {
+      case PlotterType::Text:
+        _writer = new tarch::plotter::griddata::blockstructured::PeanoTextPatchFileWriter(
+          DIMENSIONS,_order,_filename,
+          _fileCounter>0
+        );
+        break;
+      case PlotterType::Hdf5:
+        _writer = new tarch::plotter::griddata::blockstructured::PeanoHDF5PatchFileWriter(
+          DIMENSIONS,_order,_filename,
+          _fileCounter>0,
+          true
+        );
+        break;
+    }
 
     if (_plotCells) {
       _cellDataWriter          = _writer->createCellDataWriter("Q", _writtenUnknowns);
@@ -124,6 +171,7 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::startPlotting( double t
   _postProcessing->startPlotting( time );
 
   _time = time;
+  _fileCounter++;
 }
 
 
@@ -133,7 +181,6 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::finishPlotting() {
   if (_writtenUnknowns>0) {
     assertion( _writer!=nullptr );
 
-    //_writer->close();
     if (_vertexDataWriter!=nullptr) _vertexDataWriter->close();
     if (_cellDataWriter!=nullptr)   _cellDataWriter->close();
     if (_vertexTimeStampDataWriter!=nullptr) _vertexTimeStampDataWriter->close();
@@ -143,23 +190,6 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::finishPlotting() {
     snapshotFileName << _filename
                      << "-" << _fileCounter;
 
-/*
-    switch (_plotterType) {
-      case PlotterType::BinaryVTK:
-        break;
-      case PlotterType::ASCIIVTK:
-        break;
-      case PlotterType::BinaryVTU:
-        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
-        _timeSeriesWriter.writeFile(_filename);
-        break;
-      case PlotterType::ASCIIVTU:
-        _timeSeriesWriter.addSnapshot( snapshotFileName.str(), _time);
-        _timeSeriesWriter.writeFile(_filename);
-        break;
-    }
-*/
-
     const bool hasBeenSuccessful =
       _writer->writeToFile(snapshotFileName.str());
     if (!hasBeenSuccessful) {
@@ -167,15 +197,15 @@ void exahype::plotters::ADERDG2CartesianPeanoFileFormat::finishPlotting() {
     }
   }
 
-  if (_vertexDataWriter!=nullptr)     delete _vertexDataWriter;
-  if (_cellDataWriter!=nullptr)       delete _cellDataWriter;
+  if (_vertexDataWriter!=nullptr)           delete _vertexDataWriter;
+  if (_cellDataWriter!=nullptr)             delete _cellDataWriter;
   if (_vertexTimeStampDataWriter!=nullptr)  delete _vertexTimeStampDataWriter;
   if (_cellTimeStampDataWriter!=nullptr)    delete _cellTimeStampDataWriter;
   if (_writer!=nullptr)                     delete _writer;
 
-  _vertexDataWriter    = nullptr;
-  _cellDataWriter      = nullptr;
-  _writer              = nullptr;
+  _vertexDataWriter          = nullptr;
+  _cellDataWriter            = nullptr;
+  _writer                    = nullptr;
   _vertexTimeStampDataWriter = nullptr;
   _cellTimeStampDataWriter   = nullptr;
 }

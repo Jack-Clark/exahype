@@ -57,6 +57,16 @@ class exahype::mappings::FusedTimeSteppingInitialisation {
   static tarch::logging::Log _log;
 
   /**
+   * Local copy of the state which
+   * is used to determine if a solver
+   * is active in the current algorithm section.
+   * (See exahype::runners::Runner for locations
+   * where the algorithm section is set. The new
+   * state is then broadcasted by Peano to all other ranks.)
+   */
+  exahype::State _localState;
+
+  /**
    * Sets the corrector time stamp and step size to the
    * predictor values. Adds the predictor time step
    * size on the predictor time stamp.
@@ -76,16 +86,16 @@ class exahype::mappings::FusedTimeSteppingInitialisation {
   /**
    * Run through whole tree. Run concurrently on fine grid.
    */
-  static peano::MappingSpecification enterCellSpecification();
+  peano::MappingSpecification enterCellSpecification(int level) const;
 
   /**
    * Nop.
    */
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
-  static peano::MappingSpecification leaveCellSpecification();
-  static peano::MappingSpecification ascendSpecification();
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
+  peano::MappingSpecification leaveCellSpecification(int level) const;
+  peano::MappingSpecification ascendSpecification(int level) const;
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**
    * TODO(Dominic): Currently, we need to broadcast the state in order
@@ -95,7 +105,7 @@ class exahype::mappings::FusedTimeSteppingInitialisation {
    * we can set a on each rank's State a static flag
    * in Runner::run();
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
    * \see ::initialiseFusedTimestepping(exahype::solvers::Solver*,const int,const int).

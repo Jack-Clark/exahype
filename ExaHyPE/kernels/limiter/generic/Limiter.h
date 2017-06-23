@@ -24,6 +24,13 @@
 
 #include "peano/utils/Globals.h"
 
+// forward declarations
+namespace exahype {
+namespace solvers {
+ class ADERDGSolver;
+}
+}
+
 namespace kernels {
 namespace limiter {
 namespace generic {
@@ -50,8 +57,16 @@ void projectOnFVLimiterSpace(const double* const luh, const int numberOfVariable
  */
 void projectOnDGSpace(const double* const lim, const int numberOfVariables, const int basisSize, const int ghostLayerWidth, double* const luh);
 
-// Get the local min/max from the DG and Gauss Lobatto nodes
-void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables, const int basisSize, double* const localMinPerVariables, double* const localMaxPerVariables);
+/**
+ * Determine the cell-local minimum and maximum
+ * values from the solution evaluated at the
+ * Gauss-Legendre nodes, the Gauss-Lobatto nodes as well as at
+ * the subcell limiters.
+ */
+void findCellLocalMinAndMax(
+    const double* const luh,
+    const exahype::solvers::ADERDGSolver* solver,
+    double* const localMinPerVariables, double* const localMaxPerVariable);
 
 /**
  * Find the minimum and maximum per variable in the limiter solution.
@@ -65,36 +80,35 @@ void findCellLocalMinAndMax(const double* const luh, const int numberOfVariables
  * \param[in] basisSize The size of the ADER-DG basis per coordinate axis (order+1)
  * \param[in] ghostLayerWidth The ghost layer width in cells of the finite volumes patch.
  */
-void findCellLocalLimiterMinAndMax(const double* const lim, const int numberOfVariables, const int basisSize, const int ghostLayerWidth,
-                                   double* const localMinPerVariables, double* const localMaxPerVariables);
-
-/**
- * Similar to ::discreteMaximumPrinciple
- * but writes back the computed cell-local min and max to the
- * boundaryMinPerVariables and boundaryMaxPerVariables arrays.
- */
-bool discreteMaximumPrincipleAndMinAndMaxSearch(const double* const luh, const int numberOfVariables, const int basisSize,
-                    const double DMPMaximumRelaxationParameter,const double DMPDifferenceScaling,
-                    double* boundaryMinPerVariables, double* boundaryMaxPerVariables);
+void findCellLocalLimiterMinAndMax(
+    const double* const lim,
+    const exahype::solvers::ADERDGSolver* solver,
+    const int ghostLayerWidth,
+    double* localMinPerObservable, double* localMaxPerObservable);
 
 /**
  * Returns true if the nodal solution degrees of freedom
  * satisfy a discrete maximum principle.
  *
+ * Writes the new cell local min and max to the face 0 block
+ * of boundaryMinPerVariables and \p boundaryMaxPerVariables.
+ *
+ * Writes the minimised/maximised boundary min and max to the face 1 block
+ * of boundaryMinPerVariables and \p boundaryMaxPerVariables.
+ *
  * \note[24/11/16]
  * We currently abuse the term Voronoi neighbour for direct neighbour.
  *
  * \param[in] luh                           The nodal solution degrees of freedom
- * \param[in] numberOfVariables             The number of variables of the solved PDE
- * \param[in] basisSize                     The basis size of the ADER-DG discretisation (approx. order + 1).
- * \param[in] DMPMaximumRelaxationParameter The relaxation parameter for the discrete maximum principle (DMP).
- * \param[in] DMPDifferenceScaling          The difference scaling factor for the discrete maximum principle (DMP).
- * \param[in] boundaryMinPerVariables       An array of size \p numberOfVariables times DIMENSIONS_TIMES_TWO
+ * \param[in] solver                        An ADERDG solver
+ * \param[in] relaxationParameter The relaxation parameter for the discrete maximum principle (DMP).
+ * \param[in] differenceScaling             The difference scaling factor for the discrete maximum principle (DMP).
+ * \param[inout] boundaryMinPerVariables    An array of size \p numberOfVariables times DIMENSIONS_TIMES_TWO
  *                                          containing the minimum values per variable of the current cell
  *                                          and its neighbour at the particular face. Together these values
  *                                          can be used to compute the Voronoi maximum per variable.
- * \param[in] boundaryMinPerVariables       An array of size \p numberOfVariables times DIMENSIONS_TIMES_TWO
- *                                          containing the minimum values per variable of the current cell
+ * \param[inout] boundaryMaxPerVariables    An array of size \p numberOfVariables times DIMENSIONS_TIMES_TWO
+ *                                          containing the maximum values per variable of the current cell
  *                                          and its neighbour at the particular face. Together these values
  *                                          can be used to compute the Voronoi maximum per variable.
  *
@@ -120,28 +134,15 @@ bool discreteMaximumPrincipleAndMinAndMaxSearch(const double* const luh, const i
  *
  * See doi:10.1016/j.jcp.2014.08.009 for more details.
  */
-bool discreteMaximumPrinciple(const double* const luh, const int numberOfVariables, const int basisSize,
-                    const double DMPMaximumRelaxationParameter,const double DMPDifferenceScaling,
-                    const double* const boundaryMinPerVariables, const double* const boundaryMaxnPerVariables);
-
-// TODO(Dominic): @JM: We have to do a rollback in every neighbour cell of the troubled cells. Furthermore, the
-// troubled cells are not that many compared to the non-troubled ones. Thus, I decided to get
-// rid of the solution anticipation. I am sorry for the confusion.
-//bool isTroubledCell(const double* const luh, const double* const lduh, const double dt, const int numberOfVariables, const int basisSize, const double* const boundaryMinPerVariables, const double* const boundaryMaxPerVariables);
+bool discreteMaximumPrincipleAndMinAndMaxSearch(
+    const double* const luh,
+    const exahype::solvers::ADERDGSolver* solver,
+    const double relaxationParameter,const double differenceScaling,
+    double* boundaryMinPerVariables, double* boundaryMaxPerVariables);
 
 //************************
 //*** Helper functions ***
 //************************
-
-//inline double anticipateLuh(const double* const luh, const double* const lduh, const double dt, const int order, const int idx, const int x, const int y, const int z) {
-//  double weight =
-//  #if DIMENSIONS == 3
-//  kernels::gaussLegendreWeights[order][z] *
-//  #endif
-//  kernels::gaussLegendreWeights[order][y] * kernels::gaussLegendreWeights[order][x];
-//
-//  return (luh[idx] + dt / weight * lduh[idx]); // TODO(Dominic): The compiler might not able to optimise for the dt=0 case.
-//}
 
 inline int getBasisSizeLim(const int basisSize) {
   return 2*(basisSize-1)+1;
@@ -151,10 +152,17 @@ inline int getBasisSizeLim(const int basisSize) {
 //*** Private functions ***
 //*************************
 
-//Projection ADERDG -> Gauss-Lobatto, for test only
-double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize); 
-
-void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max);
+/**
+ * Compare the min and max values with the interpolated values
+ * at the Gauss-Lobatto quadrature nodes.
+ *
+ * The n Gauss-Lobatto nodes are the support points of
+ * the maxima of the Legendre polynomial of order n-1.
+ */
+void compareWithADERDGSolutionAtGaussLobattoNodes(
+    const double* const luh,
+    const exahype::solvers::ADERDGSolver* solver,
+    double* min, double* max);
 
 /**
  * Compare the min and max values with the interpolated values
@@ -165,7 +173,10 @@ void compareWithADERDGSolutionAtGaussLobattoNodes(const double* const luh, const
  * this becomes a problem if we project the DG solution onto the FV
  * subcell.
  */
-void compareWithADERDGSolutionAtFVSubcellCenters(const double* const luh, const int numberOfVariables, const int basisSize, double* const min, double* const max);
+void compareWithADERDGSolutionAtFVSubcellCenters(
+    const double* const luh,
+    const exahype::solvers::ADERDGSolver* solver,
+    double* min, double* max);
 
 } // namespace c
 } // namespace generic

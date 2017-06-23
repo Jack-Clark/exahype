@@ -23,7 +23,6 @@
  #include "exahype/mappings/Prediction.h"
  #include "exahype/mappings/FusedTimeSteppingInitialisation.h"
  #include "exahype/mappings/Plot.h"
- #include "exahype/mappings/AugmentedAMRTreePlot2d.h"
  #include "exahype/mappings/Sending.h"
  #include "exahype/mappings/PostProcessing.h"
 
@@ -50,28 +49,26 @@ class exahype::adapters::PredictionAndFusedTimeSteppingInitialisationAndPlot2d {
     typedef mappings::Prediction Mapping2;
     typedef mappings::FusedTimeSteppingInitialisation Mapping3;
     typedef mappings::Plot Mapping4;
-    typedef mappings::AugmentedAMRTreePlot2d Mapping5;
-    typedef mappings::Sending Mapping6;
-    typedef mappings::PostProcessing Mapping7;
+    typedef mappings::Sending Mapping5;
+    typedef mappings::PostProcessing Mapping6;
 
      Mapping0  _map2PreProcessing;
      Mapping1  _map2Merging;
      Mapping2  _map2Prediction;
      Mapping3  _map2FusedTimeSteppingInitialisation;
      Mapping4  _map2Plot;
-     Mapping5  _map2AugmentedAMRTreePlot2d;
-     Mapping6  _map2Sending;
-     Mapping7  _map2PostProcessing;
+     Mapping5  _map2Sending;
+     Mapping6  _map2PostProcessing;
 
 
   public:
-    static peano::MappingSpecification         touchVertexLastTimeSpecification();
-    static peano::MappingSpecification         touchVertexFirstTimeSpecification();
-    static peano::MappingSpecification         enterCellSpecification();
-    static peano::MappingSpecification         leaveCellSpecification();
-    static peano::MappingSpecification         ascendSpecification();
-    static peano::MappingSpecification         descendSpecification();
-    static peano::CommunicationSpecification   communicationSpecification();
+    peano::MappingSpecification         touchVertexLastTimeSpecification(int level) const;
+    peano::MappingSpecification         touchVertexFirstTimeSpecification(int level) const;
+    peano::MappingSpecification         enterCellSpecification(int level) const;
+    peano::MappingSpecification         leaveCellSpecification(int level) const;
+    peano::MappingSpecification         ascendSpecification(int level) const;
+    peano::MappingSpecification         descendSpecification(int level) const;
+    peano::CommunicationSpecification   communicationSpecification() const;
 
     PredictionAndFusedTimeSteppingInitialisationAndPlot2d();
 

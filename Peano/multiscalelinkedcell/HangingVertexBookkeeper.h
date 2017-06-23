@@ -70,10 +70,22 @@ namespace multiscalelinkedcell {
  *
  * To get the bookkeeper's instance, i.e. to work with it, you call
  * \code
- multiscalelinkedcell::HangingVertexBookkeeper::getInstance().
-   \endcode
+ * multiscalelinkedcell::HangingVertexBookkeeper::getInstance().
+ * \endcode
  *
- * @author Kristof Unterweger, Tobias Weinzierl
+ * If you are just interested in adjacency information
+ * at non-hanging vertices as well as (hanging) domain boundary and
+ * remote boundary vertices, you can switch to this behaviour
+ * by calling:
+ *
+ * \code
+ * multiscalelinkedcell::HangingVertexBookkeeper::getInstance().
+ * disableInheritingOfCoarseGridIndices()
+ * \endcode
+ *
+
+ *
+ * @author Kristof Unterweger, Tobias Weinzierl, Dominic Etienne Charrier
  */
 class multiscalelinkedcell::HangingVertexBookkeeper {
   private:
@@ -85,6 +97,8 @@ class multiscalelinkedcell::HangingVertexBookkeeper {
     };
 
     typedef std::map< tarch::la::Vector<DIMENSIONS+1,double >, HangingVertexIdentifier, tarch::la::VectorCompare<DIMENSIONS+1> >  VertexMap;
+
+    bool _inheritIndicesFromCoarserGrids;
 
     VertexMap _vertexMap;
 
@@ -104,6 +118,30 @@ class multiscalelinkedcell::HangingVertexBookkeeper {
     static const int DomainBoundaryAdjacencyIndex;
 
     static HangingVertexBookkeeper&  getInstance();
+
+    /**
+     * Disable inheriting the heap indices from coarser
+     * grids at a hanging node.
+     *
+     * !!! Domain and remote boundary indices !!!
+     * The above text does not tell the whole story.
+     *
+     * To be precise, we still inherit boundary
+     * adjacency information from the coarse grid
+     * but we do not inherit indices that
+     * point to actual simulation data.
+     *
+     * Remote boundary indices are set during
+     * a mesh traversal via ::updateCellIndicesInMergeWithNeighbour.
+     *
+     * !!! Background !!!
+     *
+     * This routine is for codes that do not require
+     * the actual hanging node bookkeeping but still
+     * want to use the adjacency information provided by
+     * the HangingVertexBookkepper.
+     */
+    void disableInheritingOfCoarseGridIndices();
 
     /**
      * @see createBoundaryVertex
@@ -151,7 +189,7 @@ class multiscalelinkedcell::HangingVertexBookkeeper {
      * node. If they are unknown, the operation inherits from the coarser
      * grid. We do not only inherit in the very first iteration, but we
      * update the entries permanently. This way, we ensure that the
-     * adjacency lists are updates, even if the coarser grid has not been
+     * adjacency lists are updated, even if the coarser grid has not been
      * initialised completely before.
      *
      * !!! Overwrite adjacency information

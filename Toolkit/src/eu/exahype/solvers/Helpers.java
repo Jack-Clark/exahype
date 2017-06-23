@@ -157,8 +157,8 @@ public class Helpers {
     writer.write("}\n\n");
   }
 
-  static public void invokeCodeGenerator(String solverName, int numberOfUnknowns, int numberOfParameters, int order,
-      boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm, boolean enableDeepProfiler)
+  static public void invokeCodeGenerator(String solverFullName, int numberOfUnknowns, int numberOfParameters, int order,
+      boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm, boolean enableDeepProfiler, boolean useFlux, boolean useSource, boolean useNCP)
       throws IOException {
     String currentDirectory = System.getProperty("user.dir");
     java.io.File pathToCodeGenerator =
@@ -181,17 +181,18 @@ public class Helpers {
     }
 */
     String numericsParameter = isLinear ? "linear" : "nonlinear";
-    String deepProfiler = enableDeepProfiler ? "--deepProfiling " : "";
+    String options = (enableDeepProfiler ? "--deepProfiling " : "") + (useFlux ? "--useFlux " : "") + (useSource ? "--useSource " : "") + (useNCP ? "--useNCP " : "");
+    
 
     // set up the command to execute the code generator
-    String args = " " + "Euler" + " " + numberOfUnknowns + " " + order + " " //TODO JMG see why Euler instead of solverName
+    String args = " " + solverFullName + " " + numberOfUnknowns + " " + order + " "
         + Integer.toString(dimensions) + " " + numericsParameter + " " + microarchitecture + " "
-        + currentDirectory + "/"  + pathToLibxsmm + " " + deepProfiler; 
+        + currentDirectory + "/"  + pathToLibxsmm + " " + options; 
 
     String bashCommand = "env python3 " + pathToCodeGenerator + args;
 
     Runtime runtime = Runtime.getRuntime();
-	System.out.println("Codegenerator command line: "+bashCommand);
+    System.out.println("Codegenerator command line: "+bashCommand);
     // execute the command line program
     Process codeGenerator = runtime.exec(bashCommand);
 

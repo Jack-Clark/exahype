@@ -24,6 +24,8 @@ namespace exahype {
 
     class ADERDG2CartesianCellsPeanoFileFormatAscii;
     class ADERDG2CartesianVerticesPeanoFileFormatAscii;
+    class ADERDG2CartesianCellsPeanoFileFormatHDF5;
+    class ADERDG2CartesianVerticesPeanoFileFormatHDF5;
   }
 }
 
@@ -31,18 +33,18 @@ namespace exahype {
  * Common VTK class. Usually not used directly but through one of the subclasses.
  */
 class exahype::plotters::ADERDG2CartesianPeanoFileFormat: public exahype::plotters::Plotter::Device {
-/*
  protected:
    enum class PlotterType {
-     BinaryVTK,
-     ASCIIVTK,
-     BinaryVTU,
-     ASCIIVTU
+     Text,
+     /**
+      * Strange uppercase/lowercase convention exists as we do have -DHDF5 as macro.
+      */
+     Hdf5
    };
-*/
  private:
   int           _fileCounter;
   const bool    _plotCells;
+  const PlotterType _plotType;
   std::string   _filename;
   int           _order;
   int           _solverUnknowns;
@@ -83,7 +85,7 @@ class exahype::plotters::ADERDG2CartesianPeanoFileFormat: public exahype::plotte
     double timeStamp
   );
  public:
-  ADERDG2CartesianPeanoFileFormat(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool plotCells);
+  ADERDG2CartesianPeanoFileFormat(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool plotCells, PlotterType type);
   virtual ~ADERDG2CartesianPeanoFileFormat();
 
   virtual void init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select);
@@ -113,5 +115,18 @@ class exahype::plotters::ADERDG2CartesianCellsPeanoFileFormatAscii: public exahy
     ADERDG2CartesianCellsPeanoFileFormatAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
 };
 
+
+class exahype::plotters::ADERDG2CartesianVerticesPeanoFileFormatHDF5: public exahype::plotters::ADERDG2CartesianPeanoFileFormat {
+  public:
+    static std::string getIdentifier();
+    ADERDG2CartesianVerticesPeanoFileFormatHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
+
+
+class exahype::plotters::ADERDG2CartesianCellsPeanoFileFormatHDF5: public exahype::plotters::ADERDG2CartesianPeanoFileFormat {
+  public:
+    static std::string getIdentifier();
+    ADERDG2CartesianCellsPeanoFileFormatHDF5(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
+};
 
 #endif

@@ -167,32 +167,6 @@ bool mpibalancing::FairNodePoolStrategy::hasIdleNode(int forMaster) const {
 }
 
 
-int mpibalancing::FairNodePoolStrategy::removeNextIdleNode() {
-  assertion1( !_nodes.empty(), _nodes.size() );
-  assertion4(
-    FairNodePoolStrategy::hasIdleNode(NodePoolStrategy::AnyMaster), _nodes.size(),
-    _nodes.front().toString(), _nodes.back().toString(), toString()
-  );
-
-
-  int result = -1;
-
-  if (_nodes.back().isIdle()) {
-    result = _nodes.back().getRank();
-    _nodes.pop_back();
-  }
-  else
-  if (_nodes.front().isIdle()) {
-    result = _nodes.front().getRank();
-    _nodes.pop_front();
-  }
-
-  _nodes.sort();
-
-  return result;
-}
-
-
 int mpibalancing::FairNodePoolStrategy::getNumberOfIdleNodes() const {
   int result = 0;
   NodeContainer::const_iterator p = _nodes.begin();
@@ -234,17 +208,19 @@ bool mpibalancing::FairNodePoolStrategy::isRegisteredNode(int rank) const {
 
 
 bool mpibalancing::FairNodePoolStrategy::isIdleNode(int rank) const {
-  assertion1( isRegisteredNode(rank), rank );
-  for (
-    NodeContainer::const_iterator p = _nodes.begin();
-    p != _nodes.end();
-    p++
-  ) {
-    if ( p->getRank() == rank && p->isIdle() ) {
-      return true;
+  if ( isRegisteredNode(rank) ) {
+    for (
+      NodeContainer::const_iterator p = _nodes.begin();
+      p != _nodes.end();
+      p++
+    ) {
+      if ( p->getRank() == rank && p->isIdle() ) {
+        return true;
+      }
     }
+    return false;
   }
-  return false;
+  else return false;
 }
 
 

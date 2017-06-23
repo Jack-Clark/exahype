@@ -13,6 +13,8 @@
 
 #include "exahype/runners/Runner.h"
 
+#include <cmath>
+
 #include "../../../Peano/mpibalancing/HotspotBalancing.h"
 
 #include "exahype/repositories/Repository.h"
@@ -52,10 +54,12 @@
 #ifdef Parallel
 #include "mpibalancing/GreedyBalancing.h"
 #include "mpibalancing/FairNodePoolStrategy.h"
+#include "mpibalancing/SFCDiffusionNodePoolStrategy.h"
 #endif
 #include "exahype/plotters/Plotter.h"
 
 #include "exahype/mappings/MeshRefinement.h"
+#include "exahype/mappings/LimiterStatusSpreading.h"
 
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
@@ -64,7 +68,7 @@
 
 tarch::logging::Log exahype::runners::Runner::_log("exahype::runners::Runner");
 
-exahype::runners::Runner::Runner(Parser& parser) : _parser(parser) {}
+exahype::runners::Runner::Runner(Parser& parser) : _parser(parser), _boundingBoxSize(0.0) {}
 
 exahype::runners::Runner::~Runner() {}
 
@@ -95,6 +99,30 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
       }
       tarch::parallel::NodePool::getInstance().setStrategy(
         new mpibalancing::FairNodePoolStrategy(ranksPerNode)
+      );
+      logInfo("initDistributedMemoryConfiguration()", "load balancing relies on fair answering strategy with " << ranksPerNode << " rank(s) per node") ;
+    }
+    else if (configuration.find( "sfc-diffusion" )!=std::string::npos ) {
+      int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks_per_node"));
+      if (ranksPerNode<=0) {
+        logError( "initDistributedMemoryConfiguration()", "please inform SFC balancing how many ranks per node you use through value \"ranks_per_node:XXX\". Read value " << ranksPerNode << " is invalid" );
+        ranksPerNode = 1;
+      }
+      if (tarch::parallel::Node::getInstance().getNumberOfNodes() % ranksPerNode != 0) {
+        logError( "initDistributedMemoryConfiguration()", "Value of \"ranks_per_node:XXX\" does not fit to total number of ranks. ExaHyPE requires homogeneous rank distribution" );
+        ranksPerNode = 1;
+      }
+      int primaryRanksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"primary_ranks_per_node"));
+      if (primaryRanksPerNode<=0) {
+        logError( "initDistributedMemoryConfiguration()", "please inform SFC balancing how many primary ranks per node you use through value \"primary_ranks_per_node:XXX\". Read value " << primaryRanksPerNode << " is invalid" );
+        primaryRanksPerNode = 1;
+      }
+      if ( ranksPerNode>=tarch::parallel::Node::getInstance().getNumberOfNodes() ) {
+        logWarning( "initDistributedMemoryConfiguration()", "value \"ranks_per_node:XXX\" exceeds total rank count. Reset to 1" );
+        ranksPerNode = 1;
+      }
+      tarch::parallel::NodePool::getInstance().setStrategy(
+        new mpibalancing::SFCDiffusionNodePoolStrategy(ranksPerNode,primaryRanksPerNode)
       );
       logInfo("initDistributedMemoryConfiguration()", "load balancing relies on fair answering strategy with " << ranksPerNode << " rank(s) per node") ;
     }
@@ -134,15 +162,15 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
         logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins (mpibalancing/GreedyBalancing)");
         peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
           new mpibalancing::GreedyBalancing(
-            getCoarsestGridLevelOfAllSolvers(),
-            getCoarsestGridLevelOfAllSolvers()+1
+            getCoarsestGridLevelOfAllSolvers(_boundingBoxSize),
+            getCoarsestGridLevelOfAllSolvers(_boundingBoxSize)+1
           )
         );
         break;
       case exahype::mappings::LoadBalancing::LoadBalancingAnalysis::Hotspot:
         logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
         peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-            new mpibalancing::HotspotBalancing(false,getCoarsestGridLevelOfAllSolvers()+1)
+            new mpibalancing::HotspotBalancing(false,getCoarsestGridLevelOfAllSolvers(_boundingBoxSize)+1)
         );
         break;
     }
@@ -315,14 +343,14 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 }
 
 
-int exahype::runners::Runner::getCoarsestGridLevelOfAllSolvers() const {
-  double boundingBox = _parser.getBoundingBoxSize()(0);
+int exahype::runners::Runner::getCoarsestGridLevelOfAllSolvers(
+    tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize) const {
   double hMax        = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
 
   int    result      = 1;
   double currenthMax = std::numeric_limits<double>::max();
   while (currenthMax>hMax) {
-    currenthMax = boundingBox / threePowI(result);
+    currenthMax = boundingBoxSize[0] / threePowI(result);
     result++;
   }
 
@@ -331,14 +359,14 @@ int exahype::runners::Runner::getCoarsestGridLevelOfAllSolvers() const {
 }
 
 
-int exahype::runners::Runner::getFinestGridLevelOfAllSolvers() const {
-  double boundingBox = _parser.getBoundingBoxSize()(0);
+int exahype::runners::Runner::getFinestGridLevelOfAllSolvers(
+    tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize) const {
   double hMax        = exahype::solvers::Solver::getFinestMaximumMeshSizeOfAllSolvers();
 
   int    result      = 1;
   double currenthMax = std::numeric_limits<double>::max();
   while (currenthMax>hMax) {
-    currenthMax = boundingBox / threePowI(result);
+    currenthMax = boundingBoxSize[0] / threePowI(result);
     result++;
   }
 
@@ -346,41 +374,111 @@ int exahype::runners::Runner::getFinestGridLevelOfAllSolvers() const {
   return std::max(3,result);
 }
 
+double
+exahype::runners::Runner::determineCoarsestMeshSize(
+    const tarch::la::Vector<DIMENSIONS, double>& boundingBoxSize) const {
+  const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+  const double maxBoundingBoxExtent = tarch::la::max(boundingBoxSize);
 
-exahype::repositories::Repository* exahype::runners::Runner::createRepository() const {
-  // Geometry is static as we need it survive the whole simulation time.
-  static peano::geometry::Hexahedron geometry(
-      _parser.getDomainSize(),
-      _parser.getOffset());
+  const int coarsestMeshLevel =
+      exahype::solvers::Solver::computeMeshLevel(coarsestUserMeshSize,maxBoundingBoxExtent);
+  return maxBoundingBoxExtent / threePowI(coarsestMeshLevel-1);
+}
+
+tarch::la::Vector<DIMENSIONS, double>
+exahype::runners::Runner::determineScaledDomainSize(
+    const tarch::la::Vector<DIMENSIONS, double>& domainSize,
+    const double meshSize) const {
+  tarch::la::Vector<DIMENSIONS, double> scaledDomainSize =
+      domainSize / meshSize;
+  for(int i=0; i<DIMENSIONS; i++) {
+    scaledDomainSize[i] = std::ceil(scaledDomainSize[i]) * meshSize;
+  }
+  return scaledDomainSize;
+}
+
+/**
+ * @return Bounding box size. If we have a non-cubical domain,
+ *         then the bounding box still is cubical and all of its entries are
+ *         the biggest dimension along one coordinate axis.
+ */
+tarch::la::Vector<DIMENSIONS, double> exahype::runners::Runner::determineBoundingBoxSize(
+    const tarch::la::Vector<DIMENSIONS, double>& domainSize) const {
+    double longestH = tarch::la::max(domainSize);
+    return tarch::la::Vector<DIMENSIONS, double>(longestH);
+}
+
+exahype::repositories::Repository* exahype::runners::Runner::createRepository() {
+  // Geometry is static as we need it to survive the whole simulation time.
+  _domainOffset = _parser.getOffset();
+  _domainSize   = _parser.getDomainSize();
+  _boundingBoxSize  = determineBoundingBoxSize(_domainSize);
+
+  const int coarsestUserMeshLevel = getCoarsestGridLevelOfAllSolvers(_boundingBoxSize);
+  int boundingBoxMeshLevel = coarsestUserMeshLevel;
+  tarch::la::Vector<DIMENSIONS,double> boundingBoxOffset = _domainOffset;
+
+  #ifdef Parallel
+  if (exahype::State::VirtuallyExpandBoundingBox) {
+    const double coarsestUserMeshSpacing =
+        exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+    const double maxDomainExtent = tarch::la::max(_domainSize);
+
+    double boundingBoxScaling         = 0;
+    double boundingBoxExtent          = 0;
+    double boundingBoxMeshSpacing     = std::numeric_limits<double>::max();
+
+    int level = coarsestUserMeshLevel;
+    while (boundingBoxMeshSpacing > coarsestUserMeshSpacing) {
+      const double boundingBoxMeshCells = std::pow(3,boundingBoxMeshLevel-1);
+      boundingBoxScaling                = boundingBoxMeshCells / ( boundingBoxMeshCells - 2 );
+      boundingBoxExtent                 = boundingBoxScaling * maxDomainExtent;
+      boundingBoxMeshSpacing            = boundingBoxExtent/boundingBoxMeshCells;
+      level++;
+    }
+    assertion6(boundingBoxScaling>=1.0,boundingBoxScaling,boundingBoxExtent,boundingBoxMeshSpacing,boundingBoxMeshLevel,coarsestUserMeshSpacing,maxDomainExtent);
+
+    boundingBoxMeshLevel = level--;
+    _boundingBoxSize    *= boundingBoxScaling;
+    boundingBoxOffset   -= boundingBoxMeshSpacing;
+  }
+  #endif
+
+  const double coarsestUserMeshSize = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+  const double coarsestMeshSize     = determineCoarsestMeshSize(_boundingBoxSize);
+  tarch::la::Vector<DIMENSIONS,double> scaledDomainSize =
+      determineScaledDomainSize(_domainSize,coarsestMeshSize);
+  if (!tarch::la::equals(_domainSize,scaledDomainSize)) {
+    logInfo("createRepository(...)",
+        "scale domain size artificially to " << scaledDomainSize << " from "
+        << _domainSize << " since non-cubic domain was specified");
+  }
+  logInfo("createRepository(...)",
+      "coarsest mesh size was chosen as " << coarsestMeshSize << " based on user's maximum mesh size "<<
+      coarsestUserMeshSize << " and domain size " << scaledDomainSize);
+  if (boundingBoxMeshLevel!=coarsestUserMeshLevel) {
+    logInfo("createRepository(...)",
+        "We will need to refine the grid " << boundingBoxMeshLevel-coarsestUserMeshLevel << " more time(s) than expected "
+            " in order to satisfy user's maximum mesh size criterion while scaling the bounding box");
+  }
 
   logInfo(
       "createRepository(...)",
-      "create computational domain at " << _parser.getOffset() <<
-      " of width/size " << _parser.getDomainSize() <<
-      ". bounding box has size " << _parser.getBoundingBoxSize() <<
-      ". grid regular up to level " << getCoarsestGridLevelOfAllSolvers() << " (level 1 is coarsest available cell in tree)" );
+      "summary: create computational domain at " << _domainOffset <<
+      " of width/size " << scaledDomainSize <<
+      ". bounding box has offset " << boundingBoxOffset <<
+      " and size " << _boundingBoxSize <<
+      ". grid regular up to level " << boundingBoxMeshLevel << " (level 1 is coarsest available cell in tree)");
 
+  _domainSize = scaledDomainSize;
 
-  tarch::la::Vector<DIMENSIONS, double> boundingBoxSize   = _parser.getBoundingBoxSize();
-  tarch::la::Vector<DIMENSIONS, double> boundingBoxOffset = _parser.getOffset();
-  #ifdef Parallel
-  if (_parser.getMPIConfiguration().find( "virtually-expand-domain")!=std::string::npos) {
-    const double boundingBoxScaling = static_cast<double>(getCoarsestGridLevelOfAllSolvers()) / (static_cast<double>(getCoarsestGridLevelOfAllSolvers())-2);
-    assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize() );
-    const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
-    assertion5(boundingBoxShift<=0.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize(), boundingBoxScaling );
+  static peano::geometry::Hexahedron geometry(
+      _domainSize,
+      _domainOffset);
 
-    logInfo(
-        "createRepository(...)",
-        "increase domain artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
-
-    boundingBoxSize   *= boundingBoxScaling;
-    boundingBoxOffset += boundingBoxShift*_parser.getBoundingBoxSize();
-  }
-  #endif
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
       geometry,
-      boundingBoxSize,
+      _boundingBoxSize,
       boundingBoxOffset
   );
 }
@@ -392,20 +490,54 @@ void exahype::runners::Runner::initHPCEnvironment() {
 
 
 int exahype::runners::Runner::run() {
-  exahype::repositories::Repository* repository = createRepository();
-
-  initDistributedMemoryConfiguration();
-  initSharedMemoryConfiguration();
-  initDataCompression();
-  initHPCEnvironment();
-
   int result = 0;
   if ( _parser.isValid() ) {
-    // We have to do this for any rank.
-    exahype::State::FuseADERDGPhases  = _parser.getFuseAlgorithmicSteps();
+    multiscalelinkedcell::HangingVertexBookkeeper::getInstance().disableInheritingOfCoarseGridIndices();
 
+    exahype::State::EnableMasterWorkerCommunication = _parser.getMPIMasterWorkerCommunication();
+    exahype::State::EnableNeighbourCommunication    = _parser.getMPINeighbourCommunication();
     #ifdef Parallel
-    exahype::mappings::MeshRefinement::FirstIteration = false;
+    exahype::State::VirtuallyExpandBoundingBox =
+        _parser.getMPIConfiguration().find( "virtually-expand-domain")!=std::string::npos;
+    #endif
+
+    exahype::repositories::Repository* repository = createRepository();
+    initSolvers(_domainOffset,_domainSize);
+    if (_parser.getFuseAlgorithmicSteps()) {
+      exahype::State::FuseADERDGPhases         = _parser.getFuseAlgorithmicSteps();
+      exahype::State::WeightForPredictionRerun = _parser.getFuseAlgorithmicStepsFactor();
+    } else {
+      bool abortProgram = false;
+      for (unsigned int solverNumber = 0; solverNumber < exahype::solvers::RegisteredSolvers.size(); ++solverNumber) {
+        auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+        if (solver->getType()==exahype::solvers::Solver::Type::LimitingADERDG) {
+          abortProgram = true;
+        }
+        if (solver->getMaximumAdaptiveMeshDepth()>0) {
+          abortProgram = true;
+        }
+      }
+
+      if (abortProgram) {
+        assertionMsg(false,
+            "Please set 'fuse-algorithmic-steps' to 'on' in your specification file. "
+            "You might need to add the 'optimisation' environment.");
+        logError("run()",
+            "Please set 'fuse-algorithmic-steps' to 'on' in your specification file. "
+            "You might need to add the 'optimisation' environment.");
+        abort();
+      }
+    }
+    // must be after repository creation
+    initDistributedMemoryConfiguration();
+    initSharedMemoryConfiguration();
+    initDataCompression();
+    initHPCEnvironment();
+
+    exahype::mappings::MeshRefinement::IsInitialMeshRefinement=true;
+    #ifdef Parallel
+    exahype::mappings::MeshRefinement::IsFirstIteration = false;
+    exahype::mappings::LimiterStatusSpreading::IsFirstIteration = false;
     #endif
 
     if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
@@ -416,31 +548,41 @@ int exahype::runners::Runner::run() {
       result = runAsWorker(*repository);
     }
     #endif
+
+    shutdownSharedMemoryConfiguration();
+    shutdownDistributedMemoryConfiguration();
+
+    delete repository;
   }
   else {
     logError( "run(...)", "do not run code as parser reported errors" );
     result = 1;
   }
 
-  shutdownSharedMemoryConfiguration();
-  shutdownDistributedMemoryConfiguration();
-
-  delete repository;
-
   return result;
 }
 
-void exahype::runners::Runner::createGrid(exahype::repositories::Repository& repository) {
+void exahype::runners::Runner::initSolvers(
+    const tarch::la::Vector<DIMENSIONS,double>& domainOffset,
+    const tarch::la::Vector<DIMENSIONS,double>& domainSize) const {
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    p->initSolver(0.0,domainOffset,domainSize);
+  }
+}
+
+bool exahype::runners::Runner::createMesh(exahype::repositories::Repository& repository) {
+  bool gridUpdate = false;
+
   int gridSetupIterations = 0;
   repository.switchToMeshRefinement();
 
   while ( repository.getState().continueToConstructGrid()
-          || exahype::solvers::Solver::oneSolverRequestedGridUpdate()
+          || exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
   ) {
     repository.iterate();
     gridSetupIterations++;
 
-    repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers() );
+    repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers(_boundingBoxSize) );
 
     #if defined(TrackGridStatistics) && defined(Asserts)
     logInfo("createGrid()",
@@ -471,7 +613,8 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
     #ifdef Asserts
     logInfo("createGrid()",
              "grid setup iteration #" << gridSetupIterations <<
-             ", grid update requested=" << exahype::solvers::Solver::oneSolverRequestedGridUpdate()
+             ", run one more iteration=" <<  repository.getState().continueToConstructGrid() ||
+                                              exahype::solvers::Solver::oneSolverHasNotAttainedStableState();
      );
     #endif
 
@@ -489,12 +632,33 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
       peano::heap::PlainCharHeap::getInstance().plotStatistics();
     }
     #endif
+
+    gridUpdate = true;
+  }
+
+  // a few extra iterations for the limiter status spreading
+  logInfo("createGrid()", "more status spreading.");
+  int extraIterations = 3;
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+    extraIterations = 5;
+  }
+  while (
+      extraIterations > 0
+      || repository.getState().continueToConstructGrid()
+      || exahype::solvers::Solver::oneSolverHasNotAttainedStableState()
+  ) {
+    gridUpdate |=
+        repository.getState().continueToConstructGrid()
+        || exahype::solvers::Solver::oneSolverHasNotAttainedStableState();
+
+    repository.iterate();
+    extraIterations--;
+    gridSetupIterations++;
+
+    repository.getState().endedGridConstructionIteration( getFinestGridLevelOfAllSolvers(_boundingBoxSize) );
   }
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
-
-//  repository.switchToPlotAugmentedAMRGrid();
-//  repository.iterate(); // For debugging purposes
 
   if (
     tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0
@@ -504,10 +668,12 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
     logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
   }
 
-#ifdef Parallel
+  #ifdef Parallel
   // Might be too restrictive for later runs. Remove but keep warning from above
   assertion( tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0 );
-#endif
+  #endif
+
+  return gridUpdate;
 }
 
 
@@ -515,92 +681,45 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   peano::utils::UserInterface::writeHeader();
 
   if (!exahype::solvers::RegisteredSolvers.empty()) {
-    initSolverTimeStepData();
-    repository.getState().switchToPreAMRContext();
-    createGrid(repository);
-    /*
-     * Set ADER-DG corrector time stamp and finite volumes time stamp.
-     * Compute ADER-DG corrector time step size implicitly and finite volumes time step size.
-     * (Implicitly means here that we set the predictor time step size but after the next newTimeStep(...)
-     * the corrector time step size is set as this predictor time step size.)
-     *
-     * Note that it is important that we run SolutionAdjustmentAnd
-     * GlobalTimeStepComputation directly after the grid setup
-     * since we receive here the metadata
-     * that was sent in the last iteration of the grid setup.
-     */
-    initSolverTimeStepData();
+    initialiseMesh(repository);
 
-    logInfo( "runAsMaster(...)", "start to initialise all data and to compute first time step size" );
-
-    repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
-    repository.switchToInitialConditionAndTimeStepSizeComputation();
-    repository.iterate();
     logInfo( "runAsMaster(...)", "initialised all data and computed first time step size" );
-
-    if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
-      initSolverTimeStepData();
-      updateLimiterDomain(repository);
-    }
 
     bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
+    repository.getState().setAlgorithmSection(exahype::records::State::TimeStepping);
     if (exahype::State::fuseADERDGPhases()) {
       repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
       if (plot) {
-        //      #if DIMENSIONS==2
-        //      repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot2d();
-        //      #else
         repository.switchToPredictionAndFusedTimeSteppingInitialisationAndPlot();
-        //      #endif
       } else {
         repository.switchToPredictionAndFusedTimeSteppingInitialisation();
       }
       repository.iterate();
     } else {
-      /*
-       * Compute current first predictor based on current time step size.
-       * Set current time step size as old time step size of next iteration.
-       * Compute the current time step size of the next iteration.
-       */
       repository.getState().switchToPredictionContext();
       if (plot) {
-        //    #if DIMENSIONS==2
-        //    repository.switchToPredictionAndPlot2d();
-        //    #else
         repository.switchToPredictionAndPlot();
-        //    #endif
       } else {
-        repository.switchToPrediction();   // Cell onto faces
+        repository.switchToPrediction();
       }
       repository.iterate();
     }
     logInfo("runAsMaster(...)","plotted initial solution (if specified) and computed first predictor");
 
-    /*
-     * Finally print the initial time step info.
-     */
     printTimeStepInfo(-1,repository);
-
     validateInitialSolverTimeStepData(_parser.getFuseAlgorithmicSteps());
 
     const double simulationEndTime = _parser.getSimulationEndTime();
-
     logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
     logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
-
     while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
-      // TODO(Dominic): This plotting strategy might be an issue if we use LTS.
-      // see issue #103
       bool plot = exahype::plotters::startPlottingIfAPlotterIsActive(
           solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
       if (_parser.getFuseAlgorithmicSteps()) {
-        repository.getState().setTimeStepSizeWeightForPredictionRerun(
-            _parser.getFuseAlgorithmicStepsFactor());
-
         int numberOfStepsToRun = 1;
         if (plot) {
           numberOfStepsToRun = 0;
@@ -618,14 +737,14 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
           numberOfStepsToRun = numberOfStepsToRun<1 ? 1 : numberOfStepsToRun;
         }
 
-        runOneTimeStampWithFusedAlgorithmicSteps(
+        runOneTimeStepWithFusedAlgorithmicSteps(
           repository,
           numberOfStepsToRun,
           _parser.getExchangeBoundaryDataInBatchedTimeSteps() && repository.getState().isGridStationary()
         );
         printTimeStepInfo(numberOfStepsToRun,repository);
       } else {
-        runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
+        runOneTimeStepWithThreeSeparateAlgorithmicSteps(repository, plot);
       }
 
       #if  defined(SharedMemoryParallelisation) && defined(PerformanceAnalysis) && !defined(Parallel)
@@ -648,12 +767,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.terminate();
 
   return 0;
-}
-
-void exahype::runners::Runner::initSolverTimeStepData() {
-  for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    p->initSolverTimeStepData(0.0);
-  }
 }
 
 void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuseADERDGPhases) const {
@@ -725,79 +838,126 @@ void exahype::runners::Runner::validateInitialSolverTimeStepData(const bool fuse
 }
 
 void exahype::runners::Runner::updateLimiterDomain(exahype::repositories::Repository& repository) {
-  logInfo("updateLimiterDomain(...)","start to update limiter domain");
-  repository.getState().switchToLimiterStatusSpreadingContext();
-  repository.switchToLimiterStatusSpreading();
-  repository.iterate();
-
-  /**
-   * We need to gather information from all neighbours
-   * of a cell before we can determine the unified
-   * limiter status value of the cell.
-   *
-   * We thus need two extra iterations to send and receive
-   * the limiter status of remote neighbours.
-   */
-  #ifdef Parallel
-  logInfo("updateLimiterDomain(...)","merge limiter status of remote neighbours");
-  repository.switchToLimiterStatusMergingAndSpreadingMPI();
-  repository.iterate();
-  repository.switchToLimiterStatusMergingMPI();
-  repository.iterate();
-  #endif
-
-  repository.getState().switchToReinitialisationContext();
-  logInfo("updateLimiterDomain(...)","reinitialise cells");
-  repository.switchToReinitialisation();
-  repository.iterate();
-
-  logInfo("updateLimiterDomain(...)","recompute solution in troubled cells");
-  repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
-  repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
-  repository.iterate();
-
-  logInfo("updateLimiterDomain(...)","updated limiter domain");
+//  logInfo("updateLimiterDomain(...)","start to update limiter domain");
+//  repository.getState().switchToLimiterStatusSpreadingContext();
+//  repository.switchToLimiterStatusSpreading();
+//  repository.iterate();
+//
+//  /**
+//   * We need to gather information from all neighbours
+//   * of a cell before we can determine the unified
+//   * limiter status value of the cell.
+//   *
+//   * We thus need two extra iterations to send and receive
+//   * the limiter status of remote neighbours.
+//   */
+//  #ifdef Parallel
+//  logInfo("updateLimiterDomain(...)","merge limiter status of remote neighbours");
+//  repository.switchToLimiterStatusMergingAndSpreadingMPI();
+//  repository.iterate();
+//  repository.switchToLimiterStatusMergingMPI();
+//  repository.iterate();
+//  #endif
+//
+//  repository.getState().switchToReinitialisationContext();
+//  logInfo("updateLimiterDomain(...)","reinitialise cells");
+//  repository.switchToReinitialisation();
+//  repository.iterate();
+//
+//  logInfo("updateLimiterDomain(...)","recompute solution in troubled cells");
+//  repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationContext();
+//  repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
+//  repository.iterate();
+//
+//  logInfo("updateLimiterDomain(...)","updated limiter domain");
 }
 
-void exahype::runners::Runner::updateLimiterDomainFusedTimeStepping(exahype::repositories::Repository& repository) {
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","start to update limiter domain");
-  repository.getState().switchToLimiterStatusSpreadingContext();
-  repository.switchToLimiterStatusSpreadingFusedTimeStepping();
-  repository.iterate();
+void exahype::runners::Runner::initialiseMesh(exahype::repositories::Repository& repository) {
+  // We refine here using the previous solution (which is valid)
+  logInfo("initialiseMesh(...)","create initial grid");
+  repository.getState().setAlgorithmSection(exahype::records::State::TimeStepping);
 
-  /**
-   * We need to gather information from all neighbours
-   * of a cell before we can determine the unified
-   * limiter status value of the cell.
-   *
-   * We thus need two extra iterations to send and receive
-   * the limiter status of remote neighbours.
-   */
-  #ifdef Parallel
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","merge limiter status of remote neighbours");
-  repository.switchToLimiterStatusMergingAndSpreadingMPI();
+  repository.getState().switchToUpdateMeshContext();
+  createMesh(repository);
+  logInfo("initialiseMesh(...)","finalise mesh refinement and compute first time step size");
+  repository.getState().switchToTimeStepSizeComputationContext();
+  repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
   repository.iterate();
-  repository.switchToLimiterStatusMergingMPI();
-  repository.iterate();
-  #endif
-
-  repository.getState().switchToReinitialisationContext();
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","reinitialise cells");
-  repository.switchToReinitialisation();
-  repository.iterate();
-
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","recompute solution in troubled cells");
-  repository.getState().switchToRecomputeSolutionAndTimeStepSizeComputationFusedTimeSteppingContext();
-  repository.switchToSolutionRecomputationAndTimeStepSizeComputation();
-  repository.iterate();
-
-  logInfo("updateLimiterDomainFusedTimeStepping(...)","updated limiter domain");
 }
 
-void exahype::runners::Runner::recomputePredictorAfterGridUpdate(exahype::repositories::Repository& repository) {
-  repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
-  repository.switchToPredictionAndFusedTimeSteppingInitialisation();
+void exahype::runners::Runner::updateMeshFusedTimeStepping(exahype::repositories::Repository& repository) {
+  // 1. All solvers drop their MPI messages
+  assertion(repository.getState().getAlgorithmSection()==exahype::records::State::AlgorithmSection::TimeStepping);
+  repository.getState().switchToNeighbourDataDroppingContext();
+  repository.switchToNeighbourDataMerging();
   repository.iterate();
+
+  // 1. Only the solvers with irregular limiter domain change do the limiter status spreading.
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLimiterStatusSpreading()) {
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LimiterStatusSpreading);
+    logInfo("updateMeshFusedTimeStepping(...)","pre-spreading of limiter status");
+    repository.switchToLimiterStatusSpreading();
+    repository.iterate(5);
+  }
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+    assertion(exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate());
+    assertion(exahype::solvers::LimitingADERDGSolver::oneSolverHasNotAttainedStableState());
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","global recomputation requested by at least one solver");
+  }
+
+  // 2. Perform a grid update for those solvers that requested refinement
+  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinement);
+    logInfo("updateMeshFusedTimeStepping(...)","perform mesh refinement");
+    repository.getState().switchToUpdateMeshContext(); // TODO(Dominic): Adjust context for MPI
+    createMesh(repository);
+  }
+
+  // 3. Drop the MPI metadata for all solvers that requested grid refinement
+  // Further reinitialse solvers that reported an irregular limiter domain change
+  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate() ||
+      exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation()) {
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrLocalOrGlobalRecomputation);
+
+    logInfo("updateMeshFusedTimeStepping(...)","reinitialise cells and send data to neighbours");
+    repository.getState().switchToReinitialisationContext();
+    repository.switchToFinaliseMeshRefinementAndReinitialisation();
+    repository.iterate();
+
+    // 4. Perform a local recomputation of the solution of the solvers that requested one.
+    // Perform a time
+    if (!exahype::solvers::Solver::oneSolverRequestedMeshUpdate() &&
+        !exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+      repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::LocalRecomputationAllSend);
+    }
+
+    logInfo("updateMeshFusedTimeStepping(...)","recompute solution locally (if applicable) and compute new time step size");
+    repository.getState().switchToLocalRecomputationAndTimeStepSizeComputationFusedTimeSteppingContext();
+    repository.switchToLocalRecomputationAndTimeStepSizeComputation();
+    repository.iterate(); // local recomputation: has now recomputed predictor in interface cells
+  } // LocalRecomputation is done here
+
+  if (exahype::solvers::Solver::oneSolverRequestedMeshUpdate() ||
+      exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementOrGlobalRecomputation);
+    if (!exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+      repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::MeshRefinementAllSend);
+    }
+    logInfo("updateMeshFusedTimeStepping(...)","recompute predictor globally and reinitialise fused time stepping");
+    repository.getState().switchToPredictionAndFusedTimeSteppingInitialisationContext();
+    repository.switchToPredictionAndFusedTimeSteppingInitialisation();
+    repository.iterate(); // At this stage all solvers that required a mesh update, have
+                          // recomputed the predictor
+  }  // MeshUpdate is done here
+
+  // 5. Perform a full ADER-DG time step for the cells that requested a global recomputation
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+    repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::GlobalRecomputationAllSend);
+    logInfo("updateMeshFusedTimeStepping(...)","recompute solution and predictor globally");
+    repository.getState().switchToADERDGTimeStepContext();
+    repository.switchToADERDGTimeStep();
+    repository.iterate();
+  }
 }
 
 void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCall, const exahype::repositories::Repository& repository) {
@@ -906,14 +1066,16 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
 }
 
 
-void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
+void exahype::runners::Runner::runOneTimeStepWithFusedAlgorithmicSteps(
     exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData) {
+  logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","run "<<numberOfStepsToRun<< " iterations with fused algorithmic steps");
+
   /*
    * The adapter below performs the following steps:
    *
    * 1. Exchange the fluctuations using the predictor computed in the previous
    *sweep
-   *    and the corrector time stemp size.
+   *    and the corrector time step size.
    * 2. Perform the corrector step using the corrector update and the corrector
    *time step size.
    *    This is a cell-local operation. Thus we immediately obtain the
@@ -922,7 +1084,9 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
    *predictor time step size.
    * 4. Compute the cell-local time step sizes
    */
+  repository.getState().setAlgorithmSection(exahype::records::State::AlgorithmSection::TimeStepping);
   repository.getState().switchToADERDGTimeStepContext();
+
   if (numberOfStepsToRun==0) {
     repository.switchToPlotAndADERDGTimeStep();
     repository.iterate();
@@ -931,85 +1095,61 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
     repository.iterate(numberOfStepsToRun,exchangeBoundaryData);
   }
 
-  if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
-    updateLimiterDomainFusedTimeStepping(repository);
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalRecomputation()) {
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","local recomputation requested by at least one solver");
+  }
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedGlobalRecomputation()) {
+    assertion(exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate());
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","global recomputation requested by at least one solver");
+  }
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate()) {
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)","mesh update requested by at least one solver");
   }
 
-  // We consider the limiter status in our mesh
-  // refinement criterion. We enforce that the
-  // limiter is only active on the finest mesh level
-  // by additional mesh refinement.
-  bool gridUpdate = false;
-  while (exahype::solvers::Solver::oneSolverRequestedGridUpdate()) {
-    logInfo("runOneTimeStampWithFusedAlgorithmicSteps(...)","update grid");
+  if (exahype::solvers::LimitingADERDGSolver::oneSolverRequestedMeshUpdate() ||
+      exahype::solvers::LimitingADERDGSolver::oneSolverRequestedLocalOrGlobalRecomputation()) {
+    updateMeshFusedTimeStepping(repository);
+  }
 
-    repository.getState().switchToPreAMRContext();
-    repository.switchToTimeStepDataMergingAndDropIncomingMPIMessages(); // TODO(Dominic): Need to drop the data here. Important for DYN AMR.
+  if (exahype::solvers::Solver::stabilityConditionOfOneSolverWasViolated()) {
+    logInfo("runOneTimeStepWithFusedAlgorithmicSteps(...)", "\t\t recompute space-time predictor");
+    repository.getState().setAlgorithmSection(exahype::records::State::PredictionRerunAllSend);
+    repository.getState().switchToPredictionRerunContext();
+    repository.switchToPrediction();
     repository.iterate();
-
-    createGrid(repository);
-
-    repository.getState().switchToPostAMRContext();
-    repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
-    repository.iterate();
-
-    gridUpdate = true;
-  }
-
-  if (gridUpdate) {
-    recomputePredictorAfterGridUpdate(repository);
-  }
-  else {
-    recomputePredictorIfNecessary(repository);
   }
 
   // ---- reduction/broadcast barrier ----
 }
 
-void exahype::runners::Runner::recomputePredictorIfNecessary(
-    exahype::repositories::Repository& repository) {
-  // Must be evaluated before we start a new time step
-  //  bool stabilityConditionWasHarmed = setStableTimeStepSizesIfStabilityConditionWasHarmed(factor);
-  // Note that it is important to switch the time step sizes, i.e,
-  // start a new time step, before we recompute the predictor.
-
-  if (repository.getState().stabilityConditionOfOneSolverWasViolated()) {
-    logInfo("startNewTimeStep(...)",
-        "\t\t Space-time predictor must be recomputed.");
-
-    repository.getState().switchToPredictionRerunContext();
-    repository.switchToPredictionRerun();
-    repository.iterate();
-  }
-}
-
-void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
+void exahype::runners::Runner::runOneTimeStepWithThreeSeparateAlgorithmicSteps(
     exahype::repositories::Repository& repository, bool plot) {
   // Only one time step (predictor vs. corrector) is used in this case.
-//  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","merge neighbours");
+//  logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","merge neighbours");
 
   repository.getState().switchToNeighbourDataMergingContext();
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
   repository.iterate(); // todo uncomment
 
-//  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","update solution");
+//  logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","update solution");
 
   repository.getState().switchToSolutionUpdateContext();
   repository.switchToSolutionUpdate();  // Face to cell + Inside cell
   repository.iterate();
 
-//  logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","compute new time step size");
+//  logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","compute new time step size");
 
   repository.getState().switchToTimeStepSizeComputationContext();
   repository.switchToTimeStepSizeComputation();
   repository.iterate();
 
+  // TODO(Dominic): Will be merged with the mesh refinement
   // We mimic the flow of the fused time stepping scheme here
   // a little. Updating the limiter domain is thus done after the time step
   // size computation.
-  if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
-    updateLimiterDomain(repository);
-  }
+//  if (exahype::solvers::LimitingADERDGSolver::limiterDomainOfOneSolverHasChanged()) {
+//    updateLimiterDomain(repository);
+//  }
 
   // We mimic the flow of the fused time stepping scheme here
   // a little. Updating grid is thus done after the time step
@@ -1019,19 +1159,19 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   // refinement criterion. We enforce that the
   // limiter is only active on the finest mesh level
   // by mesh refinement.
-  while (exahype::solvers::Solver::oneSolverRequestedGridUpdate()) {
-    logInfo("runOneTimeStampWithThreeSeparateAlgorithmicSteps(...)","update grid");
-
-    repository.getState().switchToPreAMRContext();
-    repository.switchToTimeStepDataMerging();
-    repository.iterate();
-
-    createGrid(repository);
-
-    repository.getState().switchToPostAMRContext();
-    repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
-    repository.iterate();
-  }
+//  while (exahype::solvers::Solver::oneSolverRequestedMeshUpdate()) {
+//    logInfo("runOneTimeStepWithThreeSeparateAlgorithmicSteps(...)","update grid");
+//
+//    repository.getState().switchToUpdateMeshContext();
+//    repository.switchToMergeTimeStepData();
+//    repository.iterate();
+//
+//    createMesh(repository);
+//
+//    repository.getState().switchToPostAMRContext();
+//    repository.switchToFinaliseMeshRefinementAndTimeStepSizeComputation();
+//    repository.iterate();
+//  }
 
   printTimeStepInfo(1,repository);
 
@@ -1042,11 +1182,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
    */
   repository.getState().switchToPredictionContext();
   if (plot) {
-//    #if DIMENSIONS==2
-//    repository.switchToPredictionAndPlot2d();
-//    #else
     repository.switchToPredictionAndPlot();
-//    #endif
   } else {
     repository.switchToPrediction();   // Cell onto faces
   }

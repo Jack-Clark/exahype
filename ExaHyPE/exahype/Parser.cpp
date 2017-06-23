@@ -20,6 +20,7 @@
 #include <string.h>
 #include <string>
 #include <regex>
+#include <cstdlib> // getenv, exit
 
 #include "tarch/la/ScalarOperations.h"
 
@@ -33,11 +34,7 @@ double exahype::Parser::getValueFromPropertyString(
     const std::string& parameterString, const std::string& key) {
   std::size_t startIndex = parameterString.find(key);
   startIndex = parameterString.find(":", startIndex);
-  std::size_t endIndexBracket = parameterString.find("}", startIndex + 1);
-  std::size_t endIndexComma = parameterString.find(",", startIndex + 1);
-
-  std::size_t endIndex =
-      endIndexBracket < endIndexComma ? endIndexBracket : endIndexComma;
+  std::size_t endIndex = parameterString.find_first_of("}, \n\r", startIndex + 1);
 
   std::string substring =
       parameterString.substr(startIndex + 1, endIndex - startIndex - 1);
@@ -170,25 +167,34 @@ void exahype::Parser::readFile(const std::string& filename) {
     _interpretationErrorOccured = true;
   }
 
+  checkValidity();
+
   //  For debugging purposes
-  //  std::cout << "_tokenStream=" << std::endl;
-  //  for (std::string str : _tokenStream) {
-  //    std::cout << "["<<str<<"]" << std::endl;
-  //  }
+  if(std::getenv("EXAHYPE_VERBOSE_PARSER")) { // runtime debugging
+	std::cout << "Parser _tokenStream=" << std::endl;
+	for (std::string str : _tokenStream) {
+		std::cout << "["<<str<<"]" << std::endl;
+	}
+  }
   //  std::string configuration = getMPIConfiguration();
   //  int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks_per_node"));
   //  std::cout << "ranks_per_node="<<ranksPerNode << std::endl;
+}
+
+void exahype::Parser::checkValidity() {
+  // functions have side-effects: might set _interpretationErrorOccured
+  getDomainSize();
+  getOffset();
+  getSimulationEndTime();
 }
 
 bool exahype::Parser::isValid() const {
   return !_tokenStream.empty() && !_interpretationErrorOccured;
 }
 
-
 void exahype::Parser::invalidate() {
   _interpretationErrorOccured = true;
 }
-
 
 std::string exahype::Parser::getTokenAfter(std::string token,
                                            int additionalTokensToSkip) const {
@@ -314,13 +320,6 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getDomainSize() const {
   return result;
 }
 
-tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getBoundingBoxSize()
-    const {
-  tarch::la::Vector<DIMENSIONS, double> domainSize = getDomainSize();
-  double longestH = tarch::la::max(domainSize);
-  return tarch::la::Vector<DIMENSIONS, double>(longestH);
-}
-
 tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getOffset() const {
   assertion(isValid());
   std::string token;
@@ -390,6 +389,28 @@ int exahype::Parser::getMPITimeOut() const {
     _interpretationErrorOccured = true;
   }
   return result;
+}
+
+bool exahype::Parser::getMPIMasterWorkerCommunication() const {
+  std::string token =
+      getTokenAfter("distributed-memory", "master-worker-communication");
+  if (token.compare(_noTokenFound) != 0) {
+    logInfo("getMPIMasterWorkerCommunication()",
+             "found master-worker-communication " << token);
+    return token.compare("on") == 0;
+  }
+  return true;
+}
+
+bool exahype::Parser::getMPINeighbourCommunication() const {
+  std::string token =
+      getTokenAfter("distributed-memory", "neighbour-communication");
+  if (token.compare(_noTokenFound) != 0) {
+    logInfo("getMPINeighbourCommunication()",
+             "found neighbour-communication " << token);
+    return token.compare("on") == 0;
+  }
+  return true;
 }
 
 exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType()
@@ -502,20 +523,30 @@ double exahype::Parser::getTimestepBatchFactor() const {
   return result;
 }
 
+
+bool exahype::Parser::hasOptimisationSegment() const {
+  std::string token = getTokenAfter("optimisation");
+  return token.compare(_noTokenFound)!=0;
+}
+
+
 bool exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
-  std::string token =
+  if (hasOptimisationSegment()) {
+    std::string token =
       getTokenAfter("optimisation", "skip-reduction-in-batched-time-steps");
-  logDebug("getSkipReductionInBatchedTimeSteps()",
+    logDebug("getSkipReductionInBatchedTimeSteps()",
            "found skip-reduction-in-batched-time-steps " << token);
-  if (token.compare("on") != 0 && token.compare("off") != 0) {
-    logError("getSkipReductionInBatchedTimeSteps()",
+    if (token.compare("on") != 0 && token.compare("off") != 0) {
+      logError("getSkipReductionInBatchedTimeSteps()",
              "skip-reduction-in-batched-time-steps is required in the "
              "optimisation segment and has to be either on or off: "
                  << token);
-    _interpretationErrorOccured = true;
-  }
+      _interpretationErrorOccured = true;
+    }
 
-  return token.compare("on") == 0;
+    return token.compare("on") == 0;
+  }
+  else return false;
 }
 
 
@@ -690,13 +721,35 @@ double exahype::Parser::getMaximumMeshSize(int solverNumber) const {
       getTokenAfter("solver", solverNumber + 1, "maximum-mesh-size", 1, 0);
   result = atof(token.c_str());
   if (tarch::la::smallerEquals(result, 0.0)) {
-    logError("getMaximumMeshSize()",
+    logError("getMaximumMeshSize(int)",
              "'" << getIdentifier(solverNumber)
                  << "': 'maximum-mesh-size': Value must be greater than zero.");
     _interpretationErrorOccured = true;
   }
 
   logDebug("getMaximumMeshSize()", "found maximum mesh size " << result);
+  return result;
+}
+
+double exahype::Parser::getMaximumMeshDepth(int solverNumber) const {
+  std::string token;
+  int result;
+
+  token = getTokenAfter("solver", solverNumber + 1, "maximum-mesh-depth", 1, 0);
+
+  if (token==_noTokenFound) {
+    return 0;
+  }
+
+  result = std::atoi(token.c_str());
+  if (tarch::la::smaller(result, 0)) {
+    logError("getMaximumMeshDepth(int)",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'maximum-mesh-depth': Value must be greater than or equal to zero.");
+    _interpretationErrorOccured = true;
+  }
+
+  logDebug("getMaximumMeshDepth()", "found maximum mesh size " << result);
   return result;
 }
 
@@ -745,13 +798,47 @@ double exahype::Parser::getDMPDifferenceScaling(int solverNumber) const {
   result = atof(token.c_str());
 
   if (result < 0) {
-    logError("getParameters()",
+    logError("getDMPDifferenceScaling()",
              "'" << getIdentifier(solverNumber)
                  << "': 'dmp-difference-scaling': Value must not be negative.");
     _interpretationErrorOccured = true;
   }
 
   logInfo("getDMPDifferenceScaling()", "found dmp-difference-scaling " << result);
+  return result;
+}
+
+int exahype::Parser::getDMPObservables(int solverNumber) const {
+  std::string token;
+  int result;
+  token = getTokenAfter("solver", solverNumber + 1, "dmp-observables", 1);
+  result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getDMPObservables()",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'dmp-observables': Value must not be negative.");
+    _interpretationErrorOccured = true;
+  }
+
+  logInfo("getDMPObservables()", "found dmp-observables " << result);
+  return result;
+}
+
+int exahype::Parser::getStepsTillCured(int solverNumber) const {
+  std::string token;
+  int result;
+  token = getTokenAfter("solver", solverNumber + 1, "steps-till-cured", 1);
+  result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getStepsTillCured()",
+             "'" << getIdentifier(solverNumber)
+                 << "': 'steps-till-cured': Value must not be negative.");
+    _interpretationErrorOccured = true;
+  }
+
+  logInfo("getStepsTillCured()", "found steps-till-cured " << result);
   return result;
 }
 
@@ -892,10 +979,12 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
   bool recompile = false;
   bool runToolkitAgain = false;
   if (solver->getType() != getType(solverNumber)) {
-    logError("checkIfSolverIsConsistent",
+    logError("checkSolverConsistency",
              "'" << getIdentifier(solverNumber)
-                 << "': Solver type in specification file"
-                 << "differs from implementation solver type.");
+                 << "': Solver type in specification file "
+		 << "('" << exahype::solvers::Solver::toString(getType(solverNumber)) << "') "
+                 << "differs from solver type used in implementation "
+		 << "('" << exahype::solvers::Solver::toString(solver->getType()) << "').");
     recompile = true;
     _interpretationErrorOccured = true;
   }
@@ -948,6 +1037,9 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
   }
 
   // @todo We should add checks for FV as well
+  
+  // (Sven:) somehow for me the following lines are never printed. I don't
+  // know why.
 
   if (runToolkitAgain) {
     logError("checkSolverConsistency",
@@ -977,7 +1069,7 @@ exahype::Parser::ParserView::ParserView(Parser& parser,
 std::string exahype::Parser::ParserView::getValue(
     const std::string inputString, const std::string& key) const {
   assertion(_parser.isValid());
-
+  
   if (inputString.substr(0, 1) != "{") return "";
   std::size_t currentIndex = 1;
   bool nextTokenIsSearchedValue = false;
@@ -1009,6 +1101,8 @@ bool exahype::Parser::ParserView::hasKey(const std::string& key) const {
   const std::string inputString = _parser.getTokenAfter(
       "solver", _solverNumberInSpecificationFile + 1, "constants", 1);
 
+  // TODO: We don't start constant lists etc. with an { any more.
+  // at least sometimes.
   if (inputString.substr(0, 1) != "{") return false;
   std::size_t currentIndex = 1;
   bool nextTokenIsValue = false;

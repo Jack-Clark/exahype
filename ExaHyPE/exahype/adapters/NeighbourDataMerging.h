@@ -18,6 +18,7 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/adapters/NeighbourDataMerging2MultiscaleLinkedCell_0.h"
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/PostProcessing.h"
 
@@ -39,21 +40,23 @@ namespace exahype {
  */
 class exahype::adapters::NeighbourDataMerging {
   private:
-    typedef mappings::Merging Mapping0;
-    typedef mappings::PostProcessing Mapping1;
+    typedef adapters::NeighbourDataMerging2MultiscaleLinkedCell_0 Mapping0;
+    typedef mappings::Merging Mapping1;
+    typedef mappings::PostProcessing Mapping2;
 
-     Mapping0  _map2Merging;
-     Mapping1  _map2PostProcessing;
+     Mapping0  _map2NeighbourDataMerging2MultiscaleLinkedCell_0;
+     Mapping1  _map2Merging;
+     Mapping2  _map2PostProcessing;
 
 
   public:
-    static peano::MappingSpecification         touchVertexLastTimeSpecification();
-    static peano::MappingSpecification         touchVertexFirstTimeSpecification();
-    static peano::MappingSpecification         enterCellSpecification();
-    static peano::MappingSpecification         leaveCellSpecification();
-    static peano::MappingSpecification         ascendSpecification();
-    static peano::MappingSpecification         descendSpecification();
-    static peano::CommunicationSpecification   communicationSpecification();
+    peano::MappingSpecification         touchVertexLastTimeSpecification(int level) const;
+    peano::MappingSpecification         touchVertexFirstTimeSpecification(int level) const;
+    peano::MappingSpecification         enterCellSpecification(int level) const;
+    peano::MappingSpecification         leaveCellSpecification(int level) const;
+    peano::MappingSpecification         ascendSpecification(int level) const;
+    peano::MappingSpecification         descendSpecification(int level) const;
+    peano::CommunicationSpecification   communicationSpecification() const;
 
     NeighbourDataMerging();
 

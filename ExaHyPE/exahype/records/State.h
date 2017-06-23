@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   05/04/2017 22:59
+    * @date   11/06/2017 00:44
     */
    class exahype::records::State { 
       
@@ -41,8 +41,12 @@ namespace exahype {
          
          typedef exahype::records::StatePacked Packed;
          
+         enum AlgorithmSection {
+            TimeStepping = 0, LimiterStatusSpreading = 1, MeshRefinement = 2, MeshRefinementOrLocalOrGlobalRecomputation = 3, LocalRecomputationAllSend = 4, MeshRefinementOrGlobalRecomputation = 5, MeshRefinementAllSend = 6, GlobalRecomputationAllSend = 7, PredictionRerunAllSend = 8
+         };
+         
          enum MergeMode {
-            MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
+            MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, DropFaceData = 3, BroadcastAndMergeTimeStepDataAndMergeFaceData = 4, BroadcastAndMergeTimeStepDataAndDropFaceData = 5
          };
          
          enum SendMode {
@@ -53,9 +57,7 @@ namespace exahype {
             int _maxRefinementLevelAllowed;
             MergeMode _mergeMode;
             SendMode _sendMode;
-            bool _reinitTimeStepData;
-            bool _stabilityConditionOfOneSolverWasViolated;
-            double _timeStepSizeWeightForPredictionRerun;
+            AlgorithmSection _algorithmSection;
             bool _hasRefined;
             bool _hasTriggeredRefinementForNextIteration;
             bool _hasErased;
@@ -71,7 +73,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             
             inline int getMaxRefinementLevelAllowed() const 
@@ -134,62 +136,22 @@ namespace exahype {
             
             
             
-            inline bool getReinitTimeStepData() const 
+            inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _reinitTimeStepData;
+               return _algorithmSection;
             }
             
             
             
-            inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+            inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _reinitTimeStepData = reinitTimeStepData;
-            }
-            
-            
-            
-            inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _stabilityConditionOfOneSolverWasViolated;
-            }
-            
-            
-            
-            inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-            }
-            
-            
-            
-            inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _timeStepSizeWeightForPredictionRerun;
-            }
-            
-            
-            
-            inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               _algorithmSection = algorithmSection;
             }
             
             
@@ -352,7 +314,7 @@ namespace exahype {
             /**
              * Generated
              */
-            State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             /**
              * Generated
@@ -420,62 +382,22 @@ namespace exahype {
             
             
             
-            inline bool getReinitTimeStepData() const 
+            inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _persistentRecords._reinitTimeStepData;
+               return _persistentRecords._algorithmSection;
             }
             
             
             
-            inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+            inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-            }
-            
-            
-            
-            inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-            }
-            
-            
-            
-            inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-            }
-            
-            
-            
-            inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-            }
-            
-            
-            
-            inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               _persistentRecords._algorithmSection = algorithmSection;
             }
             
             
@@ -622,6 +544,16 @@ namespace exahype {
             /**
              * Generated
              */
+            static std::string toString(const AlgorithmSection& param);
+            
+            /**
+             * Generated
+             */
+            static std::string getAlgorithmSectionMapping();
+            
+            /**
+             * Generated
+             */
             static std::string toString(const MergeMode& param);
             
             /**
@@ -715,7 +647,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   05/04/2017 22:59
+    * @date   11/06/2017 00:44
     */
    class exahype::records::StatePacked { 
       
@@ -725,13 +657,13 @@ namespace exahype {
          
          typedef exahype::records::State::SendMode SendMode;
          
+         typedef exahype::records::State::AlgorithmSection AlgorithmSection;
+         
          struct PersistentRecords {
             int _maxRefinementLevelAllowed;
             MergeMode _mergeMode;
             SendMode _sendMode;
-            bool _reinitTimeStepData;
-            bool _stabilityConditionOfOneSolverWasViolated;
-            double _timeStepSizeWeightForPredictionRerun;
+            AlgorithmSection _algorithmSection;
             bool _isTraversalInverted;
             
             /** mapping of records:
@@ -753,7 +685,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             
             inline int getMaxRefinementLevelAllowed() const 
@@ -816,62 +748,22 @@ namespace exahype {
             
             
             
-            inline bool getReinitTimeStepData() const 
+            inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _reinitTimeStepData;
+               return _algorithmSection;
             }
             
             
             
-            inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+            inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _reinitTimeStepData = reinitTimeStepData;
-            }
-            
-            
-            
-            inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _stabilityConditionOfOneSolverWasViolated;
-            }
-            
-            
-            
-            inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-            }
-            
-            
-            
-            inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _timeStepSizeWeightForPredictionRerun;
-            }
-            
-            
-            
-            inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               _algorithmSection = algorithmSection;
             }
             
             
@@ -1052,7 +944,7 @@ namespace exahype {
             /**
              * Generated
              */
-            StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             /**
              * Generated
@@ -1120,62 +1012,22 @@ namespace exahype {
             
             
             
-            inline bool getReinitTimeStepData() const 
+            inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _persistentRecords._reinitTimeStepData;
+               return _persistentRecords._algorithmSection;
             }
             
             
             
-            inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+            inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-            }
-            
-            
-            
-            inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-            }
-            
-            
-            
-            inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-            }
-            
-            
-            
-            inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-            }
-            
-            
-            
-            inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+               _persistentRecords._algorithmSection = algorithmSection;
             }
             
             
@@ -1360,6 +1212,16 @@ namespace exahype {
             /**
              * Generated
              */
+            static std::string toString(const AlgorithmSection& param);
+            
+            /**
+             * Generated
+             */
+            static std::string getAlgorithmSectionMapping();
+            
+            /**
+             * Generated
+             */
             std::string toString() const;
             
             /**
@@ -1429,7 +1291,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   11/06/2017 00:44
        */
       class exahype::records::State { 
          
@@ -1437,8 +1299,12 @@ namespace exahype {
             
             typedef exahype::records::StatePacked Packed;
             
+            enum AlgorithmSection {
+               TimeStepping = 0, LimiterStatusSpreading = 1, MeshRefinement = 2, MeshRefinementOrLocalOrGlobalRecomputation = 3, LocalRecomputationAllSend = 4, MeshRefinementOrGlobalRecomputation = 5, MeshRefinementAllSend = 6, GlobalRecomputationAllSend = 7, PredictionRerunAllSend = 8
+            };
+            
             enum MergeMode {
-               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
+               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, DropFaceData = 3, BroadcastAndMergeTimeStepDataAndMergeFaceData = 4, BroadcastAndMergeTimeStepDataAndDropFaceData = 5
             };
             
             enum SendMode {
@@ -1449,9 +1315,7 @@ namespace exahype {
                int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
-               bool _reinitTimeStepData;
-               bool _stabilityConditionOfOneSolverWasViolated;
-               double _timeStepSizeWeightForPredictionRerun;
+               AlgorithmSection _algorithmSection;
                #ifdef UseManualAlignment
                tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
                #else
@@ -1491,7 +1355,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                
                inline int getMaxRefinementLevelAllowed() const 
@@ -1554,62 +1418,22 @@ namespace exahype {
                
                
                
-               inline bool getReinitTimeStepData() const 
+               inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _reinitTimeStepData;
+                  return _algorithmSection;
                }
                
                
                
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  _algorithmSection = algorithmSection;
                }
                
                
@@ -2168,7 +1992,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -2236,62 +2060,22 @@ namespace exahype {
                
                
                
-               inline bool getReinitTimeStepData() const 
+               inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._reinitTimeStepData;
+                  return _persistentRecords._algorithmSection;
                }
                
                
                
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  _persistentRecords._algorithmSection = algorithmSection;
                }
                
                
@@ -2886,6 +2670,16 @@ namespace exahype {
                /**
                 * Generated
                 */
+               static std::string toString(const AlgorithmSection& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getAlgorithmSectionMapping();
+               
+               /**
+                * Generated
+                */
                static std::string toString(const MergeMode& param);
                
                /**
@@ -2979,7 +2773,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   11/06/2017 00:44
        */
       class exahype::records::StatePacked { 
          
@@ -2989,13 +2783,13 @@ namespace exahype {
             
             typedef exahype::records::State::SendMode SendMode;
             
+            typedef exahype::records::State::AlgorithmSection AlgorithmSection;
+            
             struct PersistentRecords {
                int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
-               bool _reinitTimeStepData;
-               bool _stabilityConditionOfOneSolverWasViolated;
-               double _timeStepSizeWeightForPredictionRerun;
+               AlgorithmSection _algorithmSection;
                tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
                double _numberOfInnerVertices;
@@ -3033,7 +2827,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                
                inline int getMaxRefinementLevelAllowed() const 
@@ -3096,62 +2890,22 @@ namespace exahype {
                
                
                
-               inline bool getReinitTimeStepData() const 
+               inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _reinitTimeStepData;
+                  return _algorithmSection;
                }
                
                
                
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  _algorithmSection = algorithmSection;
                }
                
                
@@ -3737,7 +3491,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -3805,62 +3559,22 @@ namespace exahype {
                
                
                
-               inline bool getReinitTimeStepData() const 
+               inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._reinitTimeStepData;
+                  return _persistentRecords._algorithmSection;
                }
                
                
                
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  _persistentRecords._algorithmSection = algorithmSection;
                }
                
                
@@ -4498,6 +4212,16 @@ namespace exahype {
                 * Generated
                 */
                static std::string getSendModeMapping();
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const AlgorithmSection& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getAlgorithmSectionMapping();
                
                /**
                 * Generated
@@ -4572,7 +4296,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   11/06/2017 00:44
        */
       class exahype::records::State { 
          
@@ -4580,8 +4304,12 @@ namespace exahype {
             
             typedef exahype::records::StatePacked Packed;
             
+            enum AlgorithmSection {
+               TimeStepping = 0, LimiterStatusSpreading = 1, MeshRefinement = 2, MeshRefinementOrLocalOrGlobalRecomputation = 3, LocalRecomputationAllSend = 4, MeshRefinementOrGlobalRecomputation = 5, MeshRefinementAllSend = 6, GlobalRecomputationAllSend = 7, PredictionRerunAllSend = 8
+            };
+            
             enum MergeMode {
-               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
+               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, DropFaceData = 3, BroadcastAndMergeTimeStepDataAndMergeFaceData = 4, BroadcastAndMergeTimeStepDataAndDropFaceData = 5
             };
             
             enum SendMode {
@@ -4592,9 +4320,7 @@ namespace exahype {
                int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
-               bool _reinitTimeStepData;
-               bool _stabilityConditionOfOneSolverWasViolated;
-               double _timeStepSizeWeightForPredictionRerun;
+               AlgorithmSection _algorithmSection;
                #ifdef UseManualAlignment
                tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
                #else
@@ -4631,7 +4357,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                
                inline int getMaxRefinementLevelAllowed() const 
@@ -4694,62 +4420,22 @@ namespace exahype {
                
                
                
-               inline bool getReinitTimeStepData() const 
+               inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _reinitTimeStepData;
+                  return _algorithmSection;
                }
                
                
                
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  _algorithmSection = algorithmSection;
                }
                
                
@@ -5248,7 +4934,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                /**
                 * Generated
@@ -5316,62 +5002,22 @@ namespace exahype {
                
                
                
-               inline bool getReinitTimeStepData() const 
+               inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._reinitTimeStepData;
+                  return _persistentRecords._algorithmSection;
                }
                
                
                
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  _persistentRecords._algorithmSection = algorithmSection;
                }
                
                
@@ -5906,6 +5552,16 @@ namespace exahype {
                /**
                 * Generated
                 */
+               static std::string toString(const AlgorithmSection& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getAlgorithmSectionMapping();
+               
+               /**
+                * Generated
+                */
                static std::string toString(const MergeMode& param);
                
                /**
@@ -5999,7 +5655,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   11/06/2017 00:44
        */
       class exahype::records::StatePacked { 
          
@@ -6009,13 +5665,13 @@ namespace exahype {
             
             typedef exahype::records::State::SendMode SendMode;
             
+            typedef exahype::records::State::AlgorithmSection AlgorithmSection;
+            
             struct PersistentRecords {
                int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
-               bool _reinitTimeStepData;
-               bool _stabilityConditionOfOneSolverWasViolated;
-               double _timeStepSizeWeightForPredictionRerun;
+               AlgorithmSection _algorithmSection;
                tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
                double _numberOfInnerVertices;
@@ -6050,7 +5706,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                
                inline int getMaxRefinementLevelAllowed() const 
@@ -6113,62 +5769,22 @@ namespace exahype {
                
                
                
-               inline bool getReinitTimeStepData() const 
+               inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _reinitTimeStepData;
+                  return _algorithmSection;
                }
                
                
                
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  _algorithmSection = algorithmSection;
                }
                
                
@@ -6685,7 +6301,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                /**
                 * Generated
@@ -6753,62 +6369,22 @@ namespace exahype {
                
                
                
-               inline bool getReinitTimeStepData() const 
+               inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._reinitTimeStepData;
+                  return _persistentRecords._algorithmSection;
                }
                
                
                
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  _persistentRecords._algorithmSection = algorithmSection;
                }
                
                
@@ -7381,6 +6957,16 @@ namespace exahype {
                /**
                 * Generated
                 */
+               static std::string toString(const AlgorithmSection& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getAlgorithmSectionMapping();
+               
+               /**
+                * Generated
+                */
                std::string toString() const;
                
                /**
@@ -7451,7 +7037,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   11/06/2017 00:44
        */
       class exahype::records::State { 
          
@@ -7459,8 +7045,12 @@ namespace exahype {
             
             typedef exahype::records::StatePacked Packed;
             
+            enum AlgorithmSection {
+               TimeStepping = 0, LimiterStatusSpreading = 1, MeshRefinement = 2, MeshRefinementOrLocalOrGlobalRecomputation = 3, LocalRecomputationAllSend = 4, MeshRefinementOrGlobalRecomputation = 5, MeshRefinementAllSend = 6, GlobalRecomputationAllSend = 7, PredictionRerunAllSend = 8
+            };
+            
             enum MergeMode {
-               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, BroadcastAndMergeTimeStepDataAndMergeFaceData = 3
+               MergeNothing = 0, BroadcastAndMergeTimeStepData = 1, MergeFaceData = 2, DropFaceData = 3, BroadcastAndMergeTimeStepDataAndMergeFaceData = 4, BroadcastAndMergeTimeStepDataAndDropFaceData = 5
             };
             
             enum SendMode {
@@ -7471,9 +7061,7 @@ namespace exahype {
                int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
-               bool _reinitTimeStepData;
-               bool _stabilityConditionOfOneSolverWasViolated;
-               double _timeStepSizeWeightForPredictionRerun;
+               AlgorithmSection _algorithmSection;
                bool _hasRefined;
                bool _hasTriggeredRefinementForNextIteration;
                bool _hasErased;
@@ -7492,7 +7080,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                
                inline int getMaxRefinementLevelAllowed() const 
@@ -7555,62 +7143,22 @@ namespace exahype {
                
                
                
-               inline bool getReinitTimeStepData() const 
+               inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _reinitTimeStepData;
+                  return _algorithmSection;
                }
                
                
                
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  _algorithmSection = algorithmSection;
                }
                
                
@@ -7833,7 +7381,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               State(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -7901,62 +7449,22 @@ namespace exahype {
                
                
                
-               inline bool getReinitTimeStepData() const 
+               inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._reinitTimeStepData;
+                  return _persistentRecords._algorithmSection;
                }
                
                
                
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  _persistentRecords._algorithmSection = algorithmSection;
                }
                
                
@@ -8163,6 +7671,16 @@ namespace exahype {
                /**
                 * Generated
                 */
+               static std::string toString(const AlgorithmSection& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getAlgorithmSectionMapping();
+               
+               /**
+                * Generated
+                */
                static std::string toString(const MergeMode& param);
                
                /**
@@ -8256,7 +7774,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   05/04/2017 22:59
+       * @date   11/06/2017 00:44
        */
       class exahype::records::StatePacked { 
          
@@ -8266,13 +7784,13 @@ namespace exahype {
             
             typedef exahype::records::State::SendMode SendMode;
             
+            typedef exahype::records::State::AlgorithmSection AlgorithmSection;
+            
             struct PersistentRecords {
                int _maxRefinementLevelAllowed;
                MergeMode _mergeMode;
                SendMode _sendMode;
-               bool _reinitTimeStepData;
-               bool _stabilityConditionOfOneSolverWasViolated;
-               double _timeStepSizeWeightForPredictionRerun;
+               AlgorithmSection _algorithmSection;
                bool _isTraversalInverted;
                
                /** mapping of records:
@@ -8297,7 +7815,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               PersistentRecords(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                
                inline int getMaxRefinementLevelAllowed() const 
@@ -8360,62 +7878,22 @@ namespace exahype {
                
                
                
-               inline bool getReinitTimeStepData() const 
+               inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _reinitTimeStepData;
+                  return _algorithmSection;
                }
                
                
                
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  _algorithmSection = algorithmSection;
                }
                
                
@@ -8665,7 +8143,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const bool& reinitTimeStepData, const bool& stabilityConditionOfOneSolverWasViolated, const double& timeStepSizeWeightForPredictionRerun, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               StatePacked(const int& maxRefinementLevelAllowed, const MergeMode& mergeMode, const SendMode& sendMode, const AlgorithmSection& algorithmSection, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -8733,62 +8211,22 @@ namespace exahype {
                
                
                
-               inline bool getReinitTimeStepData() const 
+               inline AlgorithmSection getAlgorithmSection() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._reinitTimeStepData;
+                  return _persistentRecords._algorithmSection;
                }
                
                
                
-               inline void setReinitTimeStepData(const bool& reinitTimeStepData) 
+               inline void setAlgorithmSection(const AlgorithmSection& algorithmSection) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._reinitTimeStepData = reinitTimeStepData;
-               }
-               
-               
-               
-               inline bool getStabilityConditionOfOneSolverWasViolated() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline void setStabilityConditionOfOneSolverWasViolated(const bool& stabilityConditionOfOneSolverWasViolated) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._stabilityConditionOfOneSolverWasViolated = stabilityConditionOfOneSolverWasViolated;
-               }
-               
-               
-               
-               inline double getTimeStepSizeWeightForPredictionRerun() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._timeStepSizeWeightForPredictionRerun;
-               }
-               
-               
-               
-               inline void setTimeStepSizeWeightForPredictionRerun(const double& timeStepSizeWeightForPredictionRerun) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._timeStepSizeWeightForPredictionRerun = timeStepSizeWeightForPredictionRerun;
+                  _persistentRecords._algorithmSection = algorithmSection;
                }
                
                
@@ -9038,6 +8476,16 @@ namespace exahype {
                 * Generated
                 */
                static std::string getSendModeMapping();
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const AlgorithmSection& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getAlgorithmSectionMapping();
                
                /**
                 * Generated

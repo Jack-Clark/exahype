@@ -22,7 +22,6 @@
  #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/Prediction.h"
  #include "exahype/mappings/Plot.h"
- #include "exahype/mappings/AugmentedAMRTreePlot2d.h"
  #include "exahype/mappings/Sending.h"
  #include "exahype/mappings/PostProcessing.h"
 
@@ -48,27 +47,25 @@ class exahype::adapters::PredictionAndPlot2d {
     typedef mappings::Merging Mapping1;
     typedef mappings::Prediction Mapping2;
     typedef mappings::Plot Mapping3;
-    typedef mappings::AugmentedAMRTreePlot2d Mapping4;
-    typedef mappings::Sending Mapping5;
-    typedef mappings::PostProcessing Mapping6;
+    typedef mappings::Sending Mapping4;
+    typedef mappings::PostProcessing Mapping5;
 
      Mapping0  _map2PreProcessing;
      Mapping1  _map2Merging;
      Mapping2  _map2Prediction;
      Mapping3  _map2Plot;
-     Mapping4  _map2AugmentedAMRTreePlot2d;
-     Mapping5  _map2Sending;
-     Mapping6  _map2PostProcessing;
+     Mapping4  _map2Sending;
+     Mapping5  _map2PostProcessing;
 
 
   public:
-    static peano::MappingSpecification         touchVertexLastTimeSpecification();
-    static peano::MappingSpecification         touchVertexFirstTimeSpecification();
-    static peano::MappingSpecification         enterCellSpecification();
-    static peano::MappingSpecification         leaveCellSpecification();
-    static peano::MappingSpecification         ascendSpecification();
-    static peano::MappingSpecification         descendSpecification();
-    static peano::CommunicationSpecification   communicationSpecification();
+    peano::MappingSpecification         touchVertexLastTimeSpecification(int level) const;
+    peano::MappingSpecification         touchVertexFirstTimeSpecification(int level) const;
+    peano::MappingSpecification         enterCellSpecification(int level) const;
+    peano::MappingSpecification         leaveCellSpecification(int level) const;
+    peano::MappingSpecification         ascendSpecification(int level) const;
+    peano::MappingSpecification         descendSpecification(int level) const;
+    peano::CommunicationSpecification   communicationSpecification() const;
 
     PredictionAndPlot2d();
 

@@ -25,7 +25,7 @@
 #include "exahype/solvers/LimitingADERDGSolver.h"
 
 peano::CommunicationSpecification
-exahype::mappings::FusedTimeSteppingInitialisation::communicationSpecification() {
+exahype::mappings::FusedTimeSteppingInitialisation::communicationSpecification() const {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeDescendIntoLocalSubtree,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
@@ -33,7 +33,7 @@ exahype::mappings::FusedTimeSteppingInitialisation::communicationSpecification()
 }
 
 peano::MappingSpecification
-exahype::mappings::FusedTimeSteppingInitialisation::enterCellSpecification() {
+exahype::mappings::FusedTimeSteppingInitialisation::enterCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
@@ -42,31 +42,31 @@ exahype::mappings::FusedTimeSteppingInitialisation::enterCellSpecification() {
  * Nop.
  */
 peano::MappingSpecification exahype::mappings::FusedTimeSteppingInitialisation::
-    touchVertexLastTimeSpecification() {
+    touchVertexLastTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification exahype::mappings::FusedTimeSteppingInitialisation::
-    touchVertexFirstTimeSpecification() {
+    touchVertexFirstTimeSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid,true);
 }
 peano::MappingSpecification
-exahype::mappings::FusedTimeSteppingInitialisation::leaveCellSpecification() {
+exahype::mappings::FusedTimeSteppingInitialisation::leaveCellSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::FusedTimeSteppingInitialisation::ascendSpecification() {
+exahype::mappings::FusedTimeSteppingInitialisation::ascendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
 }
 peano::MappingSpecification
-exahype::mappings::FusedTimeSteppingInitialisation::descendSpecification() {
+exahype::mappings::FusedTimeSteppingInitialisation::descendSpecification(int level) const {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces,true);
@@ -104,8 +104,11 @@ void exahype::mappings::FusedTimeSteppingInitialisation::beginIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
 
+  _localState = solverState;
+
   for (auto* solver : exahype::solvers::RegisteredSolvers) {
-    if (exahype::State::fuseADERDGPhases()) {
+    if (exahype::State::fuseADERDGPhases() &&
+        solver->isComputing(_localState.getAlgorithmSection())) {
       initialiseFusedTimestepping(solver);
     }
   }
@@ -116,15 +119,16 @@ void exahype::mappings::FusedTimeSteppingInitialisation::beginIteration(
 void exahype::mappings::FusedTimeSteppingInitialisation::initialiseFusedTimestepping(exahype::solvers::Solver* solver,const int cellDescriptionsIndex, const int element) const {
   switch (solver->getType()) {
     case exahype::solvers::Solver::Type::ADERDG: {
-      exahype::solvers::ADERDGSolver::CellDescription& cellDescription =
-          static_cast<exahype::solvers::ADERDGSolver*>(solver)->getCellDescription(cellDescriptionsIndex,element);
-      cellDescription.setPreviousCorrectorTimeStepSize(0.0);
+      auto& cellDescription = static_cast<exahype::solvers::ADERDGSolver*>(solver)->
+          getCellDescription(cellDescriptionsIndex,element);
+      cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
       cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
-      cellDescription.setPredictorTimeStamp(cellDescription.getPredictorTimeStepSize());
+      cellDescription.setPredictorTimeStamp(
+                cellDescription.getPredictorTimeStamp() +
+                cellDescription.getPredictorTimeStepSize());
       } break;
     case exahype::solvers::Solver::Type::LimitingADERDG: {
-      exahype::solvers::ADERDGSolver::CellDescription& cellDescription =
-          static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
+      auto& cellDescription = static_cast<exahype::solvers::LimitingADERDGSolver*>(solver)->
           getSolver().get()->getCellDescription(cellDescriptionsIndex,element);
       cellDescription.setPreviousCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
       cellDescription.setCorrectorTimeStepSize(cellDescription.getPredictorTimeStepSize());
@@ -156,10 +160,10 @@ void exahype::mappings::FusedTimeSteppingInitialisation::enterCell(
     // please use a different UserDefined per mapping/event
     auto grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, peano::datatraversal::autotuning::MethodTrace::UserDefined0);
     pfor(solverNumber, 0, numberOfSolvers, grainSize.getGrainSize())
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[solverNumber];
+      auto* solver = exahype::solvers::RegisteredSolvers[solverNumber];
 
-      if (exahype::State::fuseADERDGPhases()) {
+      if (exahype::State::fuseADERDGPhases() &&
+          solver->isComputing(_localState.getAlgorithmSection())) {
         const int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
         if (element!=exahype::solvers::Solver::NotFound) {
           solver->synchroniseTimeStepping(fineGridCell.getCellDescriptionsIndex(),element);

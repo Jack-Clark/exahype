@@ -13,6 +13,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <limits>
 
 
 namespace sharedmemoryoracles {
@@ -144,6 +145,8 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     static const double                                  _MaxAccuracy;
     static const double                                  _WideningFactor;
 
+    static const int                                     _MinimumNumberOfMeasurmentsBeforeWeSpeakAboutAccurateValues;
+
     /**
      * @see parallelSectionHasTerminated()
      */
@@ -167,6 +170,14 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     const bool                                           _learn;
     const bool                                           _restart;
     const SelectNextStudiedMeasureTraceStrategy          _selectNextStudiedMeasureTraceStrategy;
+
+    /**
+     * Basically, this oracle can learn for any Peano variant independently.
+     * However, you can manually instruct the oracle to rely on persistent
+     * storage for all values bigger than this integer without any search.
+     * This speeds up the search often tremendously.
+     */
+    const int                                            _persistentSubtrees;
 
     /**
      * Per method trace, we hold multiple problem analyses. See rationale
@@ -318,6 +329,8 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
          * set entries learn. I therefore use the vector instead.
          */
         bool operator<(const DatabaseEntry& cmp) const;
+
+        bool canRelyOnValidSerialMeasurement() const;
 
         /**
          * Make a database entry learn.
@@ -527,11 +540,14 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
   public:
     /**
      * Oracle Constructor
+     *
+     * @param persistentSubtrees   See _persistentSubtrees
      */
     OracleForOnePhaseWithShrinkingGrainSize(
       bool learn,
       bool restart,
-      SelectNextStudiedMeasureTraceStrategy selectNextStudiedMeasureTraceStrategy = SelectNextStudiedMeasureTraceStrategy::RandomisedWithHigherPrioritiesForSmallProblemSizes
+      SelectNextStudiedMeasureTraceStrategy selectNextStudiedMeasureTraceStrategy = SelectNextStudiedMeasureTraceStrategy::RandomisedWithHigherPrioritiesForSmallProblemSizes,
+      int persistentSubtrees = std::numeric_limits<int>::max()
     );
 
     /**
@@ -590,6 +606,18 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
 
     /**
      * See DatabaseEnty's constructor or toString(), respectively.
+     *
+     * <h2> Post-load cleanup of data </h2>
+     *
+     * We encountered several occasions when the input file had been corrupted
+     * or the data did not make any sense. If a problem scales for size n, it
+     * also should scale for 2n. However, many times the configuration did
+     * contradict this intuition.
+     *
+     * Therefore, I add a cleanup sweep after the load where I set all those
+     * entries to redo all analysis that are "do not parallelise" even though
+     * settings for smaller problem sizes do suggest that parallelisation pays
+     * off.
      */
     void loadStatistics(const std::string& filename, int oracleNumber) override;
 

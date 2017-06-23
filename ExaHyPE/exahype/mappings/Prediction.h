@@ -97,6 +97,16 @@ private:
    */
   static tarch::logging::Log _log;
 
+  /**
+   * Local copy of the state which
+   * is used to determine if a solver
+   * is active in the current algorithm section.
+   * (See exahype::runners::Runner for locations
+   * where the algorithm section is set. The new
+   * state is then broadcasted by Peano to all other ranks.)
+   */
+   exahype::State _localState;
+
   void performPredictionAndVolumeIntegral(
       exahype::solvers::ADERDGSolver* solver,
       exahype::solvers::ADERDGSolver::CellDescription& cellDescription,
@@ -107,17 +117,17 @@ private:
   exahype::solvers::PredictionTemporaryVariables _temporaryVariables;
 
  public:
-  static peano::MappingSpecification touchVertexLastTimeSpecification();
-  static peano::MappingSpecification touchVertexFirstTimeSpecification();
-  static peano::MappingSpecification enterCellSpecification();
-  static peano::MappingSpecification leaveCellSpecification();
-  static peano::MappingSpecification ascendSpecification();
-  static peano::MappingSpecification descendSpecification();
+  peano::MappingSpecification touchVertexLastTimeSpecification(int level) const;
+  peano::MappingSpecification touchVertexFirstTimeSpecification(int level) const;
+  peano::MappingSpecification enterCellSpecification(int level) const;
+  peano::MappingSpecification leaveCellSpecification(int level) const;
+  peano::MappingSpecification ascendSpecification(int level) const;
+  peano::MappingSpecification descendSpecification(int level) const;
 
   /**
    * Please consult the specification's documentation in NewTimeStep.
    */
-  static peano::CommunicationSpecification communicationSpecification();
+  peano::CommunicationSpecification communicationSpecification() const;
 
   /**
    * Initialise the temporary variables (of the master thread
@@ -144,6 +154,7 @@ private:
   #endif
 
   /**
+   * Copy the state.
    * Further initialise temporary variables
    * if they are not initialised yet (or
    * if a new solver was introuced to the grid.
@@ -162,13 +173,13 @@ private:
    * the the fine grid cell functions as a compute cell (Cell) for the solver.
    * Please see the discussion in the class header.
    *
-   * <h2>Limiting ADER-DG solver</h2>
-   * We only perform a predictor computation if the cell description's limiter status is of type
-   * Ok, NeighbourIsTroubledCell, or NeighbourIsNeighbourOfTroubledCell. These
-   * cells require time-extrapolated boundary-extrapolated solution values from their neighbours
-   * to compute the normal fluxes/fluctuations at the cell boundary.
+   * <h2>LimitingADERDGSolver</h2>
+   * We only perform a predictor computation if the cell description's limiter status is not
+   * set to Troubled.
    * Cell descriptions with limiter status Troubled do not hold a valid ADER-DG solution and thus
    * cannot provide these data.
+   * The other cells require time-extrapolated boundary-extrapolated solution values from their neighbours
+   * to compute the normal fluxes/fluctuations at the cell boundary.
    *
    * @see enterCellSpecification()
    */
